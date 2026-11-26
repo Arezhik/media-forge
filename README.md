@@ -5,12 +5,12 @@ Monorepo for a shared Swift package and three native macOS media apps.
 - **MediaForge** (`Packages/MediaForge`) — libraries `MediaCore`, `MediaUI`, and `MediaTesting`. The package floor is macOS 13. `MediaCore` and `MediaTesting` build on Linux. `MediaUI` uses SwiftUI only where that framework is available.
 - **Apps**
   - `Apps/MKVForge` — MKV Forge (macOS 15). Own package, XcodeGen project, and version (0.8.1, build 10). CI: `.github/workflows/mkvforge.yml` (workflow name MKVForge CI). Release tags: `mkvforge-vX.Y.Z`.
+  - `Apps/MP4SubRip` — MP4SubRip (macOS 14). Own package, XcodeGen project, and version (0.8.0, build 10). CI: `.github/workflows/mp4subrip.yml` (workflow name MP4SubRip CI). Release tags: `mp4subrip-vX.Y.Z`.
   - `Apps/pgs2srt` — PGS2SRT (macOS 13). Not imported yet.
-  - `Apps/mp4subrip` — MP4SubRip (macOS 14). Not imported yet.
 
-Each app keeps its own deployment target, semver, build number, and tag (`mkvforge-vX.Y.Z` for MKV Forge).
+Each app keeps its own deployment target, semver, build number, and tag (`mkvforge-vX.Y.Z` for MKV Forge, `mp4subrip-vX.Y.Z` for MP4SubRip).
 
-The root `Package.swift` is a thin umbrella over `Packages/MediaForge`. It does not contain the library sources. The canonical package, and the one root CI (`.github/workflows/ci.yml`) tests, is `Packages/MediaForge`. `Apps/MKVForge/Package.swift` is a separate package. MKVForge tests run in `.github/workflows/mkvforge.yml`.
+The root `Package.swift` is a thin umbrella over `Packages/MediaForge`. It does not contain the library sources. The canonical package, and the one root CI (`.github/workflows/ci.yml`) tests, is `Packages/MediaForge`. `Apps/MKVForge/Package.swift` and `Apps/MP4SubRip/Package.swift` are separate packages. MKVForge tests run in `.github/workflows/mkvforge.yml`. MP4SubRip tests run in `.github/workflows/mp4subrip.yml`.
 
 ## Clone
 
@@ -34,7 +34,7 @@ To check that the root umbrella still links the three products:
 swift test -Xswiftc -strict-concurrency=complete -Xswiftc -warnings-as-errors
 ```
 
-A root `swift test` does not run the MediaForge package tests. Run the `--package-path` command for those. `Apps/MKVForge/Package.swift` is a separate package, so the root commands stay on the umbrella.
+A root `swift test` does not run the MediaForge package tests. Run the `--package-path` command for those. `Apps/MKVForge/Package.swift` and `Apps/MP4SubRip/Package.swift` are separate packages, so the root commands stay on the umbrella.
 
 MKV Forge checks, from `Apps/MKVForge`:
 
@@ -44,6 +44,13 @@ bash scripts/bump-version.sh --check
 bash scripts/check-project.sh
 ```
 
-On Linux without Swift installed, the root `./scripts/verify-linux.sh` prints the GitHub Actions commands and exits 0. GitHub Actions runs the package tests on Linux (`swift:6.2.4`) and on macOS. MKVForge's workflow is `.github/workflows/mkvforge.yml`.
+MP4SubRip checks, from `Apps/MP4SubRip`:
+
+```bash
+./scripts/verify-linux.sh
+bash scripts/bump-version.sh --check
+```
+
+On Linux without Swift installed, the root `./scripts/verify-linux.sh` prints the GitHub Actions commands and exits 0. GitHub Actions runs the package tests on Linux (`swift:6.2.4`) and on macOS. MKVForge's workflow is `.github/workflows/mkvforge.yml`. MP4SubRip's workflow is `.github/workflows/mp4subrip.yml`.
 
 Agents: read `AGENTS.md` before changing the repo.

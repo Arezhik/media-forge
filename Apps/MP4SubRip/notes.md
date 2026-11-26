@@ -3,7 +3,7 @@
 Dated log of decisions, PRs, test results, and open questions. Newest at the bottom.
 Times in Mountain time (MT).
 
-- Repo: <https://github.com/Arezhik/REPO>
+- Repo: <https://github.com/Arezhik/media-forge> (`Apps/MP4SubRip`). Tags: `mp4subrip-vX.Y.Z`. Workflow: `.github/workflows/mp4subrip.yml`.
 - Spec: SPEC.md
 - Checklist used at kickoff: AGENTS.md (from the macOS Dev living checklist). Refresh 2026-11-14: folded in Phase 1 queue/Stop, ffmpeg Settings (no fallback when chosen), AVFoundation vs c608 split, and Debug ARCHS lessons from merged PRs.
 

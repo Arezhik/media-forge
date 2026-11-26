@@ -8,7 +8,7 @@ Print this, or copy it into the PR. Mark each line Pass or Fail, and write notes
 Arezhik approves the merge only after this sheet passes.
 
 ## Setup
-- [ ] Pull the branch. Quit Xcode, delete DerivedData for MP4SubRip, open `App/MP4SubRip.xcodeproj`, then Run (⌘R).
+- [ ] Pull the branch. Quit Xcode, delete DerivedData for MP4SubRip, open `Apps/MP4SubRip/App/MP4SubRip.xcodeproj`, then Run (⌘R).
 - [ ] CI is green: Linux tests, macOS tests, and the universal app. The `MP4SubRip-universal.zip` artifact is attached.
 - [ ] About MP4SubRip (app menu) and the debug log header show the new version and build. CHANGELOG.md has the entry.
 
