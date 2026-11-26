@@ -29,6 +29,7 @@
 		6428359D6410411EEFF987DF /* SplitStillChangingUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84AB3D66A009512FE7C437E8 /* SplitStillChangingUITests.swift */; };
 		6753D013FA4C907A711E6668 /* MainWindowPage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8158EA0016D4686F63028DC5 /* MainWindowPage.swift */; };
 		7A07E0E67D8DD4582CEB520F /* ShowReadyRemuxUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 739CA4BBDF8C07B0BE87091B /* ShowReadyRemuxUITests.swift */; };
+		870AD24CEFB4080AA016C1BF /* MediaUI in Frameworks */ = {isa = PBXBuildFile; productRef = A911D91A3F09F2E86C9F7E77 /* MediaUI */; };
 		8A01A6D062C3D5F296809C63 /* MainWindowSmokeUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8DF373DACD8A87D7E85CFEF /* MainWindowSmokeUITests.swift */; };
 		8DE5A9F0C3215EE3970AF053 /* AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2696D2594905DBACDA07FB03 /* AppModel.swift */; };
 		8EC8C240AA38B4273A0C7326 /* QueueRowComponent.swift in Sources */ = {isa = PBXBuildFile; fileRef = E28EA4CFE3B3345DB6747F48 /* QueueRowComponent.swift */; };
@@ -125,6 +126,7 @@
 			files = (
 				C5B5C9AB62D0B5CFEFCCFF1C /* MKVForgeCore in Frameworks */,
 				10B30F6AB5C1D2FE688677E4 /* MediaCore in Frameworks */,
+				870AD24CEFB4080AA016C1BF /* MediaUI in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -294,6 +296,7 @@
 			packageProductDependencies = (
 				2D29AEF9CAE1EB452E43FA8F /* MKVForgeCore */,
 				FEAC7AE68248BCC1815ED414 /* MediaCore */,
+				A911D91A3F09F2E86C9F7E77 /* MediaUI */,
 			);
 			productName = MKVForge;
 			productReference = 1496BB0D61ABEEFD71BF9129 /* MKVForge.app */;
@@ -694,6 +697,10 @@
 		2D29AEF9CAE1EB452E43FA8F /* MKVForgeCore */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = MKVForgeCore;
+		};
+		A911D91A3F09F2E86C9F7E77 /* MediaUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = MediaUI;
 		};
 		C46D263DBC7F751D64B2E7FA /* MediaTesting */ = {
 			isa = XCSwiftPackageProductDependency;

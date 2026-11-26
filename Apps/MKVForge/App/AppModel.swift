@@ -4,6 +4,7 @@ import SwiftUI
 import UserNotifications
 import MKVForgeCore
 import MediaCore
+import MediaUI
 
 // The app's state and actions (docs/design/v1-layout-contract_v2.md, v2.1 addendum).
 // The rules live in MKVForgeCore (ModeState, Workflow, QuitFlow, StatusLines, …), which
@@ -171,26 +172,16 @@ final class AppModel: ObservableObject {
     func chooseFolder(_ role: FolderRole) {
         guard enablement.chooseFolders else { return }
         let mode = activeMode
-        let panel = NSOpenPanel()
-        panel.canChooseDirectories = true
-        panel.canChooseFiles = false
-        panel.allowsMultipleSelection = false
-        panel.canCreateDirectories = role == .output
-        panel.prompt = "Choose"
-        panel.message = "Choose the \(role.displayName) folder (\(FolderDisplay.holds(role, mode: mode)))."
-        if let path = state(for: mode).folder(role) {
-            panel.directoryURL = URL(fileURLWithPath: path, isDirectory: true)
-        }
-        let finish: (NSApplication.ModalResponse) -> Void = { [weak self] response in
-            guard response == .OK, let url = panel.url else { return }
-            MainActor.assumeIsolated {
-                self?.setFolder(url.path, role: role, mode: mode)
-            }
-        }
-        if let window = mainWindow {
-            panel.beginSheetModal(for: window, completionHandler: finish)
-        } else {
-            finish(panel.runModal())
+        let directory = state(for: mode).folder(role).map { URL(fileURLWithPath: $0, isDirectory: true) }
+        FilePanels.chooseFolder(
+            message: "Choose the \(role.displayName) folder (\(FolderDisplay.holds(role, mode: mode))).",
+            prompt: "Choose",
+            canCreateDirectories: role == .output,
+            directoryURL: directory,
+            attachedTo: mainWindow
+        ) { [weak self] url in
+            guard let url else { return }
+            self?.setFolder(url.path, role: role, mode: mode)
         }
     }
 
@@ -422,7 +413,7 @@ final class AppModel: ObservableObject {
         case let .select(paths) where paths.count == 1:
             let path = paths[0]
             // An empty root selects the file in the main viewer. A parent folder opens a new one.
-            _ = NSWorkspace.shared.selectFile(path, inFileViewerRootedAtPath: "")
+            Reveal.selectFile(path: path)
             DebugLog.shared.record(.lifecycle, "Show in Finder: 1 item(s) api=\(Self.selectFileAPI)")
         case let .select(paths):
             // Several files: open their folder with no selection. Selecting them stretches Finder.
@@ -447,7 +438,7 @@ final class AppModel: ObservableObject {
     }
 
     private func revealFolder(_ path: String) {
-        _ = NSWorkspace.shared.selectFile(nil, inFileViewerRootedAtPath: path)
+        Reveal.selectFolder(path: path)
         DebugLog.shared.record(.lifecycle, "Show in Finder: Output folder api=\(Self.selectFileAPI)")
     }
 
@@ -483,24 +474,16 @@ final class AppModel: ObservableObject {
 
     /// Choose mkvmerge… (banner) and Choose… (Settings): the MKVToolNix app or the binary.
     func chooseTool() {
-        let panel = NSOpenPanel()
-        panel.canChooseFiles = true
-        panel.canChooseDirectories = false
-        panel.allowsMultipleSelection = false
-        panel.treatsFilePackagesAsDirectories = false
-        panel.prompt = "Choose"
-        panel.message = "Choose the MKVToolNix app or the mkvmerge program."
-        panel.directoryURL = URL(fileURLWithPath: "/Applications", isDirectory: true)
-        let finish: (NSApplication.ModalResponse) -> Void = { [weak self] response in
-            guard response == .OK, let url = panel.url else { return }
-            MainActor.assumeIsolated {
-                self?.setChosenTool(url.path)
-            }
-        }
-        if let window = NSApp.keyWindow {
-            panel.beginSheetModal(for: window, completionHandler: finish)
-        } else {
-            finish(panel.runModal())
+        FilePanels.chooseTool(
+            message: "Choose the MKVToolNix app or the mkvmerge program.",
+            prompt: "Choose",
+            canChooseDirectories: false,
+            treatsFilePackagesAsDirectories: false,
+            directoryURL: URL(fileURLWithPath: "/Applications", isDirectory: true),
+            attachedTo: NSApp.keyWindow
+        ) { [weak self] url in
+            guard let url else { return }
+            self?.setChosenTool(url.path)
         }
     }
 
