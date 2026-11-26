@@ -1,4 +1,4 @@
-/// Placeholder for the Linux-buildable MediaTesting library.
+/// Linux-buildable test support. macOS XCUITest helpers live under `UITest/`.
 public enum MediaTestingMarker: Sendable {
     public static let moduleName = "MediaTesting"
 }

@@ -1,27 +1,24 @@
+#if canImport(XCTest) && os(macOS)
 import XCTest
 
-// Helpers: waits and the macOS SwiftUI text query shared by pages and components.
+// Waits and the macOS SwiftUI text query shared by pages and components.
 
 /// Timeouts for `waitForExistence`. Window and controls use `standard`.
-/// A queue row after Scan uses `long`.
-enum UITestTimeout {
-    static let short: TimeInterval = 2
-    static let standard: TimeInterval = 5
-    static let long: TimeInterval = 10
-    /// One 1-second mkvmerge job, including process startup.
-    static let batch: TimeInterval = 60
+/// A queue row after Scan, or a batch, uses `long` or `batch`.
+public enum UITestTimeout {
+    public static let short: TimeInterval = 2
+    public static let standard: TimeInterval = 5
+    public static let long: TimeInterval = 10
+    /// One short job, including process startup. Not a long OCR or transcode.
+    public static let batch: TimeInterval = 60
 }
 
-/// Shallow locators. `descendants(matching: .any)` and `.other` snapshot the
-/// whole tree and time out on macOS ("Timed out while evaluating UI query").
-/// Each candidate is one element type on one window: buttons, staticTexts,
-/// groups, switches. A predicate that reads `value` has to be that narrow too.
-/// `exists` records a test failure when the snapshot times out. It does not
-/// return false.
-enum UITestQuery {
+/// Shallow locators. `descendants(matching: .any)` snapshots the whole tree
+/// and times out on macOS. Each candidate is one element type.
+@MainActor
+public enum UITestQuery {
     /// `XCUIElementQuery` subscript matches identifier, label, or title.
-    @MainActor
-    static func identified(
+    public static func identified(
         _ identifier: String,
         in root: XCUIElement,
         types: [XCUIElement.ElementType]
@@ -29,8 +26,7 @@ enum UITestQuery {
         types.map { root.descendants(matching: $0)[identifier] }
     }
 
-    @MainActor
-    static func matching(
+    public static func matching(
         _ predicate: NSPredicate,
         in root: XCUIElement,
         types: [XCUIElement.ElementType]
@@ -38,8 +34,7 @@ enum UITestQuery {
         types.map { root.descendants(matching: $0).matching(predicate).firstMatch }
     }
 
-    @MainActor
-    static func count(
+    public static func count(
         matching predicate: NSPredicate,
         in root: XCUIElement,
         types: [XCUIElement.ElementType]
@@ -49,8 +44,7 @@ enum UITestQuery {
         }
     }
 
-    @MainActor
-    static func all(
+    public static func all(
         matching predicate: NSPredicate,
         in root: XCUIElement,
         types: [XCUIElement.ElementType]
@@ -63,27 +57,29 @@ enum UITestQuery {
 extension XCUIApplication {
     /// The main window while Settings may also be open.
     ///
-    /// `windows["MKVForge"]` checks identifier or title. SwiftUI
-    /// `Window("MKVForge", id: "main")` fails that check when the title is
-    /// hidden and the identifier is an internal id. Do not hardcode that id.
-    /// An empty title still matches: `NOT ("" CONTAINS[c] "Settings")` is true.
-    var mainWindow: XCUIElement {
+    /// `windows["AppName"]` checks identifier or title. SwiftUI often fails that
+    /// check. An empty title still matches this predicate.
+    /// PGS2SRT's queue window identifier is `pgs2srt.queue`. Pass that to
+    /// `mainWindow(identifier:)` or override `MainWindowPage.root`.
+    public var mainWindow: XCUIElement {
         windows.matching(
             NSPredicate(format: "NOT (title CONTAINS[c] %@)", "Settings")
         ).firstMatch
     }
+
+    /// `windows[identifier]` when that window is already up, otherwise `mainWindow`.
+    public func mainWindow(identifier: String) -> XCUIElement {
+        let marked = windows[identifier]
+        if marked.exists { return marked }
+        return mainWindow
+    }
 }
 
-enum UITestWait {
+@MainActor
+public enum UITestWait {
     /// Returns the first element that exists, polling until `timeout`.
-    /// Use this when several locators can match the same control (an identifier
-    /// that arrives in a later PR, then a label fallback).
-    ///
-    /// Each element must already be one element type on one window. Pass the
-    /// Settings window, not `XCUIApplication`: an app-wide `.other` or `value`
-    /// query snapshots the main window as well and fails here.
-    @MainActor
-    static func firstExisting(_ elements: [XCUIElement], timeout: TimeInterval) -> XCUIElement? {
+    /// Each element must already be one element type on one window.
+    public static func firstExisting(_ elements: [XCUIElement], timeout: TimeInterval) -> XCUIElement? {
         let deadline = Date().addingTimeInterval(timeout)
         while true {
             for element in elements where element.exists {
@@ -98,30 +94,48 @@ enum UITestWait {
 }
 
 @MainActor
+public enum UITestPoll {
+    /// Polls until `body` is true or the timeout elapses.
+    public static func until(_ timeout: TimeInterval, _ body: () -> Bool) -> Bool {
+        let deadline = Date().addingTimeInterval(timeout)
+        while true {
+            if body() {
+                return true
+            }
+            if Date() >= deadline {
+                return false
+            }
+            RunLoop.current.run(until: Date().addingTimeInterval(0.05))
+        }
+    }
+}
+
+@MainActor
 extension XCUIElementQuery {
     /// Elements whose own `label` or `value` contains `text`.
     ///
     /// SwiftUI `Text` on macOS exposes its string as `value`. `label` is often empty.
     /// `containing` searches descendants, so a `StaticText` never matches
     /// `label CONTAINS`. Use `matching` with both keys.
-    ///
-    /// Not for switches or checkboxes. Their `value` is `1` or `0`, and
-    /// `value CONTAINS` times out the snapshot.
-    func matchingLabelOrValue(containing text: String) -> XCUIElementQuery {
+    /// Not for switches or checkboxes. Their `value` is `1` or `0`.
+    public func matchingLabelOrValue(containing text: String) -> XCUIElementQuery {
         matching(NSPredicate(format: "label CONTAINS %@ OR value CONTAINS %@", text, text))
     }
 
     /// Elements whose own `label` or `value` equals `text`.
-    func matchingLabelOrValue(equalTo text: String) -> XCUIElementQuery {
+    public func matchingLabelOrValue(equalTo text: String) -> XCUIElementQuery {
         matching(NSPredicate(format: "label == %@ OR value == %@", text, text))
     }
 }
 
 @MainActor
 extension XCUIElement {
-    /// Visible string. Folder fields set `accessibilityLabel` (`label`).
-    /// SwiftUI `Text` usually puts the string in `value` and leaves `label` empty.
-    var uiText: String {
+    /// Visible string for MKVForge.
+    /// Folder fields set `accessibilityLabel` (`label`). SwiftUI `Text` usually
+    /// puts the string in `value` and leaves `label` empty.
+    /// Exact checks (the batch caption) depend on this order. Do not fold `title` in.
+    /// Menu buttons use `uiMenuText`. Rows that expose both label and value use `uiLabelAndValue`.
+    public var uiText: String {
         if !label.isEmpty {
             return label
         }
@@ -131,8 +145,32 @@ extension XCUIElement {
         return ""
     }
 
+    /// Label, title, and value, skipping blanks and duplicates.
+    /// MP4 menu buttons and pop-ups put the chosen title in `title`.
+    public var uiMenuText: String {
+        let valueText = value as? String ?? ""
+        var parts: [String] = []
+        for part in [label, title, valueText] where !part.isEmpty && !parts.contains(part) {
+            parts.append(part)
+        }
+        return parts.joined(separator: " ")
+    }
+
+    /// Label and value together when both are set and different. Otherwise label, else value.
+    /// PGS2SRT static texts use this.
+    public var uiLabelAndValue: String {
+        let valueText = value as? String ?? ""
+        if !label.isEmpty && !valueText.isEmpty && label != valueText {
+            return label + " " + valueText
+        }
+        if !label.isEmpty {
+            return label
+        }
+        return valueText
+    }
+
     @discardableResult
-    func requireExists(
+    public func requireExists(
         timeout: TimeInterval = UITestTimeout.standard,
         message: String,
         file: StaticString = #filePath,
@@ -142,7 +180,7 @@ extension XCUIElement {
         return self
     }
 
-    func clickWhenReady(
+    public func clickWhenReady(
         timeout: TimeInterval = UITestTimeout.standard,
         message: String,
         file: StaticString = #filePath,
@@ -153,7 +191,7 @@ extension XCUIElement {
     }
 
     /// Switch and checkbox values. macOS reports `1`/`0` or `on`/`off`.
-    var switchIsOn: Bool? {
+    public var switchIsOn: Bool? {
         let raw = (value.map { "\($0)" } ?? "").trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
         switch raw {
         case "1", "on", "true":
@@ -166,7 +204,7 @@ extension XCUIElement {
     }
 
     /// The Settings bindings write on the next main-actor turn, so poll the value.
-    func waitUntilSwitch(
+    public func waitUntilSwitch(
         isOn expected: Bool,
         timeout: TimeInterval = UITestTimeout.standard,
         message: String,
@@ -183,3 +221,4 @@ extension XCUIElement {
         XCTFail("\(message) Value was \(value.map { "\($0)" } ?? "nil").", file: file, line: line)
     }
 }
+#endif

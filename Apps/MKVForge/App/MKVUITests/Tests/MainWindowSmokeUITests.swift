@@ -1,3 +1,4 @@
+import MediaTesting
 import XCTest
 
 // Thin test. Launch, fixtures, and teardown live on `BaseUITest`.

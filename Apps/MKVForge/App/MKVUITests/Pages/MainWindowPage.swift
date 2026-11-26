@@ -1,3 +1,4 @@
+import MediaTesting
 import XCTest
 
 // Page: shared chrome of the main window. A page owns locators and actions.
@@ -11,13 +12,9 @@ import XCTest
 // of one element type, not `root.descendants(matching: .any)`.
 
 /// Window, mode picker, folder fields, Scan, the toolbar primary action, and the queue.
+/// The window root is `MediaTesting.MainWindowPage` (`app.mainWindow`).
 @MainActor
-class MainWindowPage: BasePage {
-    /// Main window, including while Settings is key. See `XCUIApplication.mainWindow`.
-    override var root: XCUIElement {
-        app.mainWindow
-    }
-
+class MainWindowPage: MediaTesting.MainWindowPage {
     var modePicker: ModePickerComponent {
         ModePickerComponent(app: app)
     }

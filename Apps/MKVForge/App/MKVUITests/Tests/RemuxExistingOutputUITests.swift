@@ -1,3 +1,4 @@
+import MediaTesting
 import XCTest
 
 // UIT-P1-06. Match on MKA Name on: an existing .mkv is an Issue and is not overwritten.

@@ -1,3 +1,4 @@
+import MediaTesting
 import XCTest
 
 // Audio only: no subtitles and no chapters. The row stays Ready. Reason shows

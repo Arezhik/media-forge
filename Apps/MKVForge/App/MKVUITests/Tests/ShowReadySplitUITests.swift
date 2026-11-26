@@ -1,3 +1,4 @@
+import MediaTesting
 import XCTest
 
 // Show Ready in Split. One settled empty MKV is Issue. One settled sample (audio and

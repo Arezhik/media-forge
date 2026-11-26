@@ -1,3 +1,4 @@
+import MediaTesting
 import XCTest
 
 // Page: the Settings window (`SettingsView`). A page owns locators and actions.
@@ -13,27 +14,10 @@ import XCTest
 // on macOS ("Timed out while evaluating UI query"), including `.other`.
 
 /// Settings window. Locators assume the window is up, except `open(in:)`.
+/// Opening the window and finding it live on `MediaTesting.SettingsPage`.
 @MainActor
-final class SettingsPage: BasePage {
-    /// A window whose title or label contains Settings. Not the exact title
-    /// `MKVForge Settings`, which the Settings scene does not always expose.
-    override var root: XCUIElement {
-        app.windows.matching(
-            NSPredicate(format: "title CONTAINS[c] %@ OR label CONTAINS[c] %@", "Settings", "Settings")
-        ).firstMatch
-    }
-
-    /// Opens Settings from the MKVForge application menu and returns this page.
-    @discardableResult
-    static func open(in app: XCUIApplication) -> SettingsPage {
-        let appMenu = app.menuBars.firstMatch.menuBarItems["MKVForge"]
-        appMenu.clickWhenReady(message: "The MKVForge application menu never showed up")
-        let item = appMenu.menuItems.matching(
-            NSPredicate(format: "label CONTAINS %@ OR title CONTAINS %@", "Settings", "Settings")
-        ).firstMatch
-        item.clickWhenReady(message: "The Settings menu item never showed up")
-        return SettingsPage(app: app)
-    }
+final class SettingsPage: MediaTesting.SettingsPage {
+    override class var menuTitle: String { "MKVForge" }
 
     /// Section header "MKVToolNix". Exact label, value, title, or identifier
     /// `mkvToolNixSection`. A grouped Form header is often a group title, not a

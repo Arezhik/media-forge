@@ -1,3 +1,4 @@
+import MediaTesting
 import XCTest
 
 // UIT-P0-01, UIT-P0-02, and UIT-P2-02. One settled Split file with audio and subtitles

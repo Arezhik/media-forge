@@ -18,7 +18,8 @@ let package = Package(
         .target(name: "MediaCore"),
         // AppKit and SwiftUI stay behind `#if canImport(...)` in Sources/MediaUI.
         .target(name: "MediaUI"),
-        // UITestFixtureBuilder. XCTest is behind `#if canImport(XCTest)` so Linux builds it.
+        // UITestFixtureBuilder, plus macOS XCUITest helpers under UITest/.
+        // Those helpers are behind `#if canImport(XCTest) && os(macOS)`.
         .target(name: "MediaTesting"),
         .testTarget(name: "MediaCoreTests", dependencies: ["MediaCore"]),
         .testTarget(name: "MediaUITests", dependencies: ["MediaUI"]),

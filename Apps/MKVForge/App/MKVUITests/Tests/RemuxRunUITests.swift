@@ -1,3 +1,4 @@
+import MediaTesting
 import XCTest
 
 // UIT-P0-04. Remux run of one settled video-only prefix pair.

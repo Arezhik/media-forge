@@ -1,3 +1,4 @@
+import MediaTesting
 import XCTest
 
 // UIT-P0-05. Settings shows the tool, the match switch, and the finish switches.

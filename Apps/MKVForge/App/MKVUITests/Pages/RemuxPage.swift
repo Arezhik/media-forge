@@ -1,3 +1,4 @@
+import MediaTesting
 import XCTest
 
 // Page: Remux mode of the main window. A page owns locators and actions.
