@@ -91,7 +91,7 @@ public enum ToolStatus: Equatable, Sendable {
         case .checking: return "Looking for mkvmerge…"
         case .found: return "Found automatically. Choose another copy to override."
         case .chosen: return "Chosen by you. Use Automatic goes back to the automatic search."
-        case .notFound: return ExternalTool.searchDescription()
+        case .notFound: return ExternalTool.searchDescription(.primary)
         case let .chosenFails(_, reason): return reason
         }
     }

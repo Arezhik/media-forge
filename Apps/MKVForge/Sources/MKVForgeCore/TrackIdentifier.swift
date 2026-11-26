@@ -1,4 +1,5 @@
 import Foundation
+import MediaCore
 
 /// Reads the tracks of one file. The app uses `MKVMergeIdentifier`; tests use a fake.
 public protocol TrackIdentifying: Sendable {

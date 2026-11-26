@@ -1,4 +1,5 @@
 import XCTest
+import MediaCore
 @testable import MKVForgeCore
 
 /// Runs real Split and Remux batches with the installed mkvmerge on small files generated

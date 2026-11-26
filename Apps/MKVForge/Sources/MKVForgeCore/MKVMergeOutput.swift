@@ -1,4 +1,5 @@
 import Foundation
+import MediaCore
 
 // mkvmerge's messages (Phase 3 research, mkvmerge 82.0 and 103.0; docs/LESSONS.md L28). Rules:
 // - mkvmerge prints warnings and errors on standard output, as lines starting with
