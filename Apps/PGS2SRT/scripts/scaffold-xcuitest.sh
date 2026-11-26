@@ -11,11 +11,8 @@ fi
 
 FLOW="$1"
 
-ROOT="$(git rev-parse --show-toplevel 2>/dev/null || true)"
-if [ -z "$ROOT" ]; then
-  echo "Error: not inside a git repository."
-  exit 1
-fi
+# App root is the parent of this script (Apps/PGS2SRT in the monorepo).
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
 
 if ! [[ "$FLOW" =~ ^[A-Za-z_][A-Za-z0-9_]*$ ]]; then
