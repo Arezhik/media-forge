@@ -1,13 +1,13 @@
+import MediaTesting
 import XCTest
 
 // Page: the queue window. Drop screen when empty, table otherwise.
 // Extract Subtitles does not run until it is clicked. These tests do not click it.
+// The window root is `MediaTesting.MainWindowPage` (`app.mainWindow`).
 
 /// The MP4SubRip queue window.
 @MainActor
-final class MainWindowPage: BasePage {
-    override var root: XCUIElement { app.mainWindow }
-
+final class MainWindowPage: MediaTesting.MainWindowPage {
     var banner: IntakeBannerComponent { IntakeBannerComponent(app: app) }
     var queue: QueueRowComponent { QueueRowComponent(app: app) }
     var mode: ModePickerComponent { ModePickerComponent(app: app) }
@@ -36,7 +36,7 @@ final class MainWindowPage: BasePage {
     func assertPrimary(titled fragment: String, enabled: Bool, file: StaticString = #filePath, line: UInt = #line) {
         let button = primaryButton()
         button.requireExists(timeout: UITestTimeout.standard, message: "The primary button never showed up", file: file, line: line)
-        XCTAssertTrue(button.uiText.contains(fragment), "Primary button showed \(button.uiText)", file: file, line: line)
+        XCTAssertTrue(button.uiMenuText.contains(fragment), "Primary button showed \(button.uiMenuText)", file: file, line: line)
         XCTAssertEqual(button.isEnabled, enabled, "Primary enabled was \(button.isEnabled)", file: file, line: line)
     }
 
@@ -67,20 +67,5 @@ final class MainWindowPage: BasePage {
             return found
         }
         return toolbarButton(prefix: "Extract")
-    }
-
-    private func toolbarButton(exact: String? = nil, prefix: String? = nil) -> XCUIElement {
-        if let exact {
-            let candidates = [root.buttons[exact], root.toolbars.buttons[exact], app.buttons[exact]]
-            return UITestWait.firstExisting(candidates, timeout: UITestTimeout.short) ?? candidates[0]
-        }
-        let prefix = prefix ?? ""
-        let predicate = NSPredicate(format: "label BEGINSWITH %@ OR title BEGINSWITH %@", prefix, prefix)
-        let candidates = [
-            root.buttons.matching(predicate).firstMatch,
-            root.toolbars.buttons.matching(predicate).firstMatch,
-            app.buttons.matching(predicate).firstMatch,
-        ]
-        return UITestWait.firstExisting(candidates, timeout: UITestTimeout.standard) ?? candidates[0]
     }
 }

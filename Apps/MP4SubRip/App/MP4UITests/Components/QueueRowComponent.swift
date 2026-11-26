@@ -1,12 +1,18 @@
+import MediaTesting
 import XCTest
 
 // Component: one queued file. `queueFileName` is the file name.
 // `queueStatus` is the status cell. SwiftUI puts the words in `value`.
+// MP4 rows are not MKVForge `queueRow` stems. Status copy stays here.
+// `uiMenuText` is label, title, and value. `uiText` would drop the title.
 
 /// A row in the extraction queue.
 @MainActor
-struct QueueRowComponent {
-    let app: XCUIApplication
+final class QueueRowComponent: MediaTesting.QueueRowComponent {
+    /// MP4 looks up the file name and the status cell. It does not pass a stem.
+    init(app: XCUIApplication) {
+        super.init(app: app, stem: "")
+    }
 
     func requireName(
         _ name: String,
@@ -61,7 +67,7 @@ struct QueueRowComponent {
     private func textExists(_ name: String, identifier: String) -> Bool {
         let window = app.mainWindow
         let identified = window.staticTexts[identifier]
-        if identified.exists && identified.uiText.contains(name) {
+        if identified.exists && identified.uiMenuText.contains(name) {
             return true
         }
         return window.staticTexts.matchingLabelOrValue(equalTo: name).firstMatch.exists
@@ -70,13 +76,13 @@ struct QueueRowComponent {
     private func statusExists(_ fragment: String) -> Bool {
         let window = app.mainWindow
         let identified = window.staticTexts["queueStatus"]
-        if identified.exists && identified.uiText.contains(fragment) {
+        if identified.exists && identified.uiMenuText.contains(fragment) {
             return true
         }
         return window.staticTexts.matchingLabelOrValue(containing: fragment).firstMatch.exists
     }
 
     private func visible() -> String {
-        app.mainWindow.staticTexts.allElementsBoundByIndex.prefix(12).map(\.uiText).joined(separator: " | ")
+        app.mainWindow.staticTexts.allElementsBoundByIndex.prefix(12).map(\.uiMenuText).joined(separator: " | ")
     }
 }

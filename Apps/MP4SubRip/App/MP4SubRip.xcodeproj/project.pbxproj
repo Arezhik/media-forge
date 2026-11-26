@@ -8,11 +8,9 @@
 
 /* Begin PBXBuildFile section */
 		0593E514E352C7184A0882DA /* MediaCore in Frameworks */ = {isa = PBXBuildFile; productRef = 6618C7F804EFC8979B68E38C /* MediaCore */; };
-		0AFF09A7CDBAE04E9425082F /* UITestFixtures.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6062D9BFBAE93CDDBDED4F87 /* UITestFixtures.swift */; };
 		0F296552B3724C684CB53F22 /* SettingsEssentialsUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BD28C9E00D86EA93198430E /* SettingsEssentialsUITests.swift */; };
 		1C49DC3FF54D482C799D9D7D /* ModePickerComponent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25B71B55D7416847084B6BD2 /* ModePickerComponent.swift */; };
 		1F31CB18F1A0762F36AB41F2 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F57E97EF02F83C7F69DF0E36 /* Assets.xcassets */; };
-		202D95C6AE7004390FAFBBE8 /* XCUIElement+UITest.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2AC593BBE886E9328FC710C /* XCUIElement+UITest.swift */; };
 		233E36DA1E96972A18EB0B2E /* MediaUI in Frameworks */ = {isa = PBXBuildFile; productRef = C4C7D637675763389823AA1C /* MediaUI */; };
 		3F3D2C0969E3D135695C4F76 /* MediaTesting in Frameworks */ = {isa = PBXBuildFile; productRef = F368ED1D7BA23C3133A8A517 /* MediaTesting */; };
 		40A119F5BC5FB77D35637672 /* BaseUITest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C8E79A162DABDEB49E42893 /* BaseUITest.swift */; };
@@ -24,7 +22,6 @@
 		5CAF3DDAF0D89312A4B449FE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05B82AD68FAC7C6DB19DF330 /* AppDelegate.swift */; };
 		5E150D6CF09B76D39A86E072 /* UITestingLaunch.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACE73ACD94D5B8833412F665 /* UITestingLaunch.swift */; };
 		7255EE65D5F132DDCCBF73CE /* MP4SubRipApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC68C7D2A959F4F949F46154 /* MP4SubRipApp.swift */; };
-		83B59D72C9F9507F20063CB6 /* IntakeBannerComponent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 724D9848491F9D93D321D975 /* IntakeBannerComponent.swift */; };
 		9BEE2503EEAE968C71F5D8BF /* ExtractionModeUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E72C78D9FEE71BF8E1100CE /* ExtractionModeUITests.swift */; };
 		A4DFE28EF4ED0D85FBE25AAF /* QueueRowComponent.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCDEF2F97EAF6B13C98D9026 /* QueueRowComponent.swift */; };
 		B03720F58E12F0BD5004D6C8 /* DebugLogSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9456220548F18AF182996979 /* DebugLogSupport.swift */; };
@@ -33,7 +30,6 @@
 		EB1B02E406225B1E2713C383 /* AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24255DE297AE82DC80E922F2 /* AppModel.swift */; };
 		EE061C823D992D6141032E6A /* UnsupportedFileUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 333232E6821E3A78448FBA63 /* UnsupportedFileUITests.swift */; };
 		F1848E6E5715D6AEABE5F7C1 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 084F56A8F03FBA28B2193E86 /* ContentView.swift */; };
-		F4C3F47FE2E4CE35C3A4F633 /* BasePage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44C98A942D6A0AAFEE0EAA97 /* BasePage.swift */; };
 		F8A00FE46CBC7E0CF2256B29 /* DummyMP4QueueUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9857DE462970D5CFBD476AF0 /* DummyMP4QueueUITests.swift */; };
 /* End PBXBuildFile section */
 
@@ -55,19 +51,15 @@
 		25B71B55D7416847084B6BD2 /* ModePickerComponent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModePickerComponent.swift; sourceTree = "<group>"; };
 		2C8E79A162DABDEB49E42893 /* BaseUITest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaseUITest.swift; sourceTree = "<group>"; };
 		333232E6821E3A78448FBA63 /* UnsupportedFileUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnsupportedFileUITests.swift; sourceTree = "<group>"; };
-		44C98A942D6A0AAFEE0EAA97 /* BasePage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BasePage.swift; sourceTree = "<group>"; };
 		46F8BB6DF829707BD6D18D99 /* SettingsPage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsPage.swift; sourceTree = "<group>"; };
-		6062D9BFBAE93CDDBDED4F87 /* UITestFixtures.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UITestFixtures.swift; sourceTree = "<group>"; };
 		69F749644A2410040DE1C750 /* MP4SubRip */ = {isa = PBXFileReference; lastKnownFileType = folder; name = MP4SubRip; path = ..; sourceTree = SOURCE_ROOT; };
 		6C0E9A2495EBDFF179D9B5D3 /* MP4SubRip.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MP4SubRip.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		724D9848491F9D93D321D975 /* IntakeBannerComponent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntakeBannerComponent.swift; sourceTree = "<group>"; };
 		81693D027D49C9209D21E358 /* SaveToComponent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SaveToComponent.swift; sourceTree = "<group>"; };
 		8BD28C9E00D86EA93198430E /* SettingsEssentialsUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsEssentialsUITests.swift; sourceTree = "<group>"; };
 		939F0297BED8320C0C920EF9 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		9456220548F18AF182996979 /* DebugLogSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugLogSupport.swift; sourceTree = "<group>"; };
 		9857DE462970D5CFBD476AF0 /* DummyMP4QueueUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DummyMP4QueueUITests.swift; sourceTree = "<group>"; };
 		9E72C78D9FEE71BF8E1100CE /* ExtractionModeUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtractionModeUITests.swift; sourceTree = "<group>"; };
-		A2AC593BBE886E9328FC710C /* XCUIElement+UITest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "XCUIElement+UITest.swift"; sourceTree = "<group>"; };
 		A77EA6FD4DACAA51FA1AD91A /* MainWindowSmokeUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainWindowSmokeUITests.swift; sourceTree = "<group>"; };
 		AC68C7D2A959F4F949F46154 /* MP4SubRipApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MP4SubRipApp.swift; sourceTree = "<group>"; };
 		ACE73ACD94D5B8833412F665 /* UITestingLaunch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UITestingLaunch.swift; sourceTree = "<group>"; };
@@ -104,7 +96,6 @@
 		09A07DA07599B0F3DD4C2593 /* Components */ = {
 			isa = PBXGroup;
 			children = (
-				724D9848491F9D93D321D975 /* IntakeBannerComponent.swift */,
 				25B71B55D7416847084B6BD2 /* ModePickerComponent.swift */,
 				DCDEF2F97EAF6B13C98D9026 /* QueueRowComponent.swift */,
 				81693D027D49C9209D21E358 /* SaveToComponent.swift */,
@@ -138,20 +129,10 @@
 			children = (
 				F89F1078D5EA0D81E419FD6B /* Base */,
 				09A07DA07599B0F3DD4C2593 /* Components */,
-				821E99DA8E8B5720FDC0A3FF /* Helpers */,
 				6896BF832DA4DFDC2FFC8029 /* Pages */,
 				18C3E369E269CB9F544359FD /* Tests */,
 			);
 			path = MP4UITests;
-			sourceTree = "<group>";
-		};
-		821E99DA8E8B5720FDC0A3FF /* Helpers */ = {
-			isa = PBXGroup;
-			children = (
-				6062D9BFBAE93CDDBDED4F87 /* UITestFixtures.swift */,
-				A2AC593BBE886E9328FC710C /* XCUIElement+UITest.swift */,
-			);
-			path = Helpers;
 			sourceTree = "<group>";
 		};
 		B0BC927F646F78D50697A6B7 = {
@@ -203,7 +184,6 @@
 		F89F1078D5EA0D81E419FD6B /* Base */ = {
 			isa = PBXGroup;
 			children = (
-				44C98A942D6A0AAFEE0EAA97 /* BasePage.swift */,
 				2C8E79A162DABDEB49E42893 /* BaseUITest.swift */,
 			);
 			path = Base;
@@ -327,11 +307,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F4C3F47FE2E4CE35C3A4F633 /* BasePage.swift in Sources */,
 				40A119F5BC5FB77D35637672 /* BaseUITest.swift in Sources */,
 				F8A00FE46CBC7E0CF2256B29 /* DummyMP4QueueUITests.swift in Sources */,
 				9BEE2503EEAE968C71F5D8BF /* ExtractionModeUITests.swift in Sources */,
-				83B59D72C9F9507F20063CB6 /* IntakeBannerComponent.swift in Sources */,
 				456B6D16E1CA9B3BEDECAE91 /* MainWindowPage.swift in Sources */,
 				45170268B66607ECDE39F1F2 /* MainWindowSmokeUITests.swift in Sources */,
 				1C49DC3FF54D482C799D9D7D /* ModePickerComponent.swift in Sources */,
@@ -339,9 +317,7 @@
 				488DE3D1F25DEE9C867530D6 /* SaveToComponent.swift in Sources */,
 				0F296552B3724C684CB53F22 /* SettingsEssentialsUITests.swift in Sources */,
 				C673FEBB728E5B26C4897001 /* SettingsPage.swift in Sources */,
-				0AFF09A7CDBAE04E9425082F /* UITestFixtures.swift in Sources */,
 				EE061C823D992D6141032E6A /* UnsupportedFileUITests.swift in Sources */,
-				202D95C6AE7004390FAFBBE8 /* XCUIElement+UITest.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
