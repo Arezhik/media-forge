@@ -8,7 +8,7 @@ name: MP4SubRip
 options:
   bundleIdPrefix: com.arezhik
   deploymentTarget:
-    macOS: "14.0"
+    macOS: "15.0"
   # Off: with `path: .`, intermediate groups leave files under random TEMP_ IDs
   # so every `xcodegen generate` writes a different project (same as mkv-forge L33).
   createIntermediateGroups: false
@@ -16,7 +16,7 @@ options:
 settings:
   # XcodeGen ignores plain keys next to configs:, so project-wide keys go under base:.
   base:
-    MACOSX_DEPLOYMENT_TARGET: "14.0"
+    MACOSX_DEPLOYMENT_TARGET: "15.0"
     SDKROOT: macosx
     SUPPORTED_PLATFORMS: macosx
     SUPPORTS_MACCATALYST: NO
@@ -79,7 +79,7 @@ targets:
           - "@executable_path/../Frameworks"
         SWIFT_EMIT_LOC_STRINGS: YES
         ENABLE_PREVIEWS: YES
-        MACOSX_DEPLOYMENT_TARGET: "14.0"
+        MACOSX_DEPLOYMENT_TARGET: "15.0"
       configs:
         Debug:
           ONLY_ACTIVE_ARCH: YES
@@ -104,7 +104,7 @@ targets:
         TEST_TARGET_NAME: MP4SubRip
         CODE_SIGN_STYLE: Manual
         CODE_SIGN_IDENTITY: "-"
-        MACOSX_DEPLOYMENT_TARGET: "14.0"
+        MACOSX_DEPLOYMENT_TARGET: "15.0"
 schemes:
   MP4SubRip-UITests:
     build:
