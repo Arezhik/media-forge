@@ -1,0 +1,299 @@
+# PGS2SRT CI for the app at Apps/PGS2SRT.
+# Three jobs: Linux tests, macOS tests, and the universal unsigned app
+# with PGS2SRT-universal.zip as the download. The universal job also builds
+# the pgs2srt command-line tool and runs on the xcode-27 runner. Vision unit
+# tests stay on macos-latest.
+# Swift 6.2.4 is pinned here and in Apps/PGS2SRT/.cursor/environment.json.
+# $GITHUB_WORKSPACE is the monorepo root. Run steps use Apps/PGS2SRT as the
+# working directory. Build directories, the zip, and upload-artifact paths include
+# Apps/PGS2SRT because they are relative to the repo root, not the working directory.
+name: PGS2SRT CI
+
+on:
+  push:
+    branches: [main]
+    paths: ['Apps/PGS2SRT/**', '.github/workflows/pgs2srt.yml']
+  pull_request:
+    paths: ['Apps/PGS2SRT/**', '.github/workflows/pgs2srt.yml']
+
+concurrency:
+  group: pgs2srt-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  linux:
+    name: PGS2SRT Linux tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: Apps/PGS2SRT
+    container:
+      image: swift:6.2.4
+    steps:
+      - name: Check out
+        uses: actions/checkout@v7
+
+      - name: Install zlib headers
+        run: apt-get update && apt-get install -y zlib1g-dev
+
+      - name: Build number is above the base branch
+        # PGS2SRT has no bump-version.sh or CHANGELOG. Compare MARKETING_VERSION
+        # and CURRENT_PROJECT_VERSION in Apps/PGS2SRT's project.pbxproj and
+        # project.yml. When the base branch has no Apps/PGS2SRT yet, skip.
+        # Otherwise compare this branch to the base's Apps/PGS2SRT files.
+        # A higher build passes. An unchanged version and build passes
+        # (docs-only or CI-only). A lower build, or a version change without
+        # a new build, fails.
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          BASE="${{ github.base_ref }}"
+          git fetch --no-tags --depth=1 origin "+refs/heads/$BASE:refs/remotes/origin/$BASE"
+          PBX_REL="Apps/PGS2SRT/App/PGS2SRT.xcodeproj/project.pbxproj"
+          YML_REL="Apps/PGS2SRT/App/project.yml"
+          has_pbx=0
+          has_yml=0
+          if git cat-file -e "origin/$BASE:$PBX_REL" 2>/dev/null; then
+            has_pbx=1
+          fi
+          if git cat-file -e "origin/$BASE:$YML_REL" 2>/dev/null; then
+            has_yml=1
+          fi
+          if [ "$has_pbx" -eq 0 ] && [ "$has_yml" -eq 0 ]; then
+            echo "origin/$BASE has no Apps/PGS2SRT (git cat-file -e origin/$BASE:$PBX_REL failed); skipping build-number comparison."
+            exit 0
+          fi
+          if [ "$has_pbx" -eq 0 ] || [ "$has_yml" -eq 0 ]; then
+            echo "origin/$BASE is missing part of Apps/PGS2SRT ($PBX_REL present=$has_pbx, $YML_REL present=$has_yml)." >&2
+            exit 1
+          fi
+          die() { echo "build-number: $*" >&2; exit 1; }
+          pbx_field() { # file field
+            sed -n "s/^[[:space:]]*$2 = \"\\{0,1\\}\\([^\\\";]*\\)\"\\{0,1\\};.*/\\1/p" "$1" | sort -u
+          }
+          yml_field() { # file field
+            sed -n "s/^[[:space:]]*$2:[[:space:]]*\"\\{0,1\\}\\([^\"#]*\\)\"\\{0,1\\}.*/\\1/p" "$1" | sed 's/[[:space:]]*$//' | sort -u
+          }
+          one_line() { # label value
+            local n
+            n="$(printf '%s\n' "$2" | wc -l | tr -d ' ')"
+            [ "$n" = 1 ] && [ -n "$2" ] || die "$1 is missing or not a single value"
+          }
+          read_pair() { # pbx yml
+            local pv pb yv yb
+            pv="$(pbx_field "$1" MARKETING_VERSION)"
+            pb="$(pbx_field "$1" CURRENT_PROJECT_VERSION)"
+            yv="$(yml_field "$2" MARKETING_VERSION)"
+            yb="$(yml_field "$2" CURRENT_PROJECT_VERSION)"
+            one_line "$1 MARKETING_VERSION" "$pv"
+            one_line "$1 CURRENT_PROJECT_VERSION" "$pb"
+            one_line "$2 MARKETING_VERSION" "$yv"
+            one_line "$2 CURRENT_PROJECT_VERSION" "$yb"
+            [ "$pv" = "$yv" ] && [ "$pb" = "$yb" ] || die "$1 is $pv (build $pb) but $2 is $yv (build $yb)"
+            printf '%s\n' "$pv" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$' || die "MARKETING_VERSION $pv is not MAJOR.MINOR.PATCH"
+            printf '%s\n' "$pb" | grep -Eq '^[0-9]+$' || die "CURRENT_PROJECT_VERSION $pb is not a whole number"
+            PAIR_VERSION="$pv"
+            PAIR_BUILD="$pb"
+          }
+          read_pair "App/PGS2SRT.xcodeproj/project.pbxproj" "App/project.yml"
+          VERSION="$PAIR_VERSION"
+          BUILD="$PAIR_BUILD"
+          tmp="$(mktemp -d)"
+          trap 'rm -rf "$tmp"' EXIT
+          git show "origin/$BASE:$PBX_REL" > "$tmp/project.pbxproj"
+          git show "origin/$BASE:$YML_REL" > "$tmp/project.yml"
+          read_pair "$tmp/project.pbxproj" "$tmp/project.yml"
+          REF_VERSION="$PAIR_VERSION"
+          REF_BUILD="$PAIR_BUILD"
+          if [ "$BUILD" -gt "$REF_BUILD" ]; then
+            echo "Build $BUILD is above origin/$BASE's build $REF_BUILD ($VERSION vs $REF_VERSION)"
+            exit 0
+          fi
+          if [ "$BUILD" = "$REF_BUILD" ] && [ "$VERSION" = "$REF_VERSION" ]; then
+            echo "No version bump on this branch ($VERSION, build $BUILD, same as origin/$BASE)"
+            exit 0
+          fi
+          echo "this branch is $VERSION (build $BUILD) but origin/$BASE is $REF_VERSION (build $REF_BUILD). Another PR bumped first." >&2
+          exit 1
+
+      - name: Test
+        run: swift test -Xswiftc -strict-concurrency=complete -Xswiftc -warnings-as-errors
+
+      - name: Build command-line tools
+        run: swift build -Xswiftc -strict-concurrency=complete -Xswiftc -warnings-as-errors
+
+      - name: pgs2srt on Linux explains it needs a Mac
+        shell: bash
+        run: |
+          set -euo pipefail
+          .build/debug/pgs2srt --help | grep -q "Apple Vision"
+          set +e
+          stderr=$(.build/debug/pgs2srt sample.sup 2>&1)
+          code=$?
+          set -e
+          test "$code" -eq 1
+          echo "$stderr" | grep -q "only runs on macOS"
+
+  macos-tests:
+    name: PGS2SRT macOS tests
+    runs-on: macos-latest
+    defaults:
+      run:
+        working-directory: Apps/PGS2SRT
+    steps:
+      - name: Check out
+        uses: actions/checkout@v7
+
+      - name: Test
+        run: swift test -Xswiftc -strict-concurrency=complete -Xswiftc -warnings-as-errors
+
+  macos:
+    name: PGS2SRT macOS universal app
+    # Xcode 27 matches the Mac where Debug failed. The hosted macOS 27 image
+    # throws nilError from VNRecognizeTextRequest, so the Vision tests stay on
+    # macos-latest. This job checks the app build.
+    runs-on: xcode-27
+    defaults:
+      run:
+        working-directory: Apps/PGS2SRT
+    steps:
+      - name: Check out
+        uses: actions/checkout@v7
+
+      - name: Xcode version
+        run: xcodebuild -version
+
+      - name: Resolve local package
+        run: |
+          set -euo pipefail
+          rm -rf "$GITHUB_WORKSPACE/Apps/PGS2SRT/build" "$GITHUB_WORKSPACE/Apps/PGS2SRT/.build"
+          set +e
+          LOG=$(xcodebuild \
+            -resolvePackageDependencies \
+            -project "$GITHUB_WORKSPACE/Apps/PGS2SRT/App/PGS2SRT.xcodeproj" \
+            -scheme PGS2SRT \
+            -derivedDataPath "$GITHUB_WORKSPACE/Apps/PGS2SRT/build" 2>&1)
+          code=$?
+          set -e
+          echo "$LOG"
+          test "$code" -eq 0
+          echo "$LOG" | grep -q "PGS2SRTKit"
+          echo "$LOG" | grep -qi "resolved source packages"
+          if echo "$LOG" | grep -q "Missing package product"; then
+            echo "Package products did not bind"
+            exit 1
+          fi
+
+      - name: Build Debug app
+        run: |
+          set -euo pipefail
+          rm -rf "$GITHUB_WORKSPACE/Apps/PGS2SRT/build-debug"
+          xcodebuild \
+            -project "$GITHUB_WORKSPACE/Apps/PGS2SRT/App/PGS2SRT.xcodeproj" \
+            -scheme PGS2SRT \
+            -configuration Debug \
+            -destination 'platform=macOS,arch=arm64' \
+            -derivedDataPath "$GITHUB_WORKSPACE/Apps/PGS2SRT/build-debug" \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            build
+          BIN="$GITHUB_WORKSPACE/Apps/PGS2SRT/build-debug/Build/Products/Debug/PGS2SRT.app/Contents/MacOS/PGS2SRT"
+          if [ ! -f "$BIN" ]; then
+            BIN="$(find "$GITHUB_WORKSPACE/Apps/PGS2SRT/build-debug" -type f -path '*/Debug/PGS2SRT.app/Contents/MacOS/PGS2SRT' | head -1)"
+          fi
+          test -f "$BIN"
+          lipo -info "$BIN"
+          ARCHS="$(lipo -archs "$BIN")"
+          echo "Debug architectures: $ARCHS"
+          echo "$ARCHS" | grep -qw arm64
+          if echo "$ARCHS" | grep -qw x86_64; then
+            echo "Debug My Mac build included Intel. ONLY_ACTIVE_ARCH should keep it to arm64."
+            exit 1
+          fi
+          MOD="$(find "$GITHUB_WORKSPACE/Apps/PGS2SRT/build-debug" -path '*PGSCore.swiftmodule/arm64-apple-macos.swiftmodule')"
+          test -n "$MOD"
+          INTEL="$(find "$GITHUB_WORKSPACE/Apps/PGS2SRT/build-debug" -path '*PGSCore.swiftmodule/*x86_64*' || true)"
+          if [ -n "$INTEL" ]; then
+            echo "Debug PGSCore module was built for a second architecture"
+            exit 1
+          fi
+
+      - name: Build universal app
+        run: |
+          xcodebuild \
+            -project "$GITHUB_WORKSPACE/Apps/PGS2SRT/App/PGS2SRT.xcodeproj" \
+            -scheme PGS2SRT \
+            -configuration Release \
+            -destination 'generic/platform=macOS' \
+            -derivedDataPath "$GITHUB_WORKSPACE/Apps/PGS2SRT/build" \
+            ARCHS="arm64 x86_64" \
+            ONLY_ACTIVE_ARCH=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            build
+
+      - name: Verify both architectures and zip
+        run: |
+          set -euo pipefail
+          APP="$GITHUB_WORKSPACE/Apps/PGS2SRT/build/Build/Products/Release/PGS2SRT.app"
+          if [ ! -d "$APP" ]; then
+            APP="$(find "$GITHUB_WORKSPACE/Apps/PGS2SRT/build" -type d -name 'PGS2SRT.app' | head -1)"
+          fi
+          test -d "$APP"
+          BIN="$APP/Contents/MacOS/PGS2SRT"
+          test -f "$BIN"
+          lipo -info "$BIN"
+          ARCHS="$(lipo -archs "$BIN")"
+          echo "Architectures: $ARCHS"
+          echo "$ARCHS" | grep -qw arm64
+          echo "$ARCHS" | grep -qw x86_64
+          INFO="$APP/Contents/Info.plist"
+          test -f "$INFO"
+          plutil -extract CFBundleIdentifier raw "$INFO" | grep -qx com.pgs2srt.PGS2SRT
+          plutil -extract CFBundleDocumentTypes.0.CFBundleTypeExtensions.0 raw "$INFO" | grep -qx sup
+          plutil -extract CFBundleDocumentTypes.1.LSItemContentTypes.0 raw "$INFO" | grep -qx public.folder
+          plutil -extract UTImportedTypeDeclarations.0.UTTypeIdentifier raw "$INFO" | grep -qx com.pgs2srt.pgs-subtitle
+          ENTS="$(codesign -d --entitlements :- "$APP" 2>/dev/null || true)"
+          if printf '%s' "$ENTS" | grep -q 'com.apple.security.app-sandbox'; then
+            echo "App Sandbox should stay off so the .srt can be written next to a dropped .sup"
+            exit 1
+          fi
+          ditto -c -k --keepParent "$APP" "$GITHUB_WORKSPACE/Apps/PGS2SRT/PGS2SRT-universal.zip"
+          test -s "$GITHUB_WORKSPACE/Apps/PGS2SRT/PGS2SRT-universal.zip"
+
+      - name: Build universal command-line tool
+        run: |
+          set -euo pipefail
+          xcodebuild \
+            -project "$GITHUB_WORKSPACE/Apps/PGS2SRT/App/PGS2SRT.xcodeproj" \
+            -scheme pgs2srt-cli \
+            -configuration Release \
+            -destination 'generic/platform=macOS' \
+            -derivedDataPath "$GITHUB_WORKSPACE/Apps/PGS2SRT/build-cli" \
+            ARCHS="arm64 x86_64" \
+            ONLY_ACTIVE_ARCH=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            build
+          BIN="$GITHUB_WORKSPACE/Apps/PGS2SRT/build-cli/Build/Products/Release/pgs2srt"
+          if [ ! -f "$BIN" ]; then
+            BIN="$(find "$GITHUB_WORKSPACE/Apps/PGS2SRT/build-cli" -type f -name 'pgs2srt' -perm -111 | head -1)"
+          fi
+          test -f "$BIN"
+          lipo -info "$BIN"
+          ARCHS="$(lipo -archs "$BIN")"
+          echo "pgs2srt architectures: $ARCHS"
+          echo "$ARCHS" | grep -qw arm64
+          echo "$ARCHS" | grep -qw x86_64
+
+      - name: Upload app
+        uses: actions/upload-artifact@v7
+        with:
+          path: Apps/PGS2SRT/PGS2SRT-universal.zip
+          if-no-files-found: error
+          archive: false

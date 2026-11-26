@@ -1,0 +1,69 @@
+# Rules for this repo (macOS app)
+- Native Swift/SwiftUI macOS app, universal (arm64 + x86_64), unsigned, not sandboxed. Minimum macOS 13.0. Local Debug is built with Xcode 27.
+- You run on Linux and can't run Xcode, the app, or Apple Vision. Put convertible logic in the Swift package. `PGSCore` stays free of AppKit/SwiftUI/Vision so `swift test` runs on Linux. `VisionOCR` and live OCR need a Mac (CI `macos-tests` job).
+- The Swift package `PGS2SRTKit` lives in `Apps/PGS2SRT`. Don't rename the package to the app's name, and don't move the `.xcodeproj` out of `App/`. Never hand-edit `App/PGS2SRT.xcodeproj/project.pbxproj`. To add, rename, or remove an app file, update `App/project.yml` and run `./scripts/verify-linux.sh` from `Apps/PGS2SRT`, then commit both. Open `Apps/PGS2SRT/App/PGS2SRT.xcodeproj`, never `Package.swift`, for the windowed app.
+- Don't set `ARCHS` for Debug. Debug follows the run destination (`ONLY_ACTIVE_ARCH=YES`). Release stays universal.
+- Fix only the issue you were given. Note other problems in the PR description instead of fixing them.
+- Build and test with `-strict-concurrency=complete -warnings-as-errors`. Keep package code Sendable-clean.
+- Every long loop checks `Task.checkCancellation()`, including reading, decoding, OCR, and external tools. Cancel deletes partial `.srt` output and MKV temp `.sup` files.
+- Never write `@Published` or observed state during a view update. Controls keep local `@State` and write the model on the next run-loop turn (`DispatchQueue.main.async` or `Task { @MainActor in }`). Open issue #30 covers remaining review-scope warnings — don't "fix" them by writing the model from the view body.
+- Throttle progress to about 10 updates a second. Menu commands and toolbar enablement follow flags that publish only when they change (avoids menu flicker; see IssueDiagnosticLog / #35).
+- Don't replace a window's delegate with a plain Swift object. Prefer observing `NSWindow` notifications. The review window uses `ReviewWindowDelegateProxy` (ObjC, bridging header). If you extend it, list every selector you implement, keep unknown delegate messages from crashing, and cover new forwarding with `ReviewDelegateProxyTests`.
+- Don't set window properties from `layout()`.
+- Reveal in Finder checks the file exists first, uses `activateFileViewerSelecting` so Finder selects the file in the normal window (not a huge single-file window), and logs the call.
+- Every toolbar item is also in the menu bar. Settings opens with `SettingsLink` or `openSettings` (macOS 14+ / 26). Don't use APIs that only work on older macOS for the Settings button.
+- Dock drops and Open With reuse the one open window. Folders walk subfolders. Dropped `.sup` / `.mkv` files start converting when queued (this app does not wait for an Extract button).
+- Clear Finished and the row ✕ act only on finished, failed, skipped, or canceled rows. Never delete files on disk. An empty queue shows the drop screen. No confirmation.
+- Existing output: Overwrite asks once per batch with "Apply to all". Never ask per file mid-batch. Add a number and Skip do not ask. Two files in one batch that would share an output name get distinct names.
+- External tools (MKVToolNix `mkvmerge` / `mkvextract`): search `/opt/homebrew/bin`, `/usr/local/bin`, `/Applications/<Tool>*.app/Contents/MacOS`, then `PATH`. Log the command, exit code, and stderr (cut at 2,000 characters). Show a clear message and a download link when the tool is missing. Cancel must stop a running extract. Prefer keeping MKVToolNix as the fallback if a native MKV reader lands (#24).
+- Log through `DebugLog.shared.record(...)`: launch, settings, each file's start, finish, and error, MKV steps, review saves, window events, and Reveal. No user subtitle content. Home becomes `~`. Opt-in `IssueDiagnosticLog` is for flicker / review diagnostics only — leave it off unless debugging those issues.
+- OCR: italics stay off by default (experimental `--italics` / Settings switch). Don't turn them on for normal conversions. Failed cues stay in the `.srt` as `[OCR failed: …]`.
+- Add a test with every bug fix. Use small generated fixtures and keep real `.sup` / media out of git (`Tests/PGSCoreTests/Fixtures/*.sup` is gitignored). Linux covers decoder/cleanup; Mac CI covers Vision.
+- In the PR description, list the test steps for Arezhik to run on his Mac (Xcode 27). He tests and approves every merge. CI alone is not approval.
+- Versioning: keep `MARKETING_VERSION` and `CURRENT_PROJECT_VERSION` in sync in `App/project.yml` and `App/PGS2SRT.xcodeproj`. Bump marketing for user-visible app changes and always raise the build number by 1; never reuse a build. Docs-only and CI-only PRs don't bump. Releases of this app are tagged `pgs2srt-vX.Y.Z` (for example `pgs2srt-v0.3.0`). CI compares against `Apps/PGS2SRT` on the base branch, and skips that check when the base has no `Apps/PGS2SRT` yet. Otherwise it fails a PR whose build is lower than the base's, or whose version changed without a new build. Put the old → new version (and build) in the PR description. Arezhik confirms it at merge.
+- Cloud agents: `.cursor/environment.json` installs Swift and MKVToolNix for Linux package work. The app and Vision still need macOS CI / Arezhik's Mac.
+
+### Local Linux VM (no Swift installed)
+- Apply these rules only when `command -v swift` finds nothing (or when xcodegen exists at `/workspace/macos-dev-test/projects/mkv-forge/icon/tools/XcodeGen-2.48.0/.build/x86_64-unknown-linux-gnu/release/xcodegen`). Everywhere else the rules above apply unchanged.
+- Edit source files directly in the working tree. Don't generate `apply_changes.py` or `verify.diff`.
+- Run `./scripts/verify-linux.sh` from `Apps/PGS2SRT`. It regenerates the Xcode project with XcodeGen when Swift is absent and `App/project.yml` exists (the local package folder reference is named `PGS2SRT`), then reports that this app has no other non-Swift check scripts. A second run must change nothing. Besides Swift builds, the Linux job in `.github/workflows/pgs2srt.yml` (working directory `Apps/PGS2SRT`) runs the build-number comparison, `swift test -Xswiftc -strict-concurrency=complete -Xswiftc -warnings-as-errors`, `swift build -Xswiftc -strict-concurrency=complete -Xswiftc -warnings-as-errors`, and a bash step that runs `.build/debug/pgs2srt --help` and `.build/debug/pgs2srt sample.sup` (that step needs the Swift build). Nothing else to run here. Inspect `git diff` so only intended changes are staged. Don't run `swift test`, `swift build`, or `xcodebuild` here; they run in GitHub CI after push.
+- To add a new Core type and its test, run `./scripts/scaffold-swift.sh <Name> [Subfolder]` first instead of creating the files by hand.
+- To add a new UI flow test, run `./scripts/scaffold-xcuitest.sh <FlowName>` first instead of creating the file by hand.
+- Push to a feature branch `grok/<slug>`, then open a PR with `gh pr create --fill` (or `--draft` for work in progress) because CI runs on pull requests. Check CI with `gh pr checks` or `gh run list` only if `gh auth status` succeeds. No version bump, no CHANGELOG change.
+
+## This project
+- Repo `Arezhik/media-forge`, app path `Apps/PGS2SRT`. App PGS2SRT, bundle ID `com.pgs2srt.PGS2SRT`, macOS 13.0+. Tags `pgs2srt-vX.Y.Z`. Workflow `.github/workflows/pgs2srt.yml`.
+- Package `PGS2SRTKit` (libraries `PGSCore`, `VisionOCR`; tools `pgs2srt`, `pgsdump`; tests `PGSCoreTests` and macOS-only `ReviewDelegateProxyTests`). Xcode project `App/PGS2SRT.xcodeproj`, scheme `PGS2SRT`. Optional UI smoke: `App/P2SUITests`.
+- Version lives in `App/project.yml` / the xcodeproj (0.3.0, build 7; see About and the debug-log header). History is in merged PR descriptions and README.
+- CI artifact: `PGS2SRT-universal.zip`. Universal app job uses the `xcode-27` runner; Vision unit tests stay on `macos-latest` (hosted Xcode 27 images have broken `VNRecognizeTextRequest`).
+- Scope and roadmap: README.md. Mockups: `docs/mockups/`.
+
+## GitHub Issue & Comment Format (Token-Efficient Spec)
+When creating, rewriting, or commenting on GitHub issues (including triage, design notes, or research), **never post conversational prose**. Preserve the original human description at the top if editing an existing issue, and append or post strictly in this compact schema:
+
+### For Issue Rewrites / Specs (`## Agent Spec`)
+```markdown
+## Agent Spec
+### Goal
+<1–2 sentences: exact behavioral change>
+
+### Rules & Logic
+- <Deterministic rule or edge-case behavior>
+
+### UI / UX
+- <Control type, exact label, default state, placement — or "None">
+
+### Test Cases (Input -> Expected)
+- `<Input>` -> `<Expected result / output>`
+
+### Constraints
+- <What must NOT change>
+```
+
+### For Research / Triage / Design Comments
+Keep comments under 15 lines using only:
+- **Relevant Files:** `<path/to/File.swift>` (`SymbolName`)
+- **Findings / Edge Cases:** <1–3 terse bullets>
+- **Proposed Approach:** <2–4 terse bullets>
+- **Open Questions:** <Bullet list, or "None">
+
