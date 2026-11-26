@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1F2A50E1D26C9D0FC0239461 /* MediaUI in Frameworks */ = {isa = PBXBuildFile; productRef = B2A624AC6192AE2A9F0CDCCE /* MediaUI */; };
 		1FC8EE6CE714119BF739E318 /* IssueDiagnosticLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE667445FEF49956B476B08E /* IssueDiagnosticLog.swift */; };
 		2CC09C1C7A9CCD380B0CD334 /* PGSCore in Frameworks */ = {isa = PBXBuildFile; productRef = BB2561138E57D040F3EA914C /* PGSCore */; };
 		37CA7397C38B315F22E70154 /* VisionOCR in Frameworks */ = {isa = PBXBuildFile; productRef = CD6D0404609CCEF8D5099AC4 /* VisionOCR */; };
@@ -80,6 +81,7 @@
 				AAFAE1218132559B23634E7B /* PGSCore in Frameworks */,
 				94F4A9837F19A92CFC7B6385 /* VisionOCR in Frameworks */,
 				E4DA8BF0ED25DBAEA64AF96E /* MediaCore in Frameworks */,
+				1F2A50E1D26C9D0FC0239461 /* MediaUI in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -221,6 +223,7 @@
 				9E4CAFC4DD918D94C19BB38E /* PGSCore */,
 				A365E27F7A9106C982DAB80C /* VisionOCR */,
 				34429CAC15DCCD3313769E05 /* MediaCore */,
+				B2A624AC6192AE2A9F0CDCCE /* MediaUI */,
 			);
 			productName = PGS2SRT;
 			productReference = 88FCCF7582A151BFF36FE4CE /* PGS2SRT.app */;
@@ -362,7 +365,7 @@
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 10;
+				CURRENT_PROJECT_VERSION = 11;
 				ENABLE_HARDENED_RUNTIME = NO;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -378,7 +381,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 15.0;
-				MARKETING_VERSION = 0.4.0;
+				MARKETING_VERSION = 0.4.1;
 				ONLY_ACTIVE_ARCH = NO;
 				PRODUCT_BUNDLE_IDENTIFIER = com.pgs2srt.PGS2SRT;
 				PRODUCT_NAME = PGS2SRT;
@@ -503,7 +506,7 @@
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 10;
+				CURRENT_PROJECT_VERSION = 11;
 				ENABLE_HARDENED_RUNTIME = NO;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -519,7 +522,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 15.0;
-				MARKETING_VERSION = 0.4.0;
+				MARKETING_VERSION = 0.4.1;
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = com.pgs2srt.PGS2SRT;
 				PRODUCT_NAME = PGS2SRT;
@@ -597,7 +600,7 @@
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 10;
+				CURRENT_PROJECT_VERSION = 11;
 				ENABLE_HARDENED_RUNTIME = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -605,7 +608,7 @@
 					"@executable_path",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 15.0;
-				MARKETING_VERSION = 0.4.0;
+				MARKETING_VERSION = 0.4.1;
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = com.pgs2srt.pgs2srt;
 				PRODUCT_NAME = pgs2srt;
@@ -627,7 +630,7 @@
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 10;
+				CURRENT_PROJECT_VERSION = 11;
 				ENABLE_HARDENED_RUNTIME = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -635,7 +638,7 @@
 					"@executable_path",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 15.0;
-				MARKETING_VERSION = 0.4.0;
+				MARKETING_VERSION = 0.4.1;
 				ONLY_ACTIVE_ARCH = NO;
 				PRODUCT_BUNDLE_IDENTIFIER = com.pgs2srt.pgs2srt;
 				PRODUCT_NAME = pgs2srt;
@@ -709,6 +712,10 @@
 		A365E27F7A9106C982DAB80C /* VisionOCR */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = VisionOCR;
+		};
+		B2A624AC6192AE2A9F0CDCCE /* MediaUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = MediaUI;
 		};
 		BB2561138E57D040F3EA914C /* PGSCore */ = {
 			isa = XCSwiftPackageProductDependency;

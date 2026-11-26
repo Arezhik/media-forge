@@ -1,5 +1,11 @@
 import Foundation
 
+// Shared file intake. Folders are walked, including subfolders. A symbolic link
+// back to a parent is skipped. Hidden files are ignored by `DirectoryListing.live`.
+// Anything that is not in `accepted` becomes a notice instead of an error.
+// Each app passes its own extensions and the words used in notice text, so the
+// sentences people see stay the ones that app already showed.
+
 /// How the window looks at files and folders that were dropped or opened.
 public struct DirectoryListing: Sendable {
     public var isDirectory: @Sendable (String) -> Bool
@@ -35,42 +41,38 @@ public struct DirectoryListing: Sendable {
     )
 }
 
-/// A file or folder the person dropped that is not turned into an `.srt`.
+/// A file or folder the person dropped that is not added to the queue.
 public enum IntakeNotice: Equatable, Sendable {
-    case notSubtitle(path: String)
-    case noSubtitles(folderName: String)
+    case unsupported(path: String)
+    case noMatchingFiles(folderName: String)
     case unreadableFolder(folderName: String)
 
-    public var message: String {
+    /// `fileDescription` is the app's phrase, such as ".mp4" or ".sup or .mkv".
+    public func message(fileDescription: String) -> String {
         switch self {
-        case let .notSubtitle(path):
-            return "\(FileIntake.lastComponent(path)) is not a .sup or .mkv file, so it was skipped."
-        case let .noSubtitles(folderName):
-            return "No .sup or .mkv files were found in \(folderName)."
+        case let .unsupported(path):
+            return "\(FileIntake.lastComponent(path)) is not a \(fileDescription) file, so it was skipped."
+        case let .noMatchingFiles(folderName):
+            return "No \(fileDescription) files were found in \(folderName)."
         case let .unreadableFolder(folderName):
             return "Could not look inside \(folderName)."
         }
     }
 
+    /// The dropped file, when this notice is about one file.
     public var path: String? {
-        switch self {
-        case let .notSubtitle(path):
-            return path
-        case .noSubtitles, .unreadableFolder:
-            return nil
-        }
+        if case let .unsupported(path) = self { return path }
+        return nil
     }
 
     /// File-shaped notices become a row. Folder-shaped notices become a banner.
     public var isFile: Bool {
-        switch self {
-        case .notSubtitle: return true
-        case .noSubtitles, .unreadableFolder: return false
-        }
+        if case .unsupported = self { return true }
+        return false
     }
 }
 
-/// `.sup` and `.mkv` files to convert, plus polite notes for everything else.
+/// Files to add, plus notes for everything else.
 public struct IntakeResult: Equatable, Sendable {
     public var sourcePaths: [String]
     public var notices: [IntakeNotice]
@@ -81,9 +83,14 @@ public struct IntakeResult: Equatable, Sendable {
     }
 }
 
-/// Sorts dropped paths into subtitle files, folders of subtitle files, and notes.
+/// Sorts dropped paths into accepted files, folders of accepted files, and notes.
 public enum FileIntake {
-    public static func collect(paths: [String], listing: DirectoryListing) -> IntakeResult {
+    public static func collect(
+        paths: [String],
+        accepted: Set<String>,
+        listing: DirectoryListing
+    ) -> IntakeResult {
+        let accepted = Set(accepted.map { $0.lowercased() })
         var sourcePaths: [String] = []
         var notices: [IntakeNotice] = []
         var seenSources: Set<String> = []
@@ -96,6 +103,7 @@ public enum FileIntake {
                 let seenBefore = seenDirectories.contains(listing.identity(cleaned))
                 walk(
                     cleaned,
+                    accepted: accepted,
                     listing: listing,
                     sourcePaths: &sourcePaths,
                     seenSources: &seenSources,
@@ -107,10 +115,12 @@ public enum FileIntake {
                     return false
                 }
                 if !seenBefore && sourcePaths.count == before && !unreadable {
-                    notices.append(.noSubtitles(folderName: lastComponent(cleaned)))
+                    notices.append(.noMatchingFiles(folderName: lastComponent(cleaned)))
                 }
+            } else if isAccepted(cleaned, accepted) {
+                appendSource(cleaned, sourcePaths: &sourcePaths, seenSources: &seenSources)
             } else {
-                classifyFile(cleaned, sourcePaths: &sourcePaths, seenSources: &seenSources, notices: &notices)
+                notices.append(.unsupported(path: cleaned))
             }
         }
         return IntakeResult(sourcePaths: sourcePaths, notices: notices)
@@ -118,6 +128,7 @@ public enum FileIntake {
 
     private static func walk(
         _ directory: String,
+        accepted: Set<String>,
         listing: DirectoryListing,
         sourcePaths: inout [String],
         seenSources: inout Set<String>,
@@ -139,28 +150,16 @@ public enum FileIntake {
             if listing.isDirectory(cleaned) {
                 walk(
                     cleaned,
+                    accepted: accepted,
                     listing: listing,
                     sourcePaths: &sourcePaths,
                     seenSources: &seenSources,
                     seenDirectories: &seenDirectories,
                     notices: &notices
                 )
-            } else if isSource(cleaned) {
+            } else if isAccepted(cleaned, accepted) {
                 appendSource(cleaned, sourcePaths: &sourcePaths, seenSources: &seenSources)
             }
-        }
-    }
-
-    private static func classifyFile(
-        _ path: String,
-        sourcePaths: inout [String],
-        seenSources: inout Set<String>,
-        notices: inout [IntakeNotice]
-    ) {
-        if isSource(path) {
-            appendSource(path, sourcePaths: &sourcePaths, seenSources: &seenSources)
-        } else {
-            notices.append(.notSubtitle(path: path))
         }
     }
 
@@ -170,19 +169,12 @@ public enum FileIntake {
         }
     }
 
-    private static func isSource(_ path: String) -> Bool {
-        isSup(path) || isMkv(path)
+    public static func isAccepted(_ path: String, _ accepted: Set<String>) -> Bool {
+        let accepted = Set(accepted.map { $0.lowercased() })
+        return accepted.contains((path as NSString).pathExtension.lowercased())
     }
 
-    static func isSup(_ path: String) -> Bool {
-        (path as NSString).pathExtension.lowercased() == "sup"
-    }
-
-    static func isMkv(_ path: String) -> Bool {
-        (path as NSString).pathExtension.lowercased() == "mkv"
-    }
-
-    static func lastComponent(_ path: String) -> String {
+    public static func lastComponent(_ path: String) -> String {
         let name = (path as NSString).lastPathComponent
         return name.isEmpty ? path : name
     }

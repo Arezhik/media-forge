@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		0593E514E352C7184A0882DA /* MediaCore in Frameworks */ = {isa = PBXBuildFile; productRef = 6618C7F804EFC8979B68E38C /* MediaCore */; };
 		1F31CB18F1A0762F36AB41F2 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F57E97EF02F83C7F69DF0E36 /* Assets.xcassets */; };
+		233E36DA1E96972A18EB0B2E /* MediaUI in Frameworks */ = {isa = PBXBuildFile; productRef = C4C7D637675763389823AA1C /* MediaUI */; };
 		3F3D2C0969E3D135695C4F76 /* MediaTesting in Frameworks */ = {isa = PBXBuildFile; productRef = F368ED1D7BA23C3133A8A517 /* MediaTesting */; };
 		4148A100B04AA2A23CD3C680 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE613AFBC70440AE80065227 /* SettingsView.swift */; };
 		46D82E39AC672F759807363E /* WindowEvents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1EDF7F1C67101F6E78909643 /* WindowEvents.swift */; };
@@ -67,6 +68,7 @@
 			files = (
 				E71559FD6EAD6E845D9AE183 /* MP4SubRipCore in Frameworks */,
 				0593E514E352C7184A0882DA /* MediaCore in Frameworks */,
+				233E36DA1E96972A18EB0B2E /* MediaUI in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -147,6 +149,7 @@
 			packageProductDependencies = (
 				5C6A8FC626F65C192C9CD94E /* MP4SubRipCore */,
 				6618C7F804EFC8979B68E38C /* MediaCore */,
+				C4C7D637675763389823AA1C /* MediaUI */,
 			);
 			productName = MP4SubRip;
 			productReference = 6C0E9A2495EBDFF179D9B5D3 /* MP4SubRip.app */;
@@ -274,7 +277,7 @@
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 13;
+				CURRENT_PROJECT_VERSION = 14;
 				ENABLE_HARDENED_RUNTIME = NO;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -286,7 +289,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 15.0;
-				MARKETING_VERSION = 0.9.0;
+				MARKETING_VERSION = 0.9.1;
 				ONLY_ACTIVE_ARCH = NO;
 				PRODUCT_BUNDLE_IDENTIFIER = com.arezhik.MP4SubRip;
 				PRODUCT_NAME = MP4SubRip;
@@ -370,7 +373,7 @@
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 13;
+				CURRENT_PROJECT_VERSION = 14;
 				ENABLE_HARDENED_RUNTIME = NO;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -382,7 +385,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 15.0;
-				MARKETING_VERSION = 0.9.0;
+				MARKETING_VERSION = 0.9.1;
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = com.arezhik.MP4SubRip;
 				PRODUCT_NAME = MP4SubRip;
@@ -542,6 +545,10 @@
 		6618C7F804EFC8979B68E38C /* MediaCore */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = MediaCore;
+		};
+		C4C7D637675763389823AA1C /* MediaUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = MediaUI;
 		};
 		F368ED1D7BA23C3133A8A517 /* MediaTesting */ = {
 			isa = XCSwiftPackageProductDependency;
