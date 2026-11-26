@@ -5,12 +5,15 @@
 #   scripts/bump-version.sh patch|minor|major [--dry-run]   bump, build +1, CHANGELOG stub
 #   scripts/bump-version.sh --check                         fail if the places disagree
 #   scripts/bump-version.sh --current                       print "X.Y.Z (build N)"
+#   scripts/bump-version.sh --check-against <ref>           also fail if the build number isn't
+#                                                           above <ref>'s (unless nothing was bumped)
 #
 # Rules (Semantic Versioning, MAJOR.MINOR.PATCH):
 #   patch  bug fix or small tweak                 0.1.0 -> 0.1.1
 #   minor  normal enhancement or new feature      0.1.1 -> 0.2.0
 #   major  major enhancement or a new phase       0.2.0 -> 1.0.0
 #   Every bump also adds 1 to the build number. Docs-only or CI-only PRs don't bump.
+#   Tags: per-app tag mp4subrip-vX.Y.Z (for example mp4subrip-v0.8.0). Not vX.Y.Z.
 #
 # The version lives in: App/*.xcodeproj/project.pbxproj (MARKETING_VERSION and
 # CURRENT_PROJECT_VERSION, Debug and Release), App/project.yml (the same keys), and
@@ -18,10 +21,21 @@
 # settings. Works with macOS's bash 3.2 and BSD sed/awk, and with GNU tools.
 set -eu
 
+# App root is the parent of this script (Apps/MP4SubRip in the monorepo).
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 PBX="$(ls -1 "$ROOT"/App/*.xcodeproj/project.pbxproj 2>/dev/null | head -1 || true)"
 YML="$ROOT/App/project.yml"
 LOG="$ROOT/CHANGELOG.md"
+
+# Git tree prefix of this app, with a trailing slash (Apps/MP4SubRip/).
+# `git show REF:path` paths start at the git root, so app-relative paths need it.
+# Empty when this directory is the git root. `--show-prefix` follows cwd via -C.
+if git -C "$ROOT" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+  GIT_PREFIX="$(git -C "$ROOT" rev-parse --show-prefix 2>/dev/null || true)"
+else
+  GIT_PREFIX=""
+fi
+git_path() { printf '%s%s' "$GIT_PREFIX" "$1"; }
 
 die() { echo "bump-version: $*" >&2; exit 1; }
 [ -n "$PBX" ] && [ -f "$PBX" ] || die "no App/*.xcodeproj/project.pbxproj found under $ROOT"
@@ -57,14 +71,44 @@ replace_in() { # file sed-expression
   sed -e "$2" "$1" > "$1.tmp" && cat "$1.tmp" > "$1" && rm -f "$1.tmp"
 }
 
+# Version and build at a git ref (for example origin/main), from that ref's pbxproj.
+read_ref() { # ref
+  command -v git >/dev/null 2>&1 || die "git is needed for $1"
+  REL="$(git_path "${PBX#$ROOT/}")"
+  REF_PBX="$(git -C "$ROOT" show "$1:$REL" 2>/dev/null)" || die "can't read $REL at $1 (fetch it first, for example: git fetch origin main)"
+  REF_VERSION="$(printf '%s\n' "$REF_PBX" | sed -n 's/^[[:space:]]*MARKETING_VERSION = "\{0,1\}\([^";]*\)"\{0,1\};.*/\1/p' | sort -u)"
+  REF_BUILD="$(printf '%s\n' "$REF_PBX" | sed -n 's/^[[:space:]]*CURRENT_PROJECT_VERSION = "\{0,1\}\([^";]*\)"\{0,1\};.*/\1/p' | sort -u)"
+  [ "$(printf '%s\n' "$REF_VERSION" | wc -l | tr -d ' ')" = 1 ] && [ -n "$REF_VERSION" ] || die "$1 has no single MARKETING_VERSION"
+  [ "$(printf '%s\n' "$REF_BUILD" | wc -l | tr -d ' ')" = 1 ] && [ -n "$REF_BUILD" ] || die "$1 has no single CURRENT_PROJECT_VERSION"
+}
+
 MODE="${1:-}"
-DRY=0; [ "${2:-}" = "--dry-run" ] && DRY=1
+DRY=0
 case "$MODE" in
   --current) read_current; echo "$VERSION (build $BUILD)"; exit 0 ;;
   --check) read_current; check_changelog; echo "Version $VERSION (build $BUILD) is in sync in project.pbxproj, project.yml, and CHANGELOG.md"; exit 0 ;;
-  patch|minor|major) ;;
+  --check-against)
+    [ -n "${2:-}" ] || die "--check-against needs a git ref, such as origin/main"
+    read_current; check_changelog
+    # The first PR (the generated project) has no project file on the base branch yet.
+    # The ref itself must exist; only a missing pbxproj there counts as "no version yet".
+    command -v git >/dev/null 2>&1 || die "git is needed for $2"
+    git -C "$ROOT" rev-parse --verify --quiet "$2^{commit}" >/dev/null || die "can't read $2 (fetch it first, for example: git fetch origin main)"
+    if ! git -C "$ROOT" cat-file -e "$2:$(git_path "${PBX#$ROOT/}")" 2>/dev/null; then
+      echo "$2 has no $(git_path "${PBX#$ROOT/}") yet (first version). This branch starts at $VERSION (build $BUILD)"; exit 0
+    fi
+    read_ref "$2"
+    if [ "$BUILD" -gt "$REF_BUILD" ]; then
+      echo "Build $BUILD is above $2's build $REF_BUILD ($VERSION vs $REF_VERSION)"; exit 0
+    fi
+    if [ "$BUILD" = "$REF_BUILD" ] && [ "$VERSION" = "$REF_VERSION" ]; then
+      echo "No version bump on this branch ($VERSION, build $BUILD, same as $2)"; exit 0
+    fi
+    die "this branch is $VERSION (build $BUILD) but $2 is $REF_VERSION (build $REF_BUILD). Another PR bumped first."
+    ;;
+  patch|minor|major) [ "${2:-}" = "--dry-run" ] && DRY=1 ;;
   -h|--help|"") awk 'NR > 1 && /^#/ { sub(/^# ?/, ""); print; next } NR > 1 { exit }' "$0"; [ -n "$MODE" ]; exit $? ;;
-  *) die "unknown option $MODE (use patch, minor, major, --check, or --current)" ;;
+  *) die "unknown option $MODE (use patch, minor, major, --check, --check-against, or --current)" ;;
 esac
 
 read_current
@@ -111,3 +155,4 @@ read_current
 check_changelog
 echo "Updated project.pbxproj, project.yml, and CHANGELOG.md. Fill in the CHANGELOG entry, and put this line in the PR description:"
 echo "  Version bump: $OLD (build $OLDBUILD) to $NEW (build $NEWBUILD) ($RULE)"
+echo "Tag hint: mp4subrip-vX.Y.Z (this version is mp4subrip-v$NEW)"
