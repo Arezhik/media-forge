@@ -20,7 +20,7 @@
 - OCR: italics stay off by default (experimental `--italics` / Settings switch). Don't turn them on for normal conversions. Failed cues stay in the `.srt` as `[OCR failed: …]`.
 - Add a test with every bug fix. Use small generated fixtures and keep real `.sup` / media out of git (`Tests/PGSCoreTests/Fixtures/*.sup` is gitignored). Linux covers decoder/cleanup; Mac CI covers Vision.
 - In the PR description, list the test steps for Arezhik to run on his Mac (Xcode 27). He tests and approves every merge. CI alone is not approval.
-- Versioning: keep `MARKETING_VERSION` and `CURRENT_PROJECT_VERSION` in sync in `App/project.yml` and `App/PGS2SRT.xcodeproj`. Bump marketing for user-visible app changes and always raise the build number by 1; never reuse a build. Docs-only and CI-only PRs don't bump. Releases of this app are tagged `pgs2srt-vX.Y.Z` (for example `pgs2srt-v0.3.0`). CI compares against `Apps/PGS2SRT` on the base branch, and skips that check when the base has no `Apps/PGS2SRT` yet. Otherwise it fails a PR whose build is lower than the base's, or whose version changed without a new build. Put the old → new version (and build) in the PR description. Arezhik confirms it at merge.
+- Versioning: keep `MARKETING_VERSION` and `CURRENT_PROJECT_VERSION` in sync in `App/project.yml` and `App/PGS2SRT.xcodeproj`. Bump marketing for user-visible app changes and always raise the build number by 1; never reuse a build. Docs-only and CI-only PRs don't bump. Releases of this app are tagged `pgs2srt-vX.Y.Z` (for example `pgs2srt-v0.3.1`). CI compares against `Apps/PGS2SRT` on the base branch, and skips that check when the base has no `Apps/PGS2SRT` yet. Otherwise it fails a PR whose build is lower than the base's, or whose version changed without a new build. Put the old → new version (and build) in the PR description. Arezhik confirms it at merge.
 - Cloud agents: `.cursor/environment.json` installs Swift and MKVToolNix for Linux package work. The app and Vision still need macOS CI / Arezhik's Mac.
 
 ### Local Linux VM (no Swift installed)
@@ -34,7 +34,7 @@
 ## This project
 - Repo `Arezhik/media-forge`, app path `Apps/PGS2SRT`. App PGS2SRT, bundle ID `com.pgs2srt.PGS2SRT`, macOS 13.0+. Tags `pgs2srt-vX.Y.Z`. Workflow `.github/workflows/pgs2srt.yml`.
 - Package `PGS2SRTKit` (libraries `PGSCore`, `VisionOCR`; tools `pgs2srt`, `pgsdump`; tests `PGSCoreTests` and macOS-only `ReviewDelegateProxyTests`). Xcode project `App/PGS2SRT.xcodeproj`, scheme `PGS2SRT`. Optional UI smoke: `App/P2SUITests`.
-- Version lives in `App/project.yml` / the xcodeproj (0.3.0, build 7; see About and the debug-log header). History is in merged PR descriptions and README.
+- Version lives in `App/project.yml` / the xcodeproj (0.3.1, build 8; see About and the debug-log header). History is in merged PR descriptions and README.
 - CI artifact: `PGS2SRT-universal.zip`. Universal app job uses the `xcode-27` runner; Vision unit tests stay on `macos-latest` (hosted Xcode 27 images have broken `VNRecognizeTextRequest`).
 - Scope and roadmap: README.md. Mockups: `docs/mockups/`.
 

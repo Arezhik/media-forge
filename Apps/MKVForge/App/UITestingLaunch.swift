@@ -1,5 +1,6 @@
 import Foundation
 import MKVForgeCore
+import MediaCore
 
 /// Launch hooks for XCUITest. Active only when the process was started with
 /// `--uitesting`. Settings go to an isolated defaults suite that is cleared on

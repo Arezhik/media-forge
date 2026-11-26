@@ -1,18 +1,28 @@
 import Foundation
 
-// Exportable debug log (docs/LESSONS.md L13), generalized:
-// the categories, the header facts, and the names come from AppIdentity.
-// Rules that made it useful: no user content in the log, the home folder becomes `~`,
-// and the exported header says which Mac, chip, macOS, and tool versions were used.
+// Shared debug log. The file name, the log folder, and the export header title
+// come from the app name passed in. Rules: no user content in the log, the home
+// folder becomes `~`, and the exported header says which Mac, chip, macOS, and
+// tool versions were used.
 
 /// Where a log line belongs. The Mac app mirrors these to `os.Logger` categories.
+///
+/// One set covers every app. Each app records only the cases it already used.
+/// PGS2SRT uses lifecycle, queue, decode, ocr, mkv, error, and diagnostic.
+/// MP4SubRip and MKVForge use lifecycle, queue, work, tool, window, and error.
+/// The raw value is the text in the log line and the Console category.
 public enum DebugLogCategory: String, Sendable, CaseIterable {
     case lifecycle
     case queue
     case work
+    case decode
+    case ocr
     case tool
+    case mkv
     case window
     case error
+    /// Opt-in menu and review traces. Absent unless diagnostics are enabled.
+    case diagnostic
 }
 
 /// One redacted line, before it is written to disk.
@@ -150,12 +160,12 @@ public struct DebugEnvironment: Equatable, Sendable {
 
 /// The Desktop file name and the header that sits above the recent log lines.
 public enum DebugLogDocument {
-    public static func fileName(at date: Date, timeZone: TimeZone = .current) -> String {
+    public static func fileName(appName: String, at date: Date, timeZone: TimeZone = .current) -> String {
         var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = timeZone
         let parts = calendar.dateComponents([.year, .month, .day, .hour, .minute, .second], from: date)
         // String(format:) with %@ does not take a Swift String on Linux, so the name is joined here.
-        return AppIdentity.name + String(
+        return appName + String(
             format: "-debug-log-%04d-%02d-%02d-%02d%02d%02d.txt",
             parts.year ?? 0,
             parts.month ?? 0,
@@ -166,10 +176,10 @@ public enum DebugLogDocument {
         )
     }
 
-    public static func header(for environment: DebugEnvironment) -> String {
+    public static func header(appName: String, for environment: DebugEnvironment) -> String {
         let rosetta = environment.runningUnderRosetta ? "yes" : "no"
         var lines = [
-            "\(AppIdentity.name) debug log",
+            "\(appName) debug log",
             "App version: \(environment.appVersion)",
             "App build: \(environment.appBuild)",
             "macOS: \(environment.operatingSystem)",
@@ -187,11 +197,12 @@ public enum DebugLogDocument {
 
     /// Header, a blank line, then the log. Home-folder paths in either part become `~`.
     public static func document(
+        appName: String,
         environment: DebugEnvironment,
         logText: String,
         homeDirectory: String
     ) -> String {
-        var text = header(for: environment)
+        var text = header(appName: appName, for: environment)
         text += "\n\n"
         text += logText
         if !text.hasSuffix("\n") {
@@ -243,7 +254,7 @@ public enum DebugLogFormatting {
 
 /// Process-wide log. Until `configure` is called, recording does nothing.
 ///
-/// The Mac app points this at `~/Library/Logs/<AppName>/` and mirrors each line
+/// The Mac app points this at `~/Library/Logs/<appName>/` and mirrors each line
 /// to `os.Logger`. Never pass in user content (subtitle text, document bodies).
 public final class DebugLog: @unchecked Sendable {
     public static let shared = DebugLog()
@@ -259,15 +270,16 @@ public final class DebugLog: @unchecked Sendable {
         self.timeZone = timeZone
     }
 
-    /// `~/Library/Logs/<AppName>/`
-    public static var libraryLogsDirectory: URL {
+    /// `~/Library/Logs/<appName>/`
+    public static func libraryLogsDirectory(appName: String) -> URL {
         FileManager.default.homeDirectoryForCurrentUser
             .appendingPathComponent("Library", isDirectory: true)
             .appendingPathComponent("Logs", isDirectory: true)
-            .appendingPathComponent(AppIdentity.name, isDirectory: true)
+            .appendingPathComponent(appName, isDirectory: true)
     }
 
     public func configure(
+        appName: String,
         directory: URL,
         maxTotalBytes: Int = RollingLogStore.defaultMaxTotalBytes,
         fileCount: Int = RollingLogStore.defaultFileCount,
@@ -283,7 +295,12 @@ public final class DebugLog: @unchecked Sendable {
             self.timeZone = timeZone
         }
         self.mirror = mirror
-        store = RollingLogStore(directory: directory, maxTotalBytes: maxTotalBytes, fileCount: fileCount)
+        store = RollingLogStore(
+            directory: directory,
+            appName: appName,
+            maxTotalBytes: maxTotalBytes,
+            fileCount: fileCount
+        )
         lock.unlock()
     }
 

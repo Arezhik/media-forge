@@ -1,19 +1,49 @@
 import Foundation
+#if canImport(XCTest)
 import XCTest
+#endif
 
 /// Temporary folders and tiny media files for XCUITest. Each test gets its own
 /// root under the system temp directory, with `video/`, `audio/`, `input/`, and
-/// `output/` already created. `BaseUITest` calls `cleanup()` from `tearDown`.
-final class UITestFixtureBuilder {
-    let root: URL
-    let video: URL
-    let audio: URL
-    let input: URL
-    let output: URL
+/// `output/` already created. Call `cleanup()` from `tearDown`.
+public final class UITestFixtureBuilder {
+    public let root: URL
+    public let video: URL
+    public let audio: URL
+    public let input: URL
+    public let output: URL
 
     private let fileManager = FileManager.default
+    /// Full paths checked for an executable `ffmpeg`. The app default is Homebrew.
+    private let ffmpegCandidates: [URL]
+    /// When set, replaces `setMissingFFmpegHandler` for this builder only.
+    private let missingFFmpegHandler: (@Sendable (String) -> Error)?
 
-    init() throws {
+    /// UI test bundles set this so a missing ffmpeg throws `XCTSkip`.
+    /// MediaTesting cannot always import XCTest (it is not a test target), so the
+    /// skip is installed from the XCUITest bundle. When the handler is nil and
+    /// XCTest is visible, `createValidMediaFile` throws `XCTSkip` itself.
+    public static func setMissingFFmpegHandler(_ handler: (@Sendable (String) -> Error)?) {
+        MissingFFmpegHook.shared.set(handler)
+    }
+
+    /// `ffmpegSearchPaths` lists directories that contain `ffmpeg`. `nil` keeps
+    /// `/opt/homebrew/bin` and `/usr/local/bin`, which is what the apps use.
+    /// An empty list finds nothing, so a test can force the missing-tool path
+    /// on a machine that has Homebrew ffmpeg. `missingFFmpegHandler` overrides
+    /// the shared skip hook for this builder only; `nil` keeps that hook.
+    public init(
+        ffmpegSearchPaths: [String]? = nil,
+        missingFFmpegHandler: (@Sendable (String) -> Error)? = nil
+    ) throws {
+        if let ffmpegSearchPaths {
+            ffmpegCandidates = ffmpegSearchPaths.map { directory in
+                URL(fileURLWithPath: directory, isDirectory: true).appendingPathComponent("ffmpeg")
+            }
+        } else {
+            ffmpegCandidates = Self.defaultFFmpegCandidates
+        }
+        self.missingFFmpegHandler = missingFFmpegHandler
         root = fileManager.temporaryDirectory.appendingPathComponent(UUID().uuidString, isDirectory: true)
         video = root.appendingPathComponent("video", isDirectory: true)
         audio = root.appendingPathComponent("audio", isDirectory: true)
@@ -24,13 +54,13 @@ final class UITestFixtureBuilder {
         }
     }
 
-    func cleanup() {
+    public func cleanup() {
         try? fileManager.removeItem(at: root)
     }
 
     /// Byte size of a fixture file, or nil when the path is missing.
     /// UI tests use this for output checks. It is not a screen locator.
-    func byteCount(at url: URL) -> Int? {
+    public func byteCount(at url: URL) -> Int? {
         guard let attributes = try? fileManager.attributesOfItem(atPath: url.path),
               let size = attributes[.size] as? NSNumber else {
             return nil
@@ -40,7 +70,7 @@ final class UITestFixtureBuilder {
 
     /// A file modified in the last minute is "still changing", which blocks Ready.
     /// Move the modification date back two minutes so a scan can mark the file Ready.
-    func settle(_ url: URL) throws {
+    public func settle(_ url: URL) throws {
         try fileManager.setAttributes(
             [.modificationDate: Date().addingTimeInterval(-120)],
             ofItemAtPath: url.path
@@ -49,7 +79,7 @@ final class UITestFixtureBuilder {
 
     /// A 0-byte placeholder (`.mkv`, `.mka`, `.mp4`, `.sup`, `.srt`) for queue and matching tests.
     @discardableResult
-    func createDummyFile(in directory: URL, named name: String) throws -> URL {
+    public func createDummyFile(in directory: URL, named name: String) throws -> URL {
         let url = directory.appendingPathComponent(name)
         try Data().write(to: url)
         return url
@@ -57,7 +87,7 @@ final class UITestFixtureBuilder {
 
     /// A UTF-8 `.srt` with sequential `00:00:00,000 --> 00:00:01,000`-style timecodes.
     @discardableResult
-    func createValidSRTFile(in directory: URL, named name: String, lines: [String] = ["Hello", "World"]) throws -> URL {
+    public func createValidSRTFile(in directory: URL, named name: String, lines: [String] = ["Hello", "World"]) throws -> URL {
         let url = directory.appendingPathComponent(name)
         var body = ""
         for (index, line) in lines.enumerated() {
@@ -73,7 +103,7 @@ final class UITestFixtureBuilder {
     /// PTS/DTS, an epoch-start Presentation Composition Segment (`0x16`) with no
     /// composition objects, and an End of Display Set (`0x80`).
     @discardableResult
-    func createValidPGSFile(in directory: URL, named name: String) throws -> URL {
+    public func createValidPGSFile(in directory: URL, named name: String) throws -> URL {
         let url = directory.appendingPathComponent(name)
         // 1920x1080, frame rate 0x10, composition 0, epoch start, no palette update, palette 0, 0 objects.
         let pcsPayload: [UInt8] = [
@@ -94,16 +124,18 @@ final class UITestFixtureBuilder {
     }
 
     /// A 1-second synthetic container written with `ffmpeg`. Throws `XCTSkip` if
-    /// ffmpeg is not at `/opt/homebrew/bin/ffmpeg` or `/usr/local/bin/ffmpeg`.
-    /// `.mka` is audio-only. Video uses `libx264`, then `mpeg4` if that fails.
+    /// ffmpeg is not in the search path (`/opt/homebrew/bin` and `/usr/local/bin`
+    /// unless `init` was given other directories) and XCTest is visible or a UI
+    /// test installed `setMissingFFmpegHandler`. `.mka` is audio-only. Video uses
+    /// `libx264`, then `mpeg4` if that fails.
     @discardableResult
-    func createValidMediaFile(
+    public func createValidMediaFile(
         in directory: URL,
         named name: String,
         includeAudio: Bool = true,
         includeSubtitles: Bool = false
     ) throws -> URL {
-        let ffmpeg = try Self.ffmpegURL()
+        let ffmpeg = try ffmpegURL()
         let ext = (name as NSString).pathExtension.lowercased()
         let destination = directory.appendingPathComponent(name)
         let audioOnly = ext == "mka"
@@ -161,17 +193,34 @@ final class UITestFixtureBuilder {
         return destination
     }
 
-    private static func ffmpegURL() throws -> URL {
-        let candidates = [
-            URL(fileURLWithPath: "/opt/homebrew/bin/ffmpeg"),
-            URL(fileURLWithPath: "/usr/local/bin/ffmpeg"),
-        ]
-        for url in candidates {
-            if FileManager.default.isExecutableFile(atPath: url.path) {
+    private static let ffmpegMissingMessage = "ffmpeg was not found at /opt/homebrew/bin/ffmpeg or /usr/local/bin/ffmpeg"
+
+    private static let defaultFFmpegCandidates = [
+        URL(fileURLWithPath: "/opt/homebrew/bin/ffmpeg"),
+        URL(fileURLWithPath: "/usr/local/bin/ffmpeg"),
+    ]
+
+    private func ffmpegURL() throws -> URL {
+        for url in ffmpegCandidates {
+            if fileManager.isExecutableFile(atPath: url.path) {
                 return url
             }
         }
-        throw XCTSkip("ffmpeg was not found at /opt/homebrew/bin/ffmpeg or /usr/local/bin/ffmpeg")
+        throw ffmpegMissingError()
+    }
+
+    private func ffmpegMissingError() -> Error {
+        if let missingFFmpegHandler {
+            return missingFFmpegHandler(Self.ffmpegMissingMessage)
+        }
+        if let hooked = MissingFFmpegHook.shared.error(message: Self.ffmpegMissingMessage) {
+            return hooked
+        }
+        #if canImport(XCTest)
+        return XCTSkip(Self.ffmpegMissingMessage)
+        #else
+        return UITestFixtureBuilderError(message: Self.ffmpegMissingMessage)
+        #endif
     }
 
     private static func run(_ executable: URL, arguments: [String]) throws {
@@ -221,7 +270,30 @@ final class UITestFixtureBuilder {
     }
 }
 
-private struct UITestFixtureBuilderError: Error, CustomStringConvertible {
-    let message: String
-    var description: String { message }
+public struct UITestFixtureBuilderError: Error, CustomStringConvertible, Sendable {
+    public let message: String
+    public var description: String { message }
+    public init(message: String) {
+        self.message = message
+    }
+}
+
+/// Holds the UI-test skip hook. `@unchecked Sendable` because the lock guards `make`.
+private final class MissingFFmpegHook: @unchecked Sendable {
+    static let shared = MissingFFmpegHook()
+    private let lock = NSLock()
+    private var make: (@Sendable (String) -> Error)?
+
+    func set(_ make: (@Sendable (String) -> Error)?) {
+        lock.lock()
+        self.make = make
+        lock.unlock()
+    }
+
+    func error(message: String) -> Error? {
+        lock.lock()
+        let make = self.make
+        lock.unlock()
+        return make?(message)
+    }
 }

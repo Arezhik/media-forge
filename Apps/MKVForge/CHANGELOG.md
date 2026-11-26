@@ -6,6 +6,10 @@ Every merged PR that changes the shipped app bumps the version in the same PR wi
 
 ## [Unreleased]
 
+## [0.8.2] - 2026-11-26 (build 11)
+### Changed
+- The debug log, progress throttle, and UI-test fixture helper now live in MediaForge. Behavior is unchanged (#4).
+
 ## [0.8.1] - 2026-11-25 (build 10)
 ### Fixed
 - After Cancel, starting the queue again keeps Done and Done · warning rows finished and unchecked. Only the remaining Ready rows run, and the summary counts that new run (#30).

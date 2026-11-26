@@ -1,5 +1,5 @@
 import XCTest
-@testable import PGSCore
+import MediaCore
 
 final class UITestingEnvironmentTests: XCTestCase {
     func testMissingEmptyAndWhitespaceKeysAreIgnored() {
@@ -39,21 +39,21 @@ final class UITestingEnvironmentTests: XCTestCase {
         let found = UITestingEnvironment.directory(
             named: "UITEST_INPUT_DIR",
             from: env,
-            directoryExists: AppFolderCheck.isFolder
+            directoryExists: FolderCheck.isFolder
         )
         XCTAssertEqual(found?.path, folder.path)
         XCTAssertNil(
             UITestingEnvironment.directory(
                 named: "UITEST_OUTPUT_DIR",
                 from: env,
-                directoryExists: AppFolderCheck.isFolder
+                directoryExists: FolderCheck.isFolder
             )
         )
     }
 }
 
-/// Local folder check so the test stays in the package and does not need AppKit.
-private enum AppFolderCheck {
+/// Local folder check so the test does not need AppKit.
+private enum FolderCheck {
     static func isFolder(_ path: String) -> Bool {
         var isDirectory: ObjCBool = false
         return FileManager.default.fileExists(atPath: path, isDirectory: &isDirectory) && isDirectory.boolValue

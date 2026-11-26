@@ -1,4 +1,5 @@
 import Foundation
+import MediaCore
 
 // The extraction engine. Probe lists tracks. Extract writes SRT.
 // On macOS, `SubtitleEngine()` uses `RoutingSubtitleReader`: tx3g goes through

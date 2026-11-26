@@ -23,7 +23,7 @@
 - Reveal in Finder checks the file exists first, uses `NSWorkspace.selectFile(_:inFileViewerRootedAtPath:)`, and logs the call.
 - Add a test with every bug fix. Use small generated fixtures and keep real media out of git. Arezhik's local samples (for example `~/Desktop/Test MP4s`) are for Mac test steps only.
 - In the PR description, list the test steps for Arezhik to run on his Mac (use `docs/PR_TEST_CHECKLIST.md`). He tests and approves every merge. CI alone is not approval. App CI is `.github/workflows/mp4subrip.yml` at the media-forge repo root.
-- Versioning (SemVer): in the same PR, run `scripts/bump-version.sh patch` for a bug fix or small tweak, `minor` for a new feature, or `major` for a major enhancement or new phase. Docs-only and CI-only PRs don't bump. `scripts/bump-version.sh --check` must pass (CI runs it). Releases of this app are tagged `mp4subrip-vX.Y.Z` (for example `mp4subrip-v0.8.0`).
+- Versioning (SemVer): in the same PR, run `scripts/bump-version.sh patch` for a bug fix or small tweak, `minor` for a new feature, or `major` for a major enhancement or new phase. Docs-only and CI-only PRs don't bump. `scripts/bump-version.sh --check` must pass (CI runs it). Releases of this app are tagged `mp4subrip-vX.Y.Z` (for example `mp4subrip-v0.8.1`).
 - The build number goes up by 1 with every bump and is never reused. Don't edit the version by hand. The script keeps project.pbxproj and project.yml in sync. CI compares the build number against `Apps/MP4SubRip` on the base branch, and skips that check when the base has no `Apps/MP4SubRip` yet. Otherwise it fails a PR whose build number isn't above the base's.
 - Fill in the CHANGELOG.md entry. Put `Version bump: old to new (rule)` in the PR description. Arezhik confirms it at merge.
 

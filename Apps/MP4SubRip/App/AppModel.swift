@@ -1,6 +1,7 @@
 import AppKit
 import Combine
 import Foundation
+import MediaCore
 import UniformTypeIdentifiers
 import MP4SubRipCore
 
@@ -99,7 +100,11 @@ final class AppModel: ObservableObject {
         commandForwarding = commands.objectWillChange.sink { [weak self] _ in
             self?.objectWillChange.send()
         }
-        DebugLog.shared.configure(directory: DebugLog.libraryLogsDirectory, mirror: { AppLog.write($0) })
+        DebugLog.shared.configure(
+            appName: AppIdentity.name,
+            directory: DebugLog.libraryLogsDirectory(appName: AppIdentity.name),
+            mirror: { AppLog.write($0) }
+        )
         if outputChoice.recents != storedRecents {
             persistOutputChoice()
         }
@@ -977,9 +982,10 @@ final class AppModel: ObservableObject {
             let environment = await Task.detached(priority: .userInitiated) {
                 DebugMachine.environment(settings: settings)
             }.value
-            let name = DebugLogDocument.fileName(at: Date())
+            let name = DebugLogDocument.fileName(appName: AppIdentity.name, at: Date())
             DebugLog.shared.record(.lifecycle, "Exporting debug log \(name)")
             let text = DebugLogDocument.document(
+                appName: AppIdentity.name,
                 environment: environment,
                 logText: DebugLog.shared.recentText(),
                 homeDirectory: NSHomeDirectory()

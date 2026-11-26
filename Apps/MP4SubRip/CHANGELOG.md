@@ -6,6 +6,10 @@ Every merged PR that changes the shipped app bumps the version in the same PR wi
 
 ## [Unreleased]
 
+## [0.8.1] - 2026-11-26 (build 11)
+### Changed
+- The debug log, progress throttle, and UI-test fixture helper now live in MediaForge. Behavior is unchanged (#4).
+
 ## [0.8.0] - 2026-11-25 (build 10)
 ### Added
 - Mode, on the bottom bar, is One at a Time (the default) or Parallel. Parallel extracts up to four files at once, and at least two. The choice is remembered and locked during a run. Files added during a run join that run. Two jobs cannot write the same name: Skip and Add a number treat a reserved path as already there, and Overwrite waits for it (#12).

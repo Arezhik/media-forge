@@ -35,6 +35,9 @@ let package = Package(
         .executable(name: "pgsdump", targets: ["pgsdump"]),
         .executable(name: "pgs2srt", targets: ["pgs2srt"])
     ],
+    dependencies: [
+        .package(path: "../../Packages/MediaForge")
+    ],
     targets: [
         .systemLibrary(
             name: "CZLib",
@@ -42,14 +45,21 @@ let package = Package(
         ),
         .target(
             name: "PGSCore",
-            dependencies: ["CZLib"]
+            dependencies: [
+                "CZLib",
+                .product(name: "MediaCore", package: "MediaForge")
+            ]
         ),
         .target(name: "VisionOCR", dependencies: ["PGSCore"]),
         .executableTarget(name: "pgsdump", dependencies: ["PGSCore"]),
         .executableTarget(name: "pgs2srt", dependencies: ["PGSCore", "VisionOCR"]),
         .testTarget(
             name: "PGSCoreTests",
-            dependencies: ["PGSCore", "VisionOCR"],
+            dependencies: [
+                "PGSCore",
+                "VisionOCR",
+                .product(name: "MediaCore", package: "MediaForge")
+            ],
             exclude: ["Fixtures/mkv"]
         )
     ] + reviewDelegateProxyTargets

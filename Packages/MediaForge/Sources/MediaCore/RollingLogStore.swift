@@ -2,16 +2,20 @@ import Foundation
 
 /// A plain-text log split across a few files so the folder stays under a size cap.
 ///
-/// The active file is `<AppName>.log`. Older files are `<AppName>.log.1`, then `.2`,
+/// The active file is `<appName>.log`. Older files are `<appName>.log.1`, then `.2`,
 /// and so on. When the next line would push the active file past its share of
 /// the cap, the files rotate and the oldest one is deleted.
-/// Copied from PGS2SRT (PGSCore/RollingLogStore.swift), with the file name generalized.
 public final class RollingLogStore: @unchecked Sendable {
     public static let defaultMaxTotalBytes = 5 * 1024 * 1024
     public static let defaultFileCount = 3
-    public static let activeFileName = "\(AppIdentity.name).log"
+
+    /// `<appName>.log`
+    public static func activeFileName(for appName: String) -> String {
+        appName + ".log"
+    }
 
     public let directory: URL
+    public let activeFileName: String
     public let maxTotalBytes: Int
     public let fileCount: Int
 
@@ -19,10 +23,12 @@ public final class RollingLogStore: @unchecked Sendable {
 
     public init(
         directory: URL,
+        appName: String,
         maxTotalBytes: Int = defaultMaxTotalBytes,
         fileCount: Int = defaultFileCount
     ) {
         self.directory = directory
+        self.activeFileName = Self.activeFileName(for: appName)
         self.maxTotalBytes = max(1, maxTotalBytes)
         self.fileCount = max(1, fileCount)
     }
@@ -73,11 +79,11 @@ public final class RollingLogStore: @unchecked Sendable {
     }
 
     private var activeURL: URL {
-        directory.appendingPathComponent(Self.activeFileName)
+        directory.appendingPathComponent(activeFileName)
     }
 
     private func archiveURL(_ generation: Int) -> URL {
-        directory.appendingPathComponent("\(Self.activeFileName).\(generation)")
+        directory.appendingPathComponent("\(activeFileName).\(generation)")
     }
 
     private func rotateIfNeeded(incomingBytes: Int) {

@@ -2,9 +2,8 @@ import Foundation
 
 /// Limits how often progress counters reach the UI.
 ///
-/// New in this template (PGS2SRT does not have it yet): PGS2SRT published every
-/// progress tick, and the open menu bar menus flickered while a file converted
-/// (issue #35). Publish status changes right away, and let this gate the counters
+/// Publishing every progress tick made open menu bar menus flicker during a long
+/// run. Publish status changes right away, and let this gate the counters
 /// to about 10 updates a second. Keep one throttle per queue item.
 public struct ProgressThrottle: Sendable {
     public static let defaultInterval: TimeInterval = 0.1

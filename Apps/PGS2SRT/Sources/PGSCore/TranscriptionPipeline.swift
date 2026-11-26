@@ -1,4 +1,5 @@
 import Foundation
+import MediaCore
 
 /// How far a batch conversion has got. `completed` counts every finished cue,
 /// including ones that produced no text. Calls arrive one at a time, in the

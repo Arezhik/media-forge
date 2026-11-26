@@ -10,9 +10,9 @@ name: MP4SubRip CI
 on:
   push:
     branches: [main]
-    paths: ['Apps/MP4SubRip/**', '.github/workflows/mp4subrip.yml']
+    paths: ['Apps/MP4SubRip/**', 'Packages/MediaForge/**', '.github/workflows/mp4subrip.yml']
   pull_request:
-    paths: ['Apps/MP4SubRip/**', '.github/workflows/mp4subrip.yml']
+    paths: ['Apps/MP4SubRip/**', 'Packages/MediaForge/**', '.github/workflows/mp4subrip.yml']
 
 concurrency:
   group: mp4subrip-${{ github.ref }}

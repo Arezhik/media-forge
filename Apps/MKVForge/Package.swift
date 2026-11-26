@@ -11,10 +11,24 @@ let package = Package(
     products: [
         .library(name: "MKVForgeCore", targets: ["MKVForgeCore"])
     ],
+    dependencies: [
+        .package(path: "../../Packages/MediaForge")
+    ],
     targets: [
         // Core logic only: no AppKit, SwiftUI, or Vision imports, so `swift test`
         // runs on Linux (cloud agents and the Linux CI job) as well as on a Mac.
-        .target(name: "MKVForgeCore"),
-        .testTarget(name: "MKVForgeCoreTests", dependencies: ["MKVForgeCore"])
+        .target(
+            name: "MKVForgeCore",
+            dependencies: [
+                .product(name: "MediaCore", package: "MediaForge")
+            ]
+        ),
+        .testTarget(
+            name: "MKVForgeCoreTests",
+            dependencies: [
+                "MKVForgeCore",
+                .product(name: "MediaCore", package: "MediaForge")
+            ]
+        )
     ]
 )

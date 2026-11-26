@@ -1,5 +1,6 @@
 import AppKit
 import Darwin
+import MediaCore
 import Foundation
 import OSLog
 import PGSCore
@@ -40,6 +41,8 @@ enum AppLog {
         case .mkv: return mkv
         case .error: return error
         case .diagnostic: return diagnostic
+        case .work, .tool, .window:
+            return Logger(subsystem: subsystem, category: category.rawValue)
         }
     }
 }
@@ -69,8 +72,10 @@ enum DebugMachine {
             chip: DebugChip.label(architecture: architecture, runningUnderRosetta: rosetta),
             architecture: architecture,
             runningUnderRosetta: rosetta,
-            mkvToolNixPath: tools?.mkvmerge,
-            mkvToolNixVersion: version,
+            facts: [
+                DebugFact("MKVToolNix", tools?.mkvmerge ?? "not found"),
+                DebugFact("MKVToolNix version", version ?? "not found")
+            ],
             settings: settings
         )
     }

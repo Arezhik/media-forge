@@ -1,4 +1,5 @@
 import Foundation
+import MediaCore
 
 /// One selected PGS track inside a multi-track MKV row.
 public struct ConversionTrack: Identifiable, Equatable, Sendable {

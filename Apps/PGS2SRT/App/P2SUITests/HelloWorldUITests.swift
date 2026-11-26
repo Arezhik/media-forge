@@ -1,3 +1,4 @@
+import MediaTesting
 import XCTest
 
 final class HelloWorldUITests: XCTestCase {
@@ -5,6 +6,11 @@ final class HelloWorldUITests: XCTestCase {
 
     override func setUpWithError() throws {
         continueAfterFailure = false
+        // MediaTesting cannot always import XCTest. Install the skip here so a
+        // missing ffmpeg still skips the UI test instead of failing it.
+        UITestFixtureBuilder.setMissingFFmpegHandler { message in
+            XCTSkip(message)
+        }
         fixtures = try UITestFixtureBuilder()
         // A valid .sup in UITEST_INPUT_DIR is ingested like a drop and conversion
         // starts immediately (including OCR). A 0-byte dummy still appears in the

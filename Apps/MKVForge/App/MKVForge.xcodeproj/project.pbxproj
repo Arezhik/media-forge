@@ -12,6 +12,7 @@
 		08DD1BF4CAEC03C372E76BF2 /* RemuxChooseMatchUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E82F4FFF71F2B06C94E19C4A /* RemuxChooseMatchUITests.swift */; };
 		0D729A31503EF71D91816755 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 389CDAC04276C249F212248B /* ContentView.swift */; };
 		0FF692178EF37677938D4692 /* MKVForgeApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8576A8C62853B512A8BB65F /* MKVForgeApp.swift */; };
+		10B30F6AB5C1D2FE688677E4 /* MediaCore in Frameworks */ = {isa = PBXBuildFile; productRef = FEAC7AE68248BCC1815ED414 /* MediaCore */; };
 		11E8DC262FAEF81F34AFA26A /* RemuxMatchToggleUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 39A032EF44382BDC6427F29A /* RemuxMatchToggleUITests.swift */; };
 		21116FDFD8001036C78F16CE /* RemuxMatchOnMKANameUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9E2FB71476CEB766DDC6A15 /* RemuxMatchOnMKANameUITests.swift */; };
 		25853F093D188643622B4CAA /* RemuxExistingOutputUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E310675747612E45C1DC6D3 /* RemuxExistingOutputUITests.swift */; };
@@ -23,6 +24,7 @@
 		5189B8FFD6B78C6F43970474 /* UITestingLaunch.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8D491A04A8E2B6CCB670B83 /* UITestingLaunch.swift */; };
 		60365395663F1EFE95E79D0E /* RemuxVideoOnlyNoteUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5063002AC94E7B2FD8456218 /* RemuxVideoOnlyNoteUITests.swift */; };
 		61BE4562897AAC7D7FB61A9F /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 732DB57213FB70CB4DBF41FC /* AppDelegate.swift */; };
+		634D3B639D2DED1AE28EF8C9 /* MediaTesting in Frameworks */ = {isa = PBXBuildFile; productRef = C46D263DBC7F751D64B2E7FA /* MediaTesting */; };
 		641B6B7EAF2368E94C8F5FE8 /* SplitAudioOnlyUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AD389A601225C3CE8A810CB /* SplitAudioOnlyUITests.swift */; };
 		6428359D6410411EEFF987DF /* SplitStillChangingUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84AB3D66A009512FE7C437E8 /* SplitStillChangingUITests.swift */; };
 		6753D013FA4C907A711E6668 /* MainWindowPage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8158EA0016D4686F63028DC5 /* MainWindowPage.swift */; };
@@ -40,7 +42,6 @@
 		B934923595B4FC0F336BB031 /* SplitMissingChaptersUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F23C913BD3342BC3A51A616 /* SplitMissingChaptersUITests.swift */; };
 		C402816A1170029058EDD869 /* RemuxRunUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50F29DC4A87B1660655AEFF3 /* RemuxRunUITests.swift */; };
 		C5B5C9AB62D0B5CFEFCCFF1C /* MKVForgeCore in Frameworks */ = {isa = PBXBuildFile; productRef = 2D29AEF9CAE1EB452E43FA8F /* MKVForgeCore */; };
-		CD34CB0FD63C72AB660F6096 /* UITestFixtureBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F400027C12CE672A61FEA22 /* UITestFixtureBuilder.swift */; };
 		DBA4E066D9581D6FF28CED4D /* SplitEmptyFileUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29EE229ABEFF5F05ABB443A7 /* SplitEmptyFileUITests.swift */; };
 		DBCA36A9ADEE30F5102A3729 /* ToolBannerComponent.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDD91645221C410D7E4ABA8F /* ToolBannerComponent.swift */; };
 		DD5B5E1983A11F6141659BE5 /* BottomBarComponent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4482C5B30290F4AB246F357A /* BottomBarComponent.swift */; };
@@ -83,9 +84,9 @@
 		5063002AC94E7B2FD8456218 /* RemuxVideoOnlyNoteUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemuxVideoOnlyNoteUITests.swift; sourceTree = "<group>"; };
 		50F29DC4A87B1660655AEFF3 /* RemuxRunUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemuxRunUITests.swift; sourceTree = "<group>"; };
 		53007E21886D46130046324A /* ToolMissingBannerUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToolMissingBannerUITests.swift; sourceTree = "<group>"; };
-		5F400027C12CE672A61FEA22 /* UITestFixtureBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UITestFixtureBuilder.swift; sourceTree = "<group>"; };
 		65945D429A28CF51FF4AA4A4 /* SplitExistingOutputUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplitExistingOutputUITests.swift; sourceTree = "<group>"; };
 		6B571F909AA0951C9EB942F8 /* HelloWorldUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HelloWorldUITests.swift; sourceTree = "<group>"; };
+		7048E4E2A0D806805C46AF03 /* MediaForge */ = {isa = PBXFileReference; lastKnownFileType = folder; name = MediaForge; path = ../../../Packages/MediaForge; sourceTree = SOURCE_ROOT; };
 		732DB57213FB70CB4DBF41FC /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		739CA4BBDF8C07B0BE87091B /* ShowReadyRemuxUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShowReadyRemuxUITests.swift; sourceTree = "<group>"; };
 		75A73DF67C5EFC255E1A647E /* UITestFixtures.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UITestFixtures.swift; sourceTree = "<group>"; };
@@ -110,11 +111,20 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		0EFA622851EEA8C479394918 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				634D3B639D2DED1AE28EF8C9 /* MediaTesting in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		103573A1159FAD96490FB526 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 				C5B5C9AB62D0B5CFEFCCFF1C /* MKVForgeCore in Frameworks */,
+				10B30F6AB5C1D2FE688677E4 /* MediaCore in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -133,7 +143,6 @@
 		61D27E5330AE75B213DC0CFA /* MKVUITests */ = {
 			isa = PBXGroup;
 			children = (
-				5F400027C12CE672A61FEA22 /* UITestFixtureBuilder.swift */,
 				A922F42C85EBF46F694B9BDD /* Base */,
 				E713D68E9BF2C6B4896119E0 /* Components */,
 				B606DBDF11B7BF91AEC1F85B /* Helpers */,
@@ -181,6 +190,7 @@
 		A2454ED86F21AF0371544297 /* Packages */ = {
 			isa = PBXGroup;
 			children = (
+				7048E4E2A0D806805C46AF03 /* MediaForge */,
 				09273C4882CEA8D31E0A3095 /* MKVForge */,
 			);
 			name = Packages;
@@ -253,6 +263,7 @@
 			buildConfigurationList = 668B2349E3E5042336252030 /* Build configuration list for PBXNativeTarget "MKVForgeUITests" */;
 			buildPhases = (
 				43C202C7A523B35A62E7CC6E /* Sources */,
+				0EFA622851EEA8C479394918 /* Frameworks */,
 			);
 			buildRules = (
 			);
@@ -261,6 +272,7 @@
 			);
 			name = MKVForgeUITests;
 			packageProductDependencies = (
+				C46D263DBC7F751D64B2E7FA /* MediaTesting */,
 			);
 			productName = MKVForgeUITests;
 			productReference = 40C3B8B16D0EFAC73549387C /* MKVForgeUITests.xctest */;
@@ -281,6 +293,7 @@
 			name = MKVForge;
 			packageProductDependencies = (
 				2D29AEF9CAE1EB452E43FA8F /* MKVForgeCore */,
+				FEAC7AE68248BCC1815ED414 /* MediaCore */,
 			);
 			productName = MKVForge;
 			productReference = 1496BB0D61ABEEFD71BF9129 /* MKVForge.app */;
@@ -315,6 +328,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				69713EF1220E4E5A0C7CE26D /* XCLocalSwiftPackageReference ".." */,
+				5DABC69BB3722E8FB02B9624 /* XCLocalSwiftPackageReference "../../../Packages/MediaForge" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 5055986C8801CFB694A94D65 /* Products */;
@@ -372,7 +386,6 @@
 				6428359D6410411EEFF987DF /* SplitStillChangingUITests.swift in Sources */,
 				DBCA36A9ADEE30F5102A3729 /* ToolBannerComponent.swift in Sources */,
 				B61571C120B7790A010B3122 /* ToolMissingBannerUITests.swift in Sources */,
-				CD34CB0FD63C72AB660F6096 /* UITestFixtureBuilder.swift in Sources */,
 				B5DC759986BC45A56EE11DC5 /* UITestFixtures.swift in Sources */,
 				B36FDDA3DD574550F628BAE4 /* XCUIElement+UITest.swift in Sources */,
 			);
@@ -417,7 +430,7 @@
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 10;
+				CURRENT_PROJECT_VERSION = 11;
 				ENABLE_HARDENED_RUNTIME = NO;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -429,7 +442,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 15.0;
-				MARKETING_VERSION = 0.8.1;
+				MARKETING_VERSION = 0.8.2;
 				ONLY_ACTIVE_ARCH = NO;
 				PRODUCT_BUNDLE_IDENTIFIER = com.arezhik.MKVForge;
 				PRODUCT_NAME = MKVForge;
@@ -507,7 +520,7 @@
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 10;
+				CURRENT_PROJECT_VERSION = 11;
 				ENABLE_HARDENED_RUNTIME = NO;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -519,7 +532,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 15.0;
-				MARKETING_VERSION = 0.8.1;
+				MARKETING_VERSION = 0.8.2;
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = com.arezhik.MKVForge;
 				PRODUCT_NAME = MKVForge;
@@ -667,6 +680,10 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
+		5DABC69BB3722E8FB02B9624 /* XCLocalSwiftPackageReference "../../../Packages/MediaForge" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ../../../Packages/MediaForge;
+		};
 		69713EF1220E4E5A0C7CE26D /* XCLocalSwiftPackageReference ".." */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = ..;
@@ -677,6 +694,14 @@
 		2D29AEF9CAE1EB452E43FA8F /* MKVForgeCore */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = MKVForgeCore;
+		};
+		C46D263DBC7F751D64B2E7FA /* MediaTesting */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = MediaTesting;
+		};
+		FEAC7AE68248BCC1815ED414 /* MediaCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = MediaCore;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

@@ -1,14 +1,19 @@
+import MediaTesting
 import XCTest
 
-// Helpers: a thin forwarder to `UITestFixtureBuilder`.
-// The builder stays at `App/MKVUITests/UITestFixtureBuilder.swift`. This file
-// only creates it, cleans it up, and maps its folders onto the launch environment.
+// Helpers: a thin forwarder to `UITestFixtureBuilder` in MediaTesting.
+// This file only creates it, cleans it up, and maps its folders onto the launch environment.
 // File-generation helpers stay on the builder. Do not duplicate them here.
 
 /// Creates and cleans the temp fixture root, and builds the `UITEST_*` environment.
 enum UITestFixtures {
     static func make() throws -> UITestFixtureBuilder {
-        try UITestFixtureBuilder()
+        // MediaTesting cannot always import XCTest. Install the skip here so a
+        // missing ffmpeg still skips the UI test instead of failing it.
+        UITestFixtureBuilder.setMissingFFmpegHandler { message in
+            XCTSkip(message)
+        }
+        return try UITestFixtureBuilder()
     }
 
     static func cleanup(_ fixtures: UITestFixtureBuilder?) {

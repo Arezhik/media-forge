@@ -1,4 +1,5 @@
 import XCTest
+import MediaCore
 @testable import MKVForgeCore
 
 /// Scan progress for the `Scanning… 3 of 9` caption (layout contract v2.1 §2.2, Phase 5 Q4).

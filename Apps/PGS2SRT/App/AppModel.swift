@@ -1,5 +1,6 @@
 import AppKit
 import Combine
+import MediaCore
 import Foundation
 import PGSCore
 import UniformTypeIdentifiers
@@ -28,7 +29,11 @@ final class AppModel: ObservableObject {
 
     init(defaults: UserDefaults = UITestingLaunch.defaults) {
         self.defaults = defaults
-        DebugLog.shared.configure(directory: DebugLog.libraryLogsDirectory, mirror: { AppLog.write($0) })
+        DebugLog.shared.configure(
+            appName: AppIdentity.name,
+            directory: DebugLog.libraryLogsDirectory(appName: AppIdentity.name),
+            mirror: { AppLog.write($0) }
+        )
         let preferences = ConversionPreferenceStore.load(from: defaults)
         self.preferences = preferences
         let queue = ConversionQueue(preferences: preferences, services: Self.makeServices())
@@ -83,13 +88,14 @@ final class AppModel: ObservableObject {
             let environment = await Task.detached(priority: .userInitiated) {
                 DebugMachine.environment(settings: settings)
             }.value
-            let name = DebugLogDocument.fileName(at: Date())
+            let name = DebugLogDocument.fileName(appName: AppIdentity.name, at: Date())
             let destination = URL(fileURLWithPath: NSHomeDirectory(), isDirectory: true)
                 .appendingPathComponent("Desktop", isDirectory: true)
                 .appendingPathComponent(name)
             DebugLog.shared.record(.lifecycle, "Exporting debug log to \(destination.path)")
             IssueDiagnosticLog.flush()
             let text = DebugLogDocument.document(
+                appName: AppIdentity.name,
                 environment: environment,
                 logText: DebugLog.shared.recentText(),
                 homeDirectory: NSHomeDirectory()
