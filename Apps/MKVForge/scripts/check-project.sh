@@ -19,6 +19,7 @@
 # Works with macOS's bash 3.2 and BSD tools, and with GNU tools. Exit 0 = clean.
 set -eu
 
+# App root is the parent of this script (Apps/MKVForge in the monorepo).
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
 PBX="$(ls -1 App/*.xcodeproj/project.pbxproj 2>/dev/null | head -1 || true)"
@@ -66,8 +67,10 @@ if [ -f "$YML" ]; then
 fi
 
 # 3. Paths that differ only by case.
-if git rev-parse --is-inside-work-tree >/dev/null 2>&1 && [ -n "$(git ls-files | head -1)" ]; then
-  LIST="$(git ls-files)"
+# `--full-name` lists this app's files from the git root (Apps/MKVForge/...).
+# Plain `git ls-files` is cwd-relative; the prefix keeps the check stable in the monorepo.
+if git rev-parse --is-inside-work-tree >/dev/null 2>&1 && [ -n "$(git ls-files --full-name | head -1)" ]; then
+  LIST="$(git ls-files --full-name)"
 else
   LIST="$(find . -path ./.git -prune -o -path ./.build -prune -o -type f -print | sed 's|^\./||')"
 fi

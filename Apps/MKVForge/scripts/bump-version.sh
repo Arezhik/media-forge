@@ -18,6 +18,7 @@
 #   major  major enhancement or breaking change   0.2.0 -> 1.0.0
 #   A new phase is usually a minor bump; 1.0.0 is the v1 release.
 #   Every bump also adds 1 to the build number. Docs-only or CI-only PRs don't bump.
+#   Tags: per-app tag mkvforge-vX.Y.Z (for example mkvforge-v0.8.1). Not vX.Y.Z.
 #
 # Two open PRs that both bump collide on the same version lines. Whichever merges
 # second: merge or rebase onto main (take either side of the version-line conflicts),
@@ -31,10 +32,21 @@
 # settings. Works with macOS's bash 3.2 and BSD sed/awk, and with GNU tools.
 set -eu
 
+# App root is the parent of this script (Apps/MKVForge in the monorepo).
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 PBX="$(ls -1 "$ROOT"/App/*.xcodeproj/project.pbxproj 2>/dev/null | head -1 || true)"
 YML="$ROOT/App/project.yml"
 LOG="$ROOT/CHANGELOG.md"
+
+# Git tree prefix of this app, with a trailing slash (Apps/MKVForge/).
+# `git show REF:path` paths start at the git root, so app-relative paths need it.
+# Empty when this directory is the git root. `--show-prefix` follows cwd via -C.
+if git -C "$ROOT" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+  GIT_PREFIX="$(git -C "$ROOT" rev-parse --show-prefix 2>/dev/null || true)"
+else
+  GIT_PREFIX=""
+fi
+git_path() { printf '%s%s' "$GIT_PREFIX" "$1"; }
 
 die() { echo "bump-version: $*" >&2; exit 1; }
 [ -n "$PBX" ] && [ -f "$PBX" ] || die "no App/*.xcodeproj/project.pbxproj found under $ROOT"
@@ -73,13 +85,13 @@ replace_in() { # file sed-expression
 # Version and build at a git ref (for example origin/main), from that ref's pbxproj.
 read_ref() { # ref
   command -v git >/dev/null 2>&1 || die "git is needed for $1"
-  REL="${PBX#$ROOT/}"
-  REF_PBX="$(cd "$ROOT" && git show "$1:$REL" 2>/dev/null)" || die "can't read $REL at $1 (fetch it first, for example: git fetch origin main)"
+  REL="$(git_path "${PBX#$ROOT/}")"
+  REF_PBX="$(git -C "$ROOT" show "$1:$REL" 2>/dev/null)" || die "can't read $REL at $1 (fetch it first, for example: git fetch origin main)"
   REF_VERSION="$(printf '%s\n' "$REF_PBX" | sed -n 's/^[[:space:]]*MARKETING_VERSION = "\{0,1\}\([^";]*\)"\{0,1\};.*/\1/p' | sort -u)"
   REF_BUILD="$(printf '%s\n' "$REF_PBX" | sed -n 's/^[[:space:]]*CURRENT_PROJECT_VERSION = "\{0,1\}\([^";]*\)"\{0,1\};.*/\1/p' | sort -u)"
   [ "$(printf '%s\n' "$REF_VERSION" | wc -l | tr -d ' ')" = 1 ] && [ -n "$REF_VERSION" ] || die "$1 has no single MARKETING_VERSION"
   [ "$(printf '%s\n' "$REF_BUILD" | wc -l | tr -d ' ')" = 1 ] && [ -n "$REF_BUILD" ] || die "$1 has no single CURRENT_PROJECT_VERSION"
-  REF_LOG="$(cd "$ROOT" && git show "$1:CHANGELOG.md" 2>/dev/null || true)"
+  REF_LOG="$(git -C "$ROOT" show "$1:$(git_path CHANGELOG.md)" 2>/dev/null || true)"
 }
 
 MODE="${1:-}"
@@ -94,9 +106,9 @@ case "$MODE" in
     # The first PR (the generated project) has no project file on the base branch yet.
     # The ref itself must exist; only a missing pbxproj there counts as "no version yet".
     command -v git >/dev/null 2>&1 || die "git is needed for $2"
-    (cd "$ROOT" && git rev-parse --verify --quiet "$2^{commit}" >/dev/null) || die "can't read $2 (fetch it first, for example: git fetch origin main)"
-    if ! (cd "$ROOT" && git cat-file -e "$2:${PBX#$ROOT/}" 2>/dev/null); then
-      echo "$2 has no ${PBX#$ROOT/} yet (first version). This branch starts at $VERSION (build $BUILD)"; exit 0
+    git -C "$ROOT" rev-parse --verify --quiet "$2^{commit}" >/dev/null || die "can't read $2 (fetch it first, for example: git fetch origin main)"
+    if ! git -C "$ROOT" cat-file -e "$2:$(git_path "${PBX#$ROOT/}")" 2>/dev/null; then
+      echo "$2 has no $(git_path "${PBX#$ROOT/}") yet (first version). This branch starts at $VERSION (build $BUILD)"; exit 0
     fi
     read_ref "$2"
     if [ "$BUILD" -gt "$REF_BUILD" ]; then
@@ -195,3 +207,4 @@ read_current
 check_changelog
 echo "Updated project.pbxproj, project.yml, and CHANGELOG.md. Fill in the CHANGELOG entry, and put this line in the PR description:"
 echo "  Version bump: $OLD (build $OLDBUILD) to $NEW (build $NEWBUILD) ($RULE)"
+echo "Tag hint: mkvforge-vX.Y.Z (this version is mkvforge-v$NEW)"

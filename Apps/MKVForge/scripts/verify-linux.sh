@@ -4,6 +4,7 @@
 # with XcodeGen. Then run this repo's existing non-Swift check scripts.
 set -euo pipefail
 
+# App root is the parent of this script (Apps/MKVForge in the monorepo).
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
 
