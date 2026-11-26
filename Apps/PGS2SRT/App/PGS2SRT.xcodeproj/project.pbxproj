@@ -50,13 +50,13 @@
 		6EA3E8EBFC8C4512B11CD65C /* PGS2SRTUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PGS2SRTUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		6FC288A509FA2473CA630C83 /* ReviewWindowDelegateProxy.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ReviewWindowDelegateProxy.h; sourceTree = "<group>"; };
 		88FCCF7582A151BFF36FE4CE /* PGS2SRT.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PGS2SRT.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		8BF7142D3159CC7FF12D68CE /* pgs2srt-uniMac */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "pgs2srt-uniMac"; path = ..; sourceTree = SOURCE_ROOT; };
 		8F630CEFE46790BBB409D33F /* UITestingLaunch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UITestingLaunch.swift; sourceTree = "<group>"; };
 		9E4C571CE16BB8DB4778E604 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		B6283504DCF794F48814E8A1 /* UITestFixtureBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UITestFixtureBuilder.swift; sourceTree = "<group>"; };
 		BA5CB42CD5C41B83824AFB9C /* DebugLogSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugLogSupport.swift; sourceTree = "<group>"; };
 		BE667445FEF49956B476B08E /* IssueDiagnosticLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IssueDiagnosticLog.swift; sourceTree = "<group>"; };
 		CD0B66D179ABB3841EC90534 /* ReviewWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReviewWindow.swift; sourceTree = "<group>"; };
+		CECA0AEF85B9ADCB83F0558C /* PGS2SRT */ = {isa = PBXFileReference; lastKnownFileType = folder; name = PGS2SRT; path = ..; sourceTree = SOURCE_ROOT; };
 		D48F84F763A969232E1F173B /* AppModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppModel.swift; sourceTree = "<group>"; };
 		F174FADF49F79DE59DD274B9 /* CueTextEditor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CueTextEditor.swift; sourceTree = "<group>"; };
 		F47288C196CAEAECDFB73C0E /* pgs2srt */ = {isa = PBXFileReference; includeInIndex = 0; path = pgs2srt; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -88,7 +88,7 @@
 		06DE32F7224E05641D4D5F99 /* Packages */ = {
 			isa = PBXGroup;
 			children = (
-				8BF7142D3159CC7FF12D68CE /* pgs2srt-uniMac */,
+				CECA0AEF85B9ADCB83F0558C /* PGS2SRT */,
 			);
 			name = Packages;
 			sourceTree = "<group>";

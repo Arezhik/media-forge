@@ -1,7 +1,6 @@
 # Source of truth for App/PGS2SRT.xcodeproj. Never hand-edit project.pbxproj:
-# change this file, then run ./scripts/verify-linux.sh (XcodeGen 2.48.0).
-# The script generates from a folder named pgs2srt-uniMac (the GitHub repo)
-# so the local package's folder reference stays stable. A second run must
+# change this file, then run ./scripts/verify-linux.sh (XcodeGen 2.48.0)
+# from Apps/PGS2SRT (the folder reference is named PGS2SRT). A second run must
 # change nothing, and the project must have no TEMP_ object IDs.
 # The Xcode project must not sit next to Package.swift, and the package
 # must not be named PGS2SRT. Xcode's IDE otherwise reports the products as missing.
