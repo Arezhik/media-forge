@@ -13,10 +13,11 @@ let package = Package(
     ],
     targets: [
         // No AppKit, SwiftUI, or Vision, so Linux `swift test` builds this.
+        // UITestingEnvironment, RollingLogStore, DebugLog, and ProgressThrottle live here.
         .target(name: "MediaCore"),
         // SwiftUI is behind `#if canImport(SwiftUI)` in Sources/MediaUI.
         .target(name: "MediaUI"),
-        // Shared test support. No Apple-only imports, so Linux can build it.
+        // UITestFixtureBuilder. XCTest is behind `#if canImport(XCTest)` so Linux builds it.
         .target(name: "MediaTesting"),
         .testTarget(name: "MediaCoreTests", dependencies: ["MediaCore"]),
         .testTarget(name: "MediaUITests", dependencies: ["MediaUI"]),
