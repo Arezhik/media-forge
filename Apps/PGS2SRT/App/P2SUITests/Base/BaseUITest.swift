@@ -1,40 +1,15 @@
 import MediaTesting
 import XCTest
 
-// Base fixture. Playwright's test fixture / `beforeEach`.
-// Subclasses get a launched app and temp folders. They do not launch the app again.
-//
-// Launch arguments are `--uitesting` only. Do not add `-ApplePersistenceIgnoreState YES`:
-// together with `--uitesting` it suppresses the SwiftUI main Window.
-// The class is `@MainActor` because it owns `XCUIApplication`.
+// App hook for PGS2SRT's launch environment.
+// Launch, fixture setup, and teardown live on MediaTesting.BaseUITest.
+// This subclass only supplies the PGS2SRT `UITEST_*` keys.
+// Tests subclass this type. They do not override setUp or call app.launch().
 
-/// Launches PGS2SRT against a fresh `UITestFixtureBuilder` root.
+/// PGS2SRT UI tests. Input is ingested like a drop. Output is the chosen folder.
 @MainActor
-class BaseUITest: XCTestCase {
-    private(set) var app: XCUIApplication!
-    private(set) var fixtures: UITestFixtureBuilder!
-
-    /// Async so this `@MainActor` type can override setUp. XCTest's synchronous
-    /// `setUp` / `setUpWithError` are nonisolated.
-    override func setUp() async throws {
-        continueAfterFailure = false
-        fixtures = try UITestFixtures.make()
-        try await prepareFixtures()
-        let application = XCUIApplication()
-        // Replace, do not append. The only argument is `--uitesting`.
-        application.launchArguments = ["--uitesting"]
-        application.launchEnvironment = UITestFixtures.launchEnvironment(for: fixtures)
-        application.launch()
-        app = application
+class BaseUITest: MediaTesting.BaseUITest {
+    override func launchEnvironment(for fixtures: UITestFixtureBuilder) -> [String: String] {
+        UITestFixtures.inputOutputEnvironment(for: fixtures)
     }
-
-    override func tearDown() async throws {
-        UITestFixtures.cleanup(fixtures)
-        fixtures = nil
-        app = nil
-    }
-
-    /// Seed files before launch. The base does not create any.
-    /// A drop-screen smoke needs none. Do not launch the app here, and do not override `setUp`.
-    func prepareFixtures() async throws {}
 }

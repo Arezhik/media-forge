@@ -1,8 +1,10 @@
+import MediaTesting
 import XCTest
 
 // Component: the footer under the queue.
 // `settingsSummary` is the language / folder / pictures line.
 // `batchLine` appears after a batch finishes, such as `1 failed in 0s`.
+// Static text joins label and value. The queue window is `queueWindow`.
 
 /// Footer summary and the batch result line.
 @MainActor
@@ -44,15 +46,15 @@ struct FooterSummaryComponent {
     }
 
     private func summaryText() -> String {
-        let element = app.mainWindow.staticTexts["settingsSummary"]
+        let element = app.queueWindow.staticTexts["settingsSummary"]
         guard element.exists else { return "" }
-        return element.uiText
+        return element.uiLabelAndValue
     }
 
     private func batchText() -> String {
-        let identified = app.mainWindow.staticTexts["batchLine"]
+        let identified = app.queueWindow.staticTexts["batchLine"]
         if identified.exists {
-            return identified.uiText
+            return identified.uiLabelAndValue
         }
         return ""
     }
