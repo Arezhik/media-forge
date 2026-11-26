@@ -1,7 +1,6 @@
 # Source of truth for App/MP4SubRip.xcodeproj. Never hand-edit project.pbxproj:
-# change this file, then run ./scripts/verify-linux.sh (XcodeGen 2.48.0).
-# The script generates from a folder named mp4-sub-rip (the GitHub repo)
-# so the local package's folder reference stays stable. A second run must
+# change this file, then run ./scripts/verify-linux.sh (XcodeGen 2.48.0)
+# from Apps/MP4SubRip (the folder reference is named MP4SubRip). A second run must
 # change nothing, and the project must have no TEMP_ object IDs.
 # The Xcode project must not sit next to Package.swift, and the package
 # must not be named MP4SubRip, or Xcode reports the products as missing.
