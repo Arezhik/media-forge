@@ -52,7 +52,7 @@ The command reads the pictures in the `.sup` file, recognizes the words, and wri
 
 1. Install Xcode 27 if it is not already installed.
 2. Open Terminal.
-3. Go into this project’s folder. For example: `cd ~/Desktop/pgs2srt-uniMac`
+3. Go into this project’s folder. For example: `cd ~/Dev/media-forge/Apps/PGS2SRT`
 4. Run:
 
 ```bash
@@ -98,8 +98,8 @@ You do not need Python, Homebrew, or MKVToolNix to convert a `.sup` or an `.mkv`
 
 1. Install Xcode 27 from the App Store if it is not already installed.
 2. Download this repository (the green Code button, or the pull request’s checkout).
-3. Quit Xcode if it is open. In the repository folder, delete the `.build` folder if you see one. In Terminal, run `rm -rf ~/Library/Developer/Xcode/DerivedData/PGS2SRT-*`.
-4. Double-click **`App/PGS2SRT.xcodeproj`**. Do not open `Package.swift`, and do not open a project file that sits in the repository root. `Package.swift` is the decoder library. Opening it runs a command-line tool instead of the window.
+3. Quit Xcode if it is open. In `Apps/PGS2SRT`, delete the `.build` folder if you see one. In Terminal, run `rm -rf ~/Library/Developer/Xcode/DerivedData/PGS2SRT-*`.
+4. Double-click **`Apps/PGS2SRT/App/PGS2SRT.xcodeproj`**. Do not open `Package.swift`. `Package.swift` is the decoder library. Opening it runs a command-line tool instead of the window.
 5. If Xcode asks whether to trust the project, choose Trust. The first open loads the local Swift package. Wait until the progress spinner in the title bar finishes. That can take a minute.
 6. At the top of the window, the scheme should say **PGS2SRT** and the destination should be **My Mac**.
 7. Press the Run button (the triangle) or Command-R.
@@ -112,9 +112,9 @@ Run uses the Debug build, which includes only the chip in the Mac you are using 
 
 ### Why the project is set up this way
 
-The decoder lives in a Swift package named **PGS2SRTKit** (`Package.swift` at the repository root). The Xcode project is named PGS2SRT and lives in `App/`, one folder down, so it is not sitting in the same folder as that package. Xcode’s window gets confused when the package and the project share a name and a folder: the command line can still resolve the package, but the window says the products are missing, and a Debug build then tries to read a module built for a different Mac target. The window is a normal macOS app (not an iPad app, not Mac Catalyst). Debug builds only the chip in the Mac you are using. Release still builds for both Apple silicon and Intel. The `.xcodeproj` is already generated and checked in, so you can open it and press Run.
+The decoder lives in a Swift package named **PGS2SRTKit** (`Package.swift` in `Apps/PGS2SRT`). The Xcode project is named PGS2SRT and lives in `App/`, one folder down, so it is not sitting in the same folder as that package. Xcode’s window gets confused when the package and the project share a name and a folder: the command line can still resolve the package, but the window says the products are missing, and a Debug build then tries to read a module built for a different Mac target. The window is a normal macOS app (not an iPad app, not Mac Catalyst). Debug builds only the chip in the Mac you are using. Release still builds for both Apple silicon and Intel. The `.xcodeproj` is already generated and checked in, so you can open it and press Run.
 
-`App/project.yml` is a recipe for [XcodeGen](https://github.com/yonaskolb/XcodeGen). You can ignore it. It is only there so a developer can regenerate the Xcode project later (`brew install xcodegen`, then `cd App` and `xcodegen generate`).
+`App/project.yml` is a recipe for [XcodeGen](https://github.com/yonaskolb/XcodeGen). You can ignore it. It is only there so a developer can regenerate the Xcode project later (`./scripts/verify-linux.sh` from `Apps/PGS2SRT`, XcodeGen 2.48.0). The local package folder reference is named `PGS2SRT`.
 
 `AGENTS.md` has the rules for coding agents (and a short project map). Read it before the first change.
 
@@ -124,7 +124,7 @@ GitHub builds the universal app on a Mac runner for every pull request and every
 
 1. Open this repository on GitHub.
 2. Click **Actions**.
-3. Open the latest **CI** run that has a green check (on `main` after this is merged, or on the pull request).
+3. Open the latest **PGS2SRT CI** run that has a green check (`.github/workflows/pgs2srt.yml`; on `main` after this is merged, or on the pull request).
 4. Scroll to **Artifacts** and download **PGS2SRT-universal.zip**.
 5. Unzip it once. Inside is `PGS2SRT.app`.
 6. Move that app to the Desktop or to Applications.
@@ -156,7 +156,9 @@ A broken file stops with a message that says what was wrong and where, instead o
 
 ## For developers
 
-From the repository root, with Swift 5.9 or newer:
+Releases of this app are tagged `pgs2srt-vX.Y.Z` (this version is `pgs2srt-v0.3.0`, build 7).
+
+From `Apps/PGS2SRT`, with Swift 5.9 or newer:
 
 ```bash
 swift test
