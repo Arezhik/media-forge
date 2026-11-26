@@ -1,6 +1,6 @@
 # MKVForge — macOS App Scaffold
 
-**Repo:** [Arezhik/mkv-forge](https://github.com/Arezhik/mkv-forge)
+**Repo:** [Arezhik/media-forge](https://github.com/Arezhik/media-forge) (`Apps/MKVForge`). Tags: `mkvforge-vX.Y.Z`. Workflow: `.github/workflows/mkvforge.yml`.
 **Status:** In review with Arezhik, section by section. Confirmed: Overview, Naming Convention (2026-11-18).
 
 ## Overview

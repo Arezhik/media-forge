@@ -9,7 +9,7 @@ Arezhik approves the merge only after this sheet passes.
 
 ## Setup
 - [ ] Pull the branch. Quit Xcode, delete DerivedData for MKVForge, open `App/MKVForge.xcodeproj`, then Run (⌘R).
-- [ ] Core tests in Terminal from the repo root: `swift test --scratch-path /tmp/mkv-forge-build 2>&1 | tail -3` → 0 failures. The scratch path keeps the build out of iCloud-synced folders (L30).
+- [ ] Core tests in Terminal from `Apps/MKVForge`: `swift test --scratch-path /tmp/mkv-forge-build 2>&1 | tail -3` → 0 failures. The scratch path keeps the build out of iCloud-synced folders (L30).
 - [ ] CI is green: Linux tests, macOS tests, and the universal app. The `MKVForge-universal.zip` artifact is attached.
 - [ ] About MKVForge (app menu) and the debug log header show the new version and build. CHANGELOG.md has the entry.
 

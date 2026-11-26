@@ -2,7 +2,7 @@
 
 **Status: Approved by Arezhik 2026-11-19** (relayed by macOS Dev (test), with Q1 confirmed: closing the main window quits MKVForge, as in §1.6). Addendum to the approved v2 contract (approved by Arezhik 2026-11-18). It covers only two states Arezhik approved as functional rules on 2026-11-19: **G1** (quit or close while a batch runs) and **G2** (scanning). Every v2 rule stays as approved. Where this addendum and v2 seem to disagree, v2 wins, and §3 lists every point I checked.
 
-**Repo:** commit as docs/design/v1-layout-contract_v2.1-addendum.md in Arezhik/mkv-forge, next to docs/design/v1-layout-contract_v2.md. The four mockup PNGs stay with Design Bot and are not checked into git (see docs/design/README.md), so the `mockups-v2.1/` links below don't resolve inside the repo.
+**Repo:** `Apps/MKVForge/docs/design/v1-layout-contract_v2.1-addendum.md` in [Arezhik/media-forge](https://github.com/Arezhik/media-forge), next to docs/design/v1-layout-contract_v2.md. The four mockup PNGs stay with Design Bot and are not checked into git (see docs/design/README.md), so the `mockups-v2.1/` links below don't resolve inside the repo.
 
 **What I worked from:** the macOS Dev (test) brief of 2026-11-19, the approved v2 contract, and my own Apple HIG cache. **I did not read the repo or any app or PR code**, including the BatchRunner and FolderScanner files the brief mentions. Their behavior is taken from the brief's summary.
 

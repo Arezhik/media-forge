@@ -2,7 +2,7 @@
 
 **Status: Draft for issue #33, Match on MKA Name.** Arezhik approved the functional rules on 2026-11-21. This addendum adds the layout, strings and accessibility for those rules. Every v2 and v2.1 rule stays as approved. If this addendum and v2 or v2.1 seem to disagree, the earlier text wins, and §4 lists each point I checked.
 
-**Repo:** commit this text as docs/design/v1-layout-contract_v2.2-addendum.md in Arezhik/mkv-forge, next to the v2 and v2.1 files. I assumed the v2.1 rule still applies, so the four PNGs stay out of git in Design Bot's mockups-v2.2 folder, and docs/design/README.md points there (A1). Links below are relative to this file.
+**Repo:** `Apps/MKVForge/docs/design/v1-layout-contract_v2.2-addendum.md` in [Arezhik/media-forge](https://github.com/Arezhik/media-forge), next to the v2 and v2.1 files. I assumed the v2.1 rule still applies, so the four PNGs stay out of git in Design Bot's mockups-v2.2 folder, and docs/design/README.md points there (A1). Links below are relative to this file.
 
 **What I worked from:** the macOS Dev (test) brief of 2026-11-21, my approved v2 contract and v2.1 addendum, the public issue page https://github.com/Arezhik/mkv-forge/issues/33, and my Apple HIG cache. **I did not read the repo, any projects folder, or any app or PR code.** The matching behavior is taken from the issue and the brief.
 

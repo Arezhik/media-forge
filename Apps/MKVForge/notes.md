@@ -3,7 +3,7 @@
 Dated log of decisions, PRs, test results, and open questions. Newest at the bottom.
 Times in Mountain time (MT).
 
-- Repo: <https://github.com/Arezhik/mkv-forge>
+- Repo: <https://github.com/Arezhik/media-forge> (`Apps/MKVForge`). Tags: `mkvforge-vX.Y.Z`. Workflow: `.github/workflows/mkvforge.yml`.
 - Spec: SPEC.md
 - Rules at kickoff: AGENTS.md and docs/LESSONS.md (from macos-swift-app-boilerplate)
 - Cloud agent environment: id ee6550b7-e3bb-11f1-b825-9a9eda18fdae · build: draft bld-20261119-73b129aa-61f4-445f-aa2b-27335cb7e4a4 (saved by Arezhik 2026-11-18; check the saved build id in Cursor) · Swift 6.2.4 + mkvtoolnix 82.0

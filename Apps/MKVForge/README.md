@@ -13,29 +13,31 @@ It splits `.mkv` files into `.mka` (audio, subtitles, chapters) and remuxes vide
 MKVForge runs `mkvmerge`, which isn't part of macOS. Install it with Homebrew (`brew install mkvtoolnix`) or from https://mkvtoolnix.download/. The app looks in `/opt/homebrew/bin`, `/usr/local/bin`, `/Applications/MKVToolNix*.app/Contents/MacOS`, then `PATH`. Record the version you tested in TESTERS.md, and test an Intel Mac early (a tool's newer release has failed on Intel while the older one worked; docs/LESSONS.md L15).
 
 ## Open it in Xcode and press Run
-1. Quit Xcode. In the repository folder, delete `.build` if you see one, then run `rm -rf ~/Library/Developer/Xcode/DerivedData/MKVForge-*`.
-2. Double-click **`App/MKVForge.xcodeproj`**. Don't open `Package.swift`; that's the core library.
+1. Quit Xcode. In `Apps/MKVForge`, delete `.build` if you see one, then run `rm -rf ~/Library/Developer/Xcode/DerivedData/MKVForge-*`.
+2. Double-click **`Apps/MKVForge/App/MKVForge.xcodeproj`**. Don't open `Package.swift`; that's the core library.
 3. If Xcode asks whether to trust the project, choose Trust, and wait for the package to load.
 4. Check that the scheme says **MKVForge** and the destination says **My Mac**, then press ⌘R.
 
 The project is set to **Sign to Run Locally**, so no Apple Developer team is needed. If Xcode asks for one, select the MKVForge target, open Signing & Capabilities, and choose **Sign to Run Locally**.
 
 ### Why the project is set up this way
-- The core logic is a Swift package named **MKVForgeKit** at the repository root, with no AppKit or SwiftUI, so `swift test` runs on Linux and in cloud agents.
+- The core logic is a Swift package named **MKVForgeKit** in `Apps/MKVForge`, with no AppKit or SwiftUI, so `swift test` runs on Linux and in cloud agents.
 - The Xcode project is in `App/`, one folder down, and has a different name from the package. Xcode's window reports the package products as missing when the two share a name and a folder.
 - Debug builds only the chip in your Mac. Release builds both arm64 and x86_64.
 - The app isn't sandboxed, so it can write output next to the input file.
 - `App/project.yml` and [XcodeGen](https://github.com/yonaskolb/XcodeGen) are the source of truth for the Xcode project. Never hand-edit `project.pbxproj`: change `App/project.yml`, run `xcodegen generate` in `App/` on a Mac, and commit both. The only exception is `scripts/bump-version.sh`, which edits the version lines. Open the checked-in `App/MKVForge.xcodeproj` to build.
 
 ## Download the app that GitHub built
-1. On GitHub, open **Actions** and choose the latest green **CI** run.
+1. On GitHub, open **Actions** and choose the latest green **MKVForge CI** run (`.github/workflows/mkvforge.yml`).
 2. Under **Artifacts**, download **MKVForge-universal.zip** and unzip it.
 3. The app isn't signed or notarized. Right-click it and choose **Open**, or go to **System Settings → Privacy & Security** and click **Open Anyway**. If macOS says the app is damaged, run `xattr -dr com.apple.quarantine /path/to/MKVForge.app`.
 
 ## Versioning
-The version is MAJOR.MINOR.PATCH (shown in About MKVForge), plus a build number that goes up by 1 on every merged PR. Bump it in the same PR as the change with `scripts/bump-version.sh patch|minor|major`: patch for a bug fix or small tweak, minor for a new feature, and major for a major enhancement or breaking change (a new phase is usually minor). Docs-only and CI-only PRs don't bump. Each version gets an entry in CHANGELOG.md.
+The version is MAJOR.MINOR.PATCH (shown in About MKVForge), plus a build number that goes up by 1 on every merged PR. Bump it in the same PR as the change with `scripts/bump-version.sh patch|minor|major`: patch for a bug fix or small tweak, minor for a new feature, and major for a major enhancement or breaking change (a new phase is usually minor). Docs-only and CI-only PRs don't bump. Each version gets an entry in CHANGELOG.md. Releases are tagged `mkvforge-vX.Y.Z` (for example `mkvforge-v0.8.1`).
 
 ## For developers
+From `Apps/MKVForge`:
+
 ```bash
 swift test      # the core package, on macOS or Linux
 swift build
