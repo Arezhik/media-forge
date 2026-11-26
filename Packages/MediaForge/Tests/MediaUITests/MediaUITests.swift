@@ -118,8 +118,14 @@ final class OpenPanelOptionsTests: XCTestCase {
 
 final class FileDropParsingTests: XCTestCase {
     func testURLPassesThrough() {
+        // loadItem hands back NSSecureCoding. URL does not conform; NSURL does and bridges to URL.
         let original = URL(fileURLWithPath: "/tmp/clip.mp4")
-        XCTAssertEqual(FileDrop.url(from: original), original)
+        XCTAssertEqual(FileDrop.url(from: original as NSURL), original)
+    }
+
+    func testDataPathString() {
+        let data = Data("  /tmp/clip.mp4\n".utf8)
+        XCTAssertEqual(FileDrop.url(from: data as NSData)?.path, "/tmp/clip.mp4")
     }
 
     func testFileURLString() {
