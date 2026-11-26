@@ -1,4 +1,5 @@
 import Foundation
+import MediaCore
 
 // Discrete EIA-608 (`c608`) is extracted with ffmpeg's subtitle mapper.
 // `ffmpeg -map 0:s:N -c:s srt` is the path that worked on Arezhik's files.
@@ -10,7 +11,7 @@ struct FFmpegRunner: Sendable {
     var run: @Sendable (String, [String]) async throws -> ToolCommandResult
 
     static let live = FFmpegRunner(
-        locate: { ExternalTool.locate()?["ffmpeg"] },
+        locate: { ExternalTool.locate(.primary, customPath: FFmpegSettings.customPath())?["ffmpeg"] },
         run: { executable, arguments in
             try await ToolCommand.run(executable: executable, arguments: arguments)
         }
@@ -66,7 +67,7 @@ enum FFmpegClosedCaptions {
         let result = try await runner.run(ffmpeg, arguments)
         try Task.checkCancellation()
         guard result.status == 0 else {
-            throw ToolFailure.failed(tool: "ffmpeg", status: result.status)
+            throw FFmpegFailure.failed(tool: "ffmpeg", status: result.status)
         }
         let data: Data
         do {
