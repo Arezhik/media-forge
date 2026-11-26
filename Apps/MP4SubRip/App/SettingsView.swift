@@ -1,5 +1,6 @@
 import AppKit
 import MediaCore
+import MediaUI
 import SwiftUI
 import UniformTypeIdentifiers
 import MP4SubRipCore
@@ -195,16 +196,14 @@ struct SettingsView: View {
     }
 
     private func chooseFFmpeg() {
-        let panel = NSOpenPanel()
-        panel.canChooseFiles = true
-        panel.canChooseDirectories = true
-        panel.allowsMultipleSelection = false
-        panel.prompt = "Choose"
         // A symlink in ~/bin should stay that path. Resolving it would store the target.
-        panel.resolvesAliases = false
-        panel.treatsFilePackagesAsDirectories = false
-        panel.allowedContentTypes = [.unixExecutable, .application, .folder]
-        guard panel.runModal() == .OK, let url = panel.url else { return }
+        guard let url = FilePanels.chooseTool(
+            prompt: "Choose",
+            canChooseDirectories: true,
+            treatsFilePackagesAsDirectories: false,
+            resolvesAliases: false,
+            allowedContentTypes: [.unixExecutable, .application, .folder]
+        ) else { return }
         guard let resolved = FFmpegSettings.validatedExecutable(at: url.path) else {
             let alert = NSAlert()
             alert.alertStyle = .warning

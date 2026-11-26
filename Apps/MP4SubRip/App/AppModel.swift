@@ -2,6 +2,7 @@ import AppKit
 import Combine
 import Foundation
 import MediaCore
+import MediaUI
 import UniformTypeIdentifiers
 import MP4SubRipCore
 
@@ -232,19 +233,18 @@ final class AppModel: ObservableObject {
     }
 
     func showOpenPanel() {
-        let panel = NSOpenPanel()
-        panel.title = "Add Files"
-        panel.prompt = "Add"
-        panel.allowsMultipleSelection = true
-        panel.canChooseFiles = true
-        panel.canChooseDirectories = true
         var types: [UTType] = [.folder]
         for ext in AppIdentity.inputExtensions.sorted() {
             if let type = UTType(filenameExtension: ext) { types.append(type) }
         }
-        panel.allowedContentTypes = types
-        guard panel.runModal() == .OK else { return }
-        importURLs(panel.urls)
+        guard let urls = FilePanels.chooseFiles(
+            title: "Add Files",
+            prompt: "Add",
+            canChooseDirectories: true,
+            allowsMultipleSelection: true,
+            allowedContentTypes: types
+        ) else { return }
+        importURLs(urls)
     }
 
     // MARK: Probe
@@ -802,14 +802,14 @@ final class AppModel: ObservableObject {
         case .nothing:
             return
         case let .file(path):
-            _ = NSWorkspace.shared.selectFile(path, inFileViewerRootedAtPath: "")
+            Reveal.selectFile(path: path)
             DebugLog.shared.record(
                 .lifecycle,
                 "\(logAction): 1 item(s) api=\(RevealRules.selectFileAPI)"
             )
         case let .folders(folders):
             for folder in folders {
-                _ = NSWorkspace.shared.selectFile(nil, inFileViewerRootedAtPath: folder)
+                Reveal.selectFolder(path: folder)
                 DebugLog.shared.record(
                     .lifecycle,
                     "\(logAction): Output folder api=\(RevealRules.selectFileAPI)"
@@ -866,14 +866,11 @@ final class AppModel: ObservableObject {
 
     func chooseOutputFolder() {
         guard !accepting else { return }
-        let panel = NSOpenPanel()
-        panel.canChooseFiles = false
-        panel.canChooseDirectories = true
-        panel.canCreateDirectories = true
-        panel.allowsMultipleSelection = false
-        panel.prompt = "Choose"
-        panel.message = "Choose a folder for the .srt files"
-        guard panel.runModal() == .OK, let url = panel.url else { return }
+        guard let url = FilePanels.chooseFolder(
+            message: "Choose a folder for the .srt files",
+            prompt: "Choose",
+            canCreateDirectories: true
+        ) else { return }
         let bookmark = Self.bookmarkData(for: url)
         outputChoice.placement = SettingsKey.placementFolder
         outputChoice.folderPath = RecentFolderList.normalize(url.path)
