@@ -14,6 +14,10 @@ public final class UITestFixtureBuilder {
     public let output: URL
 
     private let fileManager = FileManager.default
+    /// Full paths checked for an executable `ffmpeg`. The app default is Homebrew.
+    private let ffmpegCandidates: [URL]
+    /// When set, replaces `setMissingFFmpegHandler` for this builder only.
+    private let missingFFmpegHandler: (@Sendable (String) -> Error)?
 
     /// UI test bundles set this so a missing ffmpeg throws `XCTSkip`.
     /// MediaTesting cannot always import XCTest (it is not a test target), so the
@@ -23,7 +27,23 @@ public final class UITestFixtureBuilder {
         MissingFFmpegHook.shared.set(handler)
     }
 
-    public init() throws {
+    /// `ffmpegSearchPaths` lists directories that contain `ffmpeg`. `nil` keeps
+    /// `/opt/homebrew/bin` and `/usr/local/bin`, which is what the apps use.
+    /// An empty list finds nothing, so a test can force the missing-tool path
+    /// on a machine that has Homebrew ffmpeg. `missingFFmpegHandler` overrides
+    /// the shared skip hook for this builder only; `nil` keeps that hook.
+    public init(
+        ffmpegSearchPaths: [String]? = nil,
+        missingFFmpegHandler: (@Sendable (String) -> Error)? = nil
+    ) throws {
+        if let ffmpegSearchPaths {
+            ffmpegCandidates = ffmpegSearchPaths.map { directory in
+                URL(fileURLWithPath: directory, isDirectory: true).appendingPathComponent("ffmpeg")
+            }
+        } else {
+            ffmpegCandidates = Self.defaultFFmpegCandidates
+        }
+        self.missingFFmpegHandler = missingFFmpegHandler
         root = fileManager.temporaryDirectory.appendingPathComponent(UUID().uuidString, isDirectory: true)
         video = root.appendingPathComponent("video", isDirectory: true)
         audio = root.appendingPathComponent("audio", isDirectory: true)
@@ -104,9 +124,10 @@ public final class UITestFixtureBuilder {
     }
 
     /// A 1-second synthetic container written with `ffmpeg`. Throws `XCTSkip` if
-    /// ffmpeg is not at `/opt/homebrew/bin/ffmpeg` or `/usr/local/bin/ffmpeg`
-    /// and XCTest is visible or a UI test installed `setMissingFFmpegHandler`.
-    /// `.mka` is audio-only. Video uses `libx264`, then `mpeg4` if that fails.
+    /// ffmpeg is not in the search path (`/opt/homebrew/bin` and `/usr/local/bin`
+    /// unless `init` was given other directories) and XCTest is visible or a UI
+    /// test installed `setMissingFFmpegHandler`. `.mka` is audio-only. Video uses
+    /// `libx264`, then `mpeg4` if that fails.
     @discardableResult
     public func createValidMediaFile(
         in directory: URL,
@@ -114,7 +135,7 @@ public final class UITestFixtureBuilder {
         includeAudio: Bool = true,
         includeSubtitles: Bool = false
     ) throws -> URL {
-        let ffmpeg = try Self.ffmpegURL()
+        let ffmpeg = try ffmpegURL()
         let ext = (name as NSString).pathExtension.lowercased()
         let destination = directory.appendingPathComponent(name)
         let audioOnly = ext == "mka"
@@ -174,27 +195,31 @@ public final class UITestFixtureBuilder {
 
     private static let ffmpegMissingMessage = "ffmpeg was not found at /opt/homebrew/bin/ffmpeg or /usr/local/bin/ffmpeg"
 
-    private static func ffmpegURL() throws -> URL {
-        let candidates = [
-            URL(fileURLWithPath: "/opt/homebrew/bin/ffmpeg"),
-            URL(fileURLWithPath: "/usr/local/bin/ffmpeg"),
-        ]
-        for url in candidates {
-            if FileManager.default.isExecutableFile(atPath: url.path) {
+    private static let defaultFFmpegCandidates = [
+        URL(fileURLWithPath: "/opt/homebrew/bin/ffmpeg"),
+        URL(fileURLWithPath: "/usr/local/bin/ffmpeg"),
+    ]
+
+    private func ffmpegURL() throws -> URL {
+        for url in ffmpegCandidates {
+            if fileManager.isExecutableFile(atPath: url.path) {
                 return url
             }
         }
         throw ffmpegMissingError()
     }
 
-    private static func ffmpegMissingError() -> Error {
-        if let hooked = MissingFFmpegHook.shared.error(message: ffmpegMissingMessage) {
+    private func ffmpegMissingError() -> Error {
+        if let missingFFmpegHandler {
+            return missingFFmpegHandler(Self.ffmpegMissingMessage)
+        }
+        if let hooked = MissingFFmpegHook.shared.error(message: Self.ffmpegMissingMessage) {
             return hooked
         }
         #if canImport(XCTest)
-        return XCTSkip(ffmpegMissingMessage)
+        return XCTSkip(Self.ffmpegMissingMessage)
         #else
-        return UITestFixtureBuilderError(message: ffmpegMissingMessage)
+        return UITestFixtureBuilderError(message: Self.ffmpegMissingMessage)
         #endif
     }
 

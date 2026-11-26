@@ -28,16 +28,21 @@ final class MediaTestingTests: XCTestCase {
     }
 
     func testMissingFFmpegThrowsWhenTheToolIsAbsent() throws {
-        let homebrew = "/opt/homebrew/bin/ffmpeg"
-        let local = "/usr/local/bin/ffmpeg"
-        if FileManager.default.isExecutableFile(atPath: homebrew)
-            || FileManager.default.isExecutableFile(atPath: local) {
-            throw XCTSkip("ffmpeg is installed; the missing-tool path is not exercised")
-        }
-        let builder = try UITestFixtureBuilder()
+        // An empty search list never sees Homebrew or PATH ffmpeg. Apple's
+        // XCTSkip description omits the message that Linux prints, so this
+        // builder turns that message into a normal error.
+        let builder = try UITestFixtureBuilder(
+            ffmpegSearchPaths: [],
+            missingFFmpegHandler: { message in
+                UITestFixtureBuilderError(message: message)
+            }
+        )
         defer { builder.cleanup() }
         XCTAssertThrowsError(try builder.createValidMediaFile(in: builder.video, named: "a.mkv")) { error in
-            XCTAssertTrue(String(describing: error).contains("ffmpeg was not found"))
+            XCTAssertTrue(
+                String(describing: error).contains("ffmpeg was not found"),
+                "missing ffmpeg should say so, got \(error)"
+            )
         }
     }
 }
