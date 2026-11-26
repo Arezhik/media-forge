@@ -6,6 +6,10 @@ Every merged PR that changes the shipped app bumps the version in the same PR wi
 
 ## [Unreleased]
 
+## [0.9.1] - 2026-11-26 (build 14)
+### Changed
+- File intake, drops, open panels, Show in Finder, the tool picker, and debug-log export use shared MediaCore and MediaUI helpers. Behavior is unchanged (#6).
+
 ## [0.9.0] - 2026-11-26 (build 13)
 ### Changed
 - The minimum system is macOS 15. macOS 14 is no longer supported (#1).

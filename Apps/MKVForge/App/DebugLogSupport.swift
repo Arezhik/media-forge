@@ -3,8 +3,8 @@ import Darwin
 import Foundation
 import OSLog
 import MKVForgeCore
-import UniformTypeIdentifiers
 import MediaCore
+import MediaUI
 
 // App side of the exportable debug log (docs/LESSONS.md L13).
 
@@ -126,14 +126,14 @@ enum DebugLogExporter {
         }
         guard alert.runModal() == .alertFirstButtonReturn else { return }
 
-        let panel = NSSavePanel()
-        panel.title = "Export Debug Log"
-        panel.prompt = "Save"
-        panel.nameFieldStringValue = fileName
-        panel.canCreateDirectories = true
-        panel.allowedContentTypes = [.plainText]
-        panel.message = "The Desktop could not be written. \(reason(desktopError))"
-        guard panel.runModal() == .OK, let url = panel.url else { return }
+        guard let url = DebugLogExport.chooseDestination(
+            DebugLogExport.SaveOptions(
+                fileName: fileName,
+                title: "Export Debug Log",
+                prompt: "Save",
+                message: "The Desktop could not be written. \(reason(desktopError))"
+            )
+        ) else { return }
         do {
             try text.write(to: url, atomically: true, encoding: .utf8)
             DebugLog.shared.record(.lifecycle, "Exported debug log to \(url.path)")
@@ -164,7 +164,7 @@ enum DebugLogExporter {
             alert.buttons[1].keyEquivalent = "\u{1b}"
         }
         if alert.runModal() == .alertFirstButtonReturn {
-            NSWorkspace.shared.activateFileViewerSelecting([url])
+            DebugLogExport.reveal(url, choice: .activateViewer)
         }
     }
 

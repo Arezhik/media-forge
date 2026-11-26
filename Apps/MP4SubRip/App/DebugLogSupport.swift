@@ -1,10 +1,10 @@
 import AppKit
 import Darwin
 import MediaCore
+import MediaUI
 import Foundation
 import OSLog
 import MP4SubRipCore
-import UniformTypeIdentifiers
 
 // Copied from PGS2SRT (App/DebugLogSupport.swift, PR #26) and generalized.
 
@@ -122,14 +122,14 @@ enum DebugLogExporter {
         }
         guard alert.runModal() == .alertFirstButtonReturn else { return }
 
-        let panel = NSSavePanel()
-        panel.title = "Export Debug Log"
-        panel.prompt = "Save"
-        panel.nameFieldStringValue = fileName
-        panel.canCreateDirectories = true
-        panel.allowedContentTypes = [.plainText]
-        panel.message = "The Desktop could not be written. \(reason(desktopError))"
-        guard panel.runModal() == .OK, let url = panel.url else { return }
+        guard let url = DebugLogExport.chooseDestination(
+            DebugLogExport.SaveOptions(
+                fileName: fileName,
+                title: "Export Debug Log",
+                prompt: "Save",
+                message: "The Desktop could not be written. \(reason(desktopError))"
+            )
+        ) else { return }
         do {
             try text.write(to: url, atomically: true, encoding: .utf8)
             DebugLog.shared.record(.lifecycle, "Exported debug log to \(url.path)")
@@ -160,7 +160,7 @@ enum DebugLogExporter {
             alert.buttons[1].keyEquivalent = "\u{1b}"
         }
         if alert.runModal() == .alertFirstButtonReturn {
-            _ = NSWorkspace.shared.selectFile(url.path, inFileViewerRootedAtPath: "")
+            DebugLogExport.reveal(url, choice: .selectFile)
             DebugLog.shared.record(.lifecycle, "Reveal in Finder: 1 item(s) api=\(RevealRules.selectFileAPI)")
         }
     }

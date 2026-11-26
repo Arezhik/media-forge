@@ -55,6 +55,8 @@ targets:
         product: MKVForgeCore
       - package: MediaForge
         product: MediaCore
+      - package: MediaForge
+        product: MediaUI
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.arezhik.MKVForge
@@ -65,8 +67,8 @@ targets:
         INFOPLIST_FILE: Info.plist
         # Version: change with scripts/bump-version.sh only, so this file and the
         # .xcodeproj stay in sync. MARKETING_VERSION is what users see (MAJOR.MINOR.PATCH).
-        MARKETING_VERSION: "0.8.3"
-        CURRENT_PROJECT_VERSION: "12"
+        MARKETING_VERSION: "0.8.4"
+        CURRENT_PROJECT_VERSION: "13"
         CODE_SIGN_STYLE: Manual
         CODE_SIGN_IDENTITY: "-"
         CODE_SIGNING_REQUIRED: NO

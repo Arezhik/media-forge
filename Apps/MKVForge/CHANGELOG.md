@@ -6,6 +6,10 @@ Every merged PR that changes the shipped app bumps the version in the same PR wi
 
 ## [Unreleased]
 
+## [0.8.4] - 2026-11-26 (build 13)
+### Changed
+- Folder and file pickers, Show in Finder, the tool picker, and debug-log export use shared MediaUI helpers. Behavior is unchanged (#6).
+
 ## [0.8.3] - 2026-11-26 (build 12)
 ### Changed
 - mkvmerge and mkvextract are found and run through the shared MediaCore tool locator and runner. Behavior is unchanged (#5).
