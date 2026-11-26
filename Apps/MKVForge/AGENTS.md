@@ -53,7 +53,7 @@ Read this before the first change. The reasons behind each rule are in docs/LESS
 
 ## Versioning
 - SemVer. In the same PR, run `scripts/bump-version.sh patch` for a bug fix or small tweak, `minor` for a new feature, or `major` for a major enhancement or breaking change. A new phase is usually `minor`; 1.0.0 is the v1 release. Docs-only and CI-only PRs don't bump.
-- Releases of this app are tagged `mkvforge-vX.Y.Z` (for example `mkvforge-v0.8.1`).
+- Releases of this app are tagged `mkvforge-vX.Y.Z` (for example `mkvforge-v0.8.2`).
 - The build number goes up by 1 with every bump and is never reused. Don't edit the version by hand; the script keeps project.pbxproj, project.yml, and CHANGELOG.md in sync.
 - If `main` moved after your bump (another PR merged with a bump), run `scripts/bump-version.sh --rebase origin/main patch|minor|major` to recompute from `main`'s version, then fix the CHANGELOG heading it reports. CI compares against `Apps/MKVForge` on the base branch, and skips that check when the base has no `Apps/MKVForge` yet. Otherwise it fails a PR whose build number isn't above the base's (L20).
 - Fill in the CHANGELOG.md entry. Put `Version bump: old to new (rule)` in the PR description. Arezhik confirms it at merge.

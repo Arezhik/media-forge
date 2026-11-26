@@ -156,7 +156,7 @@ A broken file stops with a message that says what was wrong and where, instead o
 
 ## For developers
 
-Releases of this app are tagged `pgs2srt-vX.Y.Z` (this version is `pgs2srt-v0.3.0`, build 7).
+Releases of this app are tagged `pgs2srt-vX.Y.Z` (this version is `pgs2srt-v0.3.1`, build 8).
 
 From `Apps/PGS2SRT`, with Swift 5.9 or newer:
 

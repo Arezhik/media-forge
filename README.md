@@ -2,11 +2,11 @@
 
 Monorepo for a shared Swift package and three native macOS media apps.
 
-- **MediaForge** (`Packages/MediaForge`) — libraries `MediaCore`, `MediaUI`, and `MediaTesting`. The package floor is macOS 13. `MediaCore` and `MediaTesting` build on Linux. `MediaUI` uses SwiftUI only where that framework is available.
+- **MediaForge** (`Packages/MediaForge`) — libraries `MediaCore`, `MediaUI`, and `MediaTesting`. The package floor is macOS 13. `MediaCore` and `MediaTesting` build on Linux. `MediaUI` uses SwiftUI only where that framework is available. `MediaCore` holds `UITestingEnvironment`, `RollingLogStore`, `DebugLog` (one category set for every app), and `ProgressThrottle`. `MediaTesting` holds `UITestFixtureBuilder`.
 - **Apps**
-  - `Apps/MKVForge` — MKV Forge (macOS 15). Own package, XcodeGen project, and version (0.8.1, build 10). CI: `.github/workflows/mkvforge.yml` (workflow name MKVForge CI). Release tags: `mkvforge-vX.Y.Z`.
-  - `Apps/MP4SubRip` — MP4SubRip (macOS 14). Own package, XcodeGen project, and version (0.8.0, build 10). CI: `.github/workflows/mp4subrip.yml` (workflow name MP4SubRip CI). Release tags: `mp4subrip-vX.Y.Z`.
-  - `Apps/PGS2SRT` — PGS2SRT (macOS 13). Own package, XcodeGen project, and version (0.3.0, build 7). CI: `.github/workflows/pgs2srt.yml` (workflow name PGS2SRT CI). Release tags: `pgs2srt-vX.Y.Z`.
+  - `Apps/MKVForge` — MKV Forge (macOS 15). Own package, XcodeGen project, and version (0.8.2, build 11). CI: `.github/workflows/mkvforge.yml` (workflow name MKVForge CI). Release tags: `mkvforge-vX.Y.Z`.
+  - `Apps/MP4SubRip` — MP4SubRip (macOS 14). Own package, XcodeGen project, and version (0.8.1, build 11). CI: `.github/workflows/mp4subrip.yml` (workflow name MP4SubRip CI). Release tags: `mp4subrip-vX.Y.Z`.
+  - `Apps/PGS2SRT` — PGS2SRT (macOS 13). Own package, XcodeGen project, and version (0.3.1, build 8). CI: `.github/workflows/pgs2srt.yml` (workflow name PGS2SRT CI). Release tags: `pgs2srt-vX.Y.Z`.
 
 Each app keeps its own deployment target, semver, build number, and tag (`mkvforge-vX.Y.Z` for MKV Forge, `mp4subrip-vX.Y.Z` for MP4SubRip, `pgs2srt-vX.Y.Z` for PGS2SRT).
 
