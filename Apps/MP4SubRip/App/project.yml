@@ -92,7 +92,12 @@ targets:
     type: bundle.ui-testing
     platform: macOS
     sources:
+      # Recurses into Tests, Pages, Components, Helpers, and Base.
+      # README.md is documentation. Leave it out of the test bundle.
       - path: MP4UITests
+        excludes:
+          - "README.md"
+          - "**/*.md"
     dependencies:
       - target: MP4SubRip
       - package: MediaForge

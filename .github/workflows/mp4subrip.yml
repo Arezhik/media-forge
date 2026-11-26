@@ -136,6 +136,21 @@ jobs:
             exit 1
           fi
 
+      - name: Build UI tests for testing
+        run: |
+          set -euo pipefail
+          rm -rf "$GITHUB_WORKSPACE/Apps/MP4SubRip/build-uitests"
+          xcodebuild \
+            -project "$GITHUB_WORKSPACE/Apps/MP4SubRip/App/MP4SubRip.xcodeproj" \
+            -scheme MP4SubRip-UITests \
+            -configuration Debug \
+            -destination 'platform=macOS,arch=arm64' \
+            -derivedDataPath "$GITHUB_WORKSPACE/Apps/MP4SubRip/build-uitests" \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            build-for-testing
+
       - name: Build universal app
         run: |
           xcodebuild \

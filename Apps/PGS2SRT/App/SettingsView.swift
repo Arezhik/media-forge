@@ -104,6 +104,7 @@ private struct GeneralSettings: View {
                     Text("Skip that file").tag(ExistingSubtitleAction.skip.rawValue)
                 }
                 .pickerStyle(.menu)
+                .accessibilityIdentifier("existingFilePicker")
             } header: {
                 Text("Output")
             }
@@ -133,6 +134,7 @@ private struct GeneralSettings: View {
                 }
                 .toggleStyle(.switch)
                 .controlSize(.mini)
+                .accessibilityIdentifier("chooseMKVTrackToggle")
             } header: {
                 Text("MKV files")
             }
@@ -180,11 +182,13 @@ private struct RecognitionSettings: View {
                     }
                 }
                 .pickerStyle(.menu)
+                .accessibilityIdentifier("languagePicker")
                 LabeledContent {
                     Stepper(value: $concurrency, in: 1...8) {
                         Text("\(concurrency)")
                             .monospacedDigit()
                     }
+                    .accessibilityIdentifier("concurrencyStepper")
                 } label: {
                     VStack(alignment: .leading, spacing: 2) {
                         Text("Pictures to read at once")
@@ -213,6 +217,7 @@ private struct RecognitionSettings: View {
                 }
                 .toggleStyle(.switch)
                 .controlSize(.mini)
+                .accessibilityIdentifier("italicsToggle")
             } header: {
                 Text("Experimental")
             }
@@ -258,6 +263,7 @@ private struct NotificationsSettings: View {
                     }
                     .pickerStyle(.menu)
                     .labelsHidden()
+                    .accessibilityIdentifier("batchNotificationPicker")
                 } label: {
                     VStack(alignment: .leading, spacing: 2) {
                         Text("Send a notification")
@@ -305,7 +311,15 @@ private struct NotificationsSettings: View {
 
 private extension View {
     func settingsPane() -> some View {
-        frame(minWidth: 540, idealWidth: 620, maxWidth: 760, minHeight: 300, maxHeight: 640)
+        // Tall enough that the General pane, including the MKV switch, fits without clipping.
+        frame(
+            minWidth: 540,
+            idealWidth: 620,
+            maxWidth: 760,
+            minHeight: 560,
+            idealHeight: 620,
+            maxHeight: 760
+        )
     }
 }
 
@@ -330,5 +344,8 @@ private final class SettingsChromeView: NSView {
         guard let window else { return }
         window.standardWindowButton(.miniaturizeButton)?.isEnabled = false
         window.standardWindowButton(.zoomButton)?.isEnabled = false
+        // The title bar names the selected pane. Tests find this window by identifier.
+        window.identifier = NSUserInterfaceItemIdentifier("pgs2srt.settings")
+        window.setAccessibilityIdentifier("pgs2srt.settings")
     }
 }

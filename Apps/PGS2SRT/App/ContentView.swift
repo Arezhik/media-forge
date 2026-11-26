@@ -143,6 +143,7 @@ struct ContentView: View {
                 .foregroundStyle(targeted ? Color.accentColor : Color.secondary.opacity(0.45))
                 .padding(20)
         }
+        .accessibilityIdentifier("emptyDrop")
     }
 
     private var queueList: some View {
@@ -214,6 +215,7 @@ struct ContentView: View {
                             .foregroundStyle(line.failed ? Color.red : Color(nsColor: .systemGreen))
                         Text(line.text)
                             .foregroundStyle(.primary)
+                            .accessibilityIdentifier("batchLine")
                     }
                 } else {
                     Text(model.items.isEmpty ? "The .srt is written next to the file unless Settings says otherwise." : "Drop more files to add them.")
@@ -355,9 +357,11 @@ private final class QueueWindowClaim: NSView {
         if IssueDiagnosticLog.enabled {
             let changed = host.map { $0.identifier != QueueWindow.marker } ?? false
             host?.identifier = QueueWindow.marker
+            host?.setAccessibilityIdentifier(QueueWindow.marker.rawValue)
             IssueDiagnosticLog.recordWindowMarker(hadWindow: host != nil, identifierChanged: changed)
         } else {
             host?.identifier = QueueWindow.marker
+            host?.setAccessibilityIdentifier(QueueWindow.marker.rawValue)
         }
     }
 }
@@ -454,6 +458,7 @@ private struct QueueRow: View {
             onSelect()
         }
         .accessibilityElement(children: .contain)
+        .accessibilityIdentifier("queueRow")
         .contextMenu {
             if summary != nil && item.tracks.count < 2 {
                 Button("Review") { onReview(false) }

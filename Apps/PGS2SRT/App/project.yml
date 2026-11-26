@@ -135,7 +135,12 @@ targets:
     type: bundle.ui-testing
     platform: macOS
     sources:
+      # Recurses into Tests, Pages, Components, Helpers, and Base.
+      # README.md is documentation. Leave it out of the test bundle.
       - path: P2SUITests
+        excludes:
+          - "README.md"
+          - "**/*.md"
     dependencies:
       - target: PGS2SRT
       - package: MediaForge
