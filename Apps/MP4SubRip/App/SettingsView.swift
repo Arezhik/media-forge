@@ -79,6 +79,7 @@ struct SettingsView: View {
                     Text("Overwrite it").tag(ExistingFileChoice.overwrite.rawValue)
                     Text("Add a number").tag(ExistingFileChoice.addNumber.rawValue)
                 }
+                .accessibilityIdentifier("existingFilePicker")
             } header: {
                 Text("Output")
             }
@@ -136,6 +137,7 @@ struct SettingsView: View {
                 }
             } header: {
                 Text("ffmpeg")
+                    .accessibilityIdentifier("ffmpegSection")
             }
         }
         .formStyle(.grouped)

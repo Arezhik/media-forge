@@ -99,11 +99,13 @@ struct ContentView: View {
                 Button("Stop") { model.stopExtraction() }
                     .buttonStyle(.borderedProminent)
                     .help("Stop (⌘.)")
+                    .accessibilityIdentifier("primaryAction")
             } else {
                 Button("Extract Subtitles") { model.extractSubtitles() }
                     .buttonStyle(.borderedProminent)
                     .disabled(!model.commands.flags.canExtract)
                     .help("Extract Subtitles (⌘↩)")
+                    .accessibilityIdentifier("primaryAction")
             }
         }
     }
@@ -117,6 +119,7 @@ struct ContentView: View {
             Button("Add Files") { model.showOpenPanel() }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .accessibilityIdentifier("emptyDrop")
     }
 
     private var bannerList: some View {
@@ -356,6 +359,7 @@ struct ContentView: View {
             .frame(minWidth: 180, maxWidth: maxWidth, alignment: .leading)
         }
         .menuStyle(.button)
+        .accessibilityIdentifier("saveToMenu")
     }
 
     private func handleDrop(_ providers: [NSItemProvider]) -> Bool {
@@ -426,6 +430,7 @@ private struct NameCell: View {
                     .font(.system(size: 13))
                     .lineLimit(1)
                     .truncationMode(.middle)
+                    .accessibilityIdentifier("queueFileName")
                 let parent = DisplayPath.parent(item.path, home: NSHomeDirectory())
                 if !parent.isEmpty {
                     Text(parent)
@@ -553,6 +558,7 @@ private struct StatusCell: View {
         }
         .help(help)
         .frame(maxWidth: .infinity, alignment: .leading)
+        .accessibilityIdentifier("queueStatus")
     }
 
     @ViewBuilder
