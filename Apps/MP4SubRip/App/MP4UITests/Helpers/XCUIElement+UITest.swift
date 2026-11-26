@@ -105,15 +105,15 @@ extension XCUIElementQuery {
 extension XCUIElement {
     /// Visible string. Controls that set `accessibilityLabel` expose `label`.
     /// SwiftUI `Text` usually puts the string in `value` and leaves `label` empty.
+    /// Menu buttons and pop-ups put the chosen title in `title`, which `label` and
+    /// `value` often leave blank.
     var uiText: String {
         let valueText = value as? String ?? ""
-        if !label.isEmpty && !valueText.isEmpty && label != valueText {
-            return label + " " + valueText
+        var parts: [String] = []
+        for part in [label, title, valueText] where !part.isEmpty && !parts.contains(part) {
+            parts.append(part)
         }
-        if !label.isEmpty {
-            return label
-        }
-        return valueText
+        return parts.joined(separator: " ")
     }
 
     @discardableResult

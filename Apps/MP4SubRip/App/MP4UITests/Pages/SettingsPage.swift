@@ -26,9 +26,27 @@ final class SettingsPage: BasePage {
     func waitForSettingsChrome(timeout: TimeInterval = UITestTimeout.standard) {
         let page = self
         let found = UITestPoll.until(timeout) {
-            page.root.exists && page.root.staticTexts.matchingLabelOrValue(containing: "Output").firstMatch.exists
+            page.showsSettingsChrome()
         }
-        XCTAssertTrue(found, "Settings never showed Output. \(diagnostics())")
+        XCTAssertTrue(found, "Settings never showed the output controls. \(diagnostics())")
+    }
+
+    /// The grouped-form header "Output" is not always its own static text.
+    /// The radio label and the existing-file picker are.
+    private func showsSettingsChrome() -> Bool {
+        guard root.exists else { return false }
+        if root.staticTexts.matchingLabelOrValue(containing: "Save the output").firstMatch.exists {
+            return true
+        }
+        if root.radioButtons.matchingLabelOrValue(containing: "Next to the source").firstMatch.exists {
+            return true
+        }
+        let header = NSPredicate(format: "label CONTAINS[c] %@ OR value CONTAINS[c] %@ OR title CONTAINS[c] %@", "Output", "Output", "Output")
+        if root.staticTexts.matching(header).firstMatch.exists || root.groups.matching(header).firstMatch.exists {
+            return true
+        }
+        let picker = UITestQuery.identified("existingFilePicker", in: root, types: [.popUpButton, .button, .menuButton])
+        return picker.contains(where: \.exists)
     }
 
     func requireExistingFile(contains fragment: String, file: StaticString = #filePath, line: UInt = #line) {
@@ -56,8 +74,16 @@ final class SettingsPage: BasePage {
 
     /// Automatic ffmpeg lookup finishes as a path or as Not found. Either is a settled tool row.
     func requireFFmpegSettled(file: StaticString = #filePath, line: UInt = #line) {
-        let section = root.staticTexts.matchingLabelOrValue(equalTo: "ffmpeg").firstMatch
-        section.requireExists(timeout: UITestTimeout.standard, message: "The ffmpeg section never showed up", file: file, line: line)
+        let sectionCandidates = [
+            root.staticTexts["ffmpegSection"],
+            root.staticTexts.matchingLabelOrValue(equalTo: "ffmpeg").firstMatch,
+            root.radioButtons.matchingLabelOrValue(containing: "Find it automatically").firstMatch,
+            root.staticTexts.matchingLabelOrValue(containing: "Find it automatically").firstMatch,
+        ]
+        guard UITestWait.firstExisting(sectionCandidates, timeout: UITestTimeout.standard) != nil else {
+            XCTFail("The ffmpeg section never showed up. \(diagnostics())", file: file, line: line)
+            return
+        }
         let settled = UITestPoll.until(UITestTimeout.long) {
             let checking = self.root.staticTexts.matchingLabelOrValue(equalTo: "Checking…").firstMatch.exists
             if checking { return false }
@@ -65,7 +91,7 @@ final class SettingsPage: BasePage {
             let path = self.root.staticTexts.matchingLabelOrValue(containing: "/").firstMatch.exists
             return missing || path
         }
-        XCTAssertTrue(settled, "ffmpeg status never settled", file: file, line: line)
+        XCTAssertTrue(settled, "ffmpeg status never settled. \(diagnostics())", file: file, line: line)
     }
 
     private func existingFilePopup() -> XCUIElement {
@@ -78,6 +104,7 @@ final class SettingsPage: BasePage {
 
     private func diagnostics() -> String {
         guard root.exists else { return "No Settings window." }
-        return "Window title '\(root.title)' label '\(root.label)'."
+        let texts = root.staticTexts.allElementsBoundByIndex.prefix(8).map(\.uiText).joined(separator: " | ")
+        return "Window title '\(root.title)' label '\(root.label)'. Texts: \(texts)."
     }
 }
