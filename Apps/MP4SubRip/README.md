@@ -34,7 +34,7 @@ The project is set to **Sign to Run Locally**, so no Apple Developer team is nee
 3. The app isn't signed or notarized. Right-click it and choose **Open**, or go to **System Settings → Privacy & Security** and click **Open Anyway**. If macOS says the app is damaged, run `xattr -dr com.apple.quarantine /path/to/MP4SubRip.app`.
 
 ## Versioning
-The version is MAJOR.MINOR.PATCH (shown in About MP4SubRip), plus a build number that goes up by 1 on every merged PR. Bump it in the same PR as the change with `scripts/bump-version.sh patch|minor|major`: patch for a bug fix or small tweak, minor for a new feature, and major for a major enhancement or a new phase. Docs-only and CI-only PRs don't bump. Each version gets an entry in CHANGELOG.md. Releases are tagged `mp4subrip-vX.Y.Z` (for example `mp4subrip-v0.8.1`).
+The version is MAJOR.MINOR.PATCH (shown in About MP4SubRip), plus a build number that goes up by 1 on every merged PR. Bump it in the same PR as the change with `scripts/bump-version.sh mp4subrip patch|minor|major` from the repo root: patch for a bug fix or small tweak, minor for a new feature, and major for a major enhancement or breaking change (a new phase is usually minor). From `Apps/MP4SubRip`, `scripts/bump-version.sh patch|minor|major` forwards to that command. Docs-only and CI-only PRs don't bump. Each version gets an entry in CHANGELOG.md. Releases are tagged `mp4subrip-vX.Y.Z` (for example `mp4subrip-v0.8.1`).
 
 ## For developers
 From `Apps/MP4SubRip`:
@@ -45,6 +45,6 @@ swift build
 ```
 - `SPEC.md` has the scope and the definition of done for the current phase.
 - `AGENTS.md` has the rules for coding agents. Read it before the first change.
-- `scripts/bump-version.sh --check` confirms the version agrees everywhere (CI runs it).
+- `scripts/bump-version.sh mp4subrip --check` from the repo root confirms the version agrees everywhere (CI runs the wrapper in `Apps/MP4SubRip/scripts/`, which calls the same script). `./scripts/verify-linux.sh mp4subrip` from the repo root runs this app's Linux checks.
 - `docs/PR_TEST_CHECKLIST.md` is the template for each PR's printable test sheet.
 - `TESTERS.md` is the guide for friends who test builds.

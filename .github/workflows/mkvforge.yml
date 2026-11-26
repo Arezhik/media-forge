@@ -11,9 +11,9 @@ name: MKVForge CI
 on:
   push:
     branches: [main]
-    paths: ['Apps/MKVForge/**', 'Packages/MediaForge/**', '.github/workflows/mkvforge.yml']
+    paths: ['Apps/MKVForge/**', 'Packages/MediaForge/**', 'scripts/**', '.github/workflows/mkvforge.yml']
   pull_request:
-    paths: ['Apps/MKVForge/**', 'Packages/MediaForge/**', '.github/workflows/mkvforge.yml']
+    paths: ['Apps/MKVForge/**', 'Packages/MediaForge/**', 'scripts/**', '.github/workflows/mkvforge.yml']
 
 concurrency:
   group: mkvforge-${{ github.ref }}
@@ -37,7 +37,9 @@ jobs:
         run: apt-get update -qq && apt-get install -y --no-install-recommends mkvtoolnix
 
       - name: Version is in sync
-        # project.pbxproj, project.yml, and CHANGELOG.md must agree (scripts/bump-version.sh).
+        # project.pbxproj, project.yml, and CHANGELOG.md must agree.
+        # Apps/MKVForge/scripts/bump-version.sh forwards to the repo-root
+        # scripts/bump-version.sh mkvforge.
         run: bash scripts/bump-version.sh --check
 
       - name: Build number is above the base branch

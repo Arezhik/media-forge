@@ -12,9 +12,9 @@ name: PGS2SRT CI
 on:
   push:
     branches: [main]
-    paths: ['Apps/PGS2SRT/**', 'Packages/MediaForge/**', '.github/workflows/pgs2srt.yml']
+    paths: ['Apps/PGS2SRT/**', 'Packages/MediaForge/**', 'scripts/**', '.github/workflows/pgs2srt.yml']
   pull_request:
-    paths: ['Apps/PGS2SRT/**', 'Packages/MediaForge/**', '.github/workflows/pgs2srt.yml']
+    paths: ['Apps/PGS2SRT/**', 'Packages/MediaForge/**', 'scripts/**', '.github/workflows/pgs2srt.yml']
 
 concurrency:
   group: pgs2srt-${{ github.ref }}
@@ -36,14 +36,19 @@ jobs:
       - name: Install zlib headers
         run: apt-get update && apt-get install -y zlib1g-dev
 
+      - name: Version is in sync
+        # project.pbxproj and project.yml must agree. PGS2SRT has no CHANGELOG.md;
+        # the shared script treats that file as optional and does not create one.
+        # Apps/PGS2SRT/scripts/bump-version.sh forwards to the repo-root
+        # scripts/bump-version.sh pgs2srt.
+        run: bash scripts/bump-version.sh --check
+
       - name: Build number is above the base branch
-        # PGS2SRT has no bump-version.sh or CHANGELOG. Compare MARKETING_VERSION
-        # and CURRENT_PROJECT_VERSION in Apps/PGS2SRT's project.pbxproj and
-        # project.yml. When the base branch has no Apps/PGS2SRT yet, skip.
-        # Otherwise compare this branch to the base's Apps/PGS2SRT files.
-        # A higher build passes. An unchanged version and build passes
-        # (docs-only or CI-only). A lower build, or a version change without
-        # a new build, fails.
+        # Same policy as before: an unchanged version and build passes
+        # (docs-only or CI-only). A higher build passes. A lower build, or a
+        # version change without a new build, fails. When the base branch has
+        # no Apps/PGS2SRT yet, skip. The wrapper calls
+        # scripts/bump-version.sh pgs2srt --check-against.
         if: github.event_name == 'pull_request'
         shell: bash
         run: |
@@ -51,72 +56,11 @@ jobs:
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
           BASE="${{ github.base_ref }}"
           git fetch --no-tags --depth=1 origin "+refs/heads/$BASE:refs/remotes/origin/$BASE"
-          PBX_REL="Apps/PGS2SRT/App/PGS2SRT.xcodeproj/project.pbxproj"
-          YML_REL="Apps/PGS2SRT/App/project.yml"
-          has_pbx=0
-          has_yml=0
-          if git cat-file -e "origin/$BASE:$PBX_REL" 2>/dev/null; then
-            has_pbx=1
-          fi
-          if git cat-file -e "origin/$BASE:$YML_REL" 2>/dev/null; then
-            has_yml=1
-          fi
-          if [ "$has_pbx" -eq 0 ] && [ "$has_yml" -eq 0 ]; then
-            echo "origin/$BASE has no Apps/PGS2SRT (git cat-file -e origin/$BASE:$PBX_REL failed); skipping build-number comparison."
+          if ! git cat-file -e "origin/$BASE:Apps/PGS2SRT/App/PGS2SRT.xcodeproj/project.pbxproj" 2>/dev/null; then
+            echo "origin/$BASE has no Apps/PGS2SRT (git cat-file -e origin/$BASE:Apps/PGS2SRT/App/PGS2SRT.xcodeproj/project.pbxproj failed); skipping build-number comparison."
             exit 0
           fi
-          if [ "$has_pbx" -eq 0 ] || [ "$has_yml" -eq 0 ]; then
-            echo "origin/$BASE is missing part of Apps/PGS2SRT ($PBX_REL present=$has_pbx, $YML_REL present=$has_yml)." >&2
-            exit 1
-          fi
-          die() { echo "build-number: $*" >&2; exit 1; }
-          pbx_field() { # file field
-            sed -n "s/^[[:space:]]*$2 = \"\\{0,1\\}\\([^\\\";]*\\)\"\\{0,1\\};.*/\\1/p" "$1" | sort -u
-          }
-          yml_field() { # file field
-            sed -n "s/^[[:space:]]*$2:[[:space:]]*\"\\{0,1\\}\\([^\"#]*\\)\"\\{0,1\\}.*/\\1/p" "$1" | sed 's/[[:space:]]*$//' | sort -u
-          }
-          one_line() { # label value
-            local n
-            n="$(printf '%s\n' "$2" | wc -l | tr -d ' ')"
-            [ "$n" = 1 ] && [ -n "$2" ] || die "$1 is missing or not a single value"
-          }
-          read_pair() { # pbx yml
-            local pv pb yv yb
-            pv="$(pbx_field "$1" MARKETING_VERSION)"
-            pb="$(pbx_field "$1" CURRENT_PROJECT_VERSION)"
-            yv="$(yml_field "$2" MARKETING_VERSION)"
-            yb="$(yml_field "$2" CURRENT_PROJECT_VERSION)"
-            one_line "$1 MARKETING_VERSION" "$pv"
-            one_line "$1 CURRENT_PROJECT_VERSION" "$pb"
-            one_line "$2 MARKETING_VERSION" "$yv"
-            one_line "$2 CURRENT_PROJECT_VERSION" "$yb"
-            [ "$pv" = "$yv" ] && [ "$pb" = "$yb" ] || die "$1 is $pv (build $pb) but $2 is $yv (build $yb)"
-            printf '%s\n' "$pv" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$' || die "MARKETING_VERSION $pv is not MAJOR.MINOR.PATCH"
-            printf '%s\n' "$pb" | grep -Eq '^[0-9]+$' || die "CURRENT_PROJECT_VERSION $pb is not a whole number"
-            PAIR_VERSION="$pv"
-            PAIR_BUILD="$pb"
-          }
-          read_pair "App/PGS2SRT.xcodeproj/project.pbxproj" "App/project.yml"
-          VERSION="$PAIR_VERSION"
-          BUILD="$PAIR_BUILD"
-          tmp="$(mktemp -d)"
-          trap 'rm -rf "$tmp"' EXIT
-          git show "origin/$BASE:$PBX_REL" > "$tmp/project.pbxproj"
-          git show "origin/$BASE:$YML_REL" > "$tmp/project.yml"
-          read_pair "$tmp/project.pbxproj" "$tmp/project.yml"
-          REF_VERSION="$PAIR_VERSION"
-          REF_BUILD="$PAIR_BUILD"
-          if [ "$BUILD" -gt "$REF_BUILD" ]; then
-            echo "Build $BUILD is above origin/$BASE's build $REF_BUILD ($VERSION vs $REF_VERSION)"
-            exit 0
-          fi
-          if [ "$BUILD" = "$REF_BUILD" ] && [ "$VERSION" = "$REF_VERSION" ]; then
-            echo "No version bump on this branch ($VERSION, build $BUILD, same as origin/$BASE)"
-            exit 0
-          fi
-          echo "this branch is $VERSION (build $BUILD) but origin/$BASE is $REF_VERSION (build $REF_BUILD). Another PR bumped first." >&2
-          exit 1
+          bash scripts/bump-version.sh --check-against "origin/$BASE"
 
       - name: Test
         run: swift test -Xswiftc -strict-concurrency=complete -Xswiftc -warnings-as-errors

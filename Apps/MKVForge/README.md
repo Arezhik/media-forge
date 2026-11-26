@@ -25,7 +25,7 @@ The project is set to **Sign to Run Locally**, so no Apple Developer team is nee
 - The Xcode project is in `App/`, one folder down, and has a different name from the package. Xcode's window reports the package products as missing when the two share a name and a folder.
 - Debug builds only the chip in your Mac. Release builds both arm64 and x86_64.
 - The app isn't sandboxed, so it can write output next to the input file.
-- `App/project.yml` and [XcodeGen](https://github.com/yonaskolb/XcodeGen) are the source of truth for the Xcode project. Never hand-edit `project.pbxproj`: change `App/project.yml`, run `xcodegen generate` in `App/` on a Mac, and commit both. The only exception is `scripts/bump-version.sh`, which edits the version lines. Open the checked-in `App/MKVForge.xcodeproj` to build.
+- `App/project.yml` and [XcodeGen](https://github.com/yonaskolb/XcodeGen) are the source of truth for the Xcode project. Never hand-edit `project.pbxproj`: change `App/project.yml`, run `xcodegen generate` in `App/` on a Mac, and commit both. The only exception is `scripts/bump-version.sh mkvforge` at the repo root (the copy in `Apps/MKVForge/scripts/` forwards to it), which edits the version lines. Open the checked-in `App/MKVForge.xcodeproj` to build.
 
 ## Download the app that GitHub built
 1. On GitHub, open **Actions** and choose the latest green **MKVForge CI** run (`.github/workflows/mkvforge.yml`).
@@ -33,7 +33,7 @@ The project is set to **Sign to Run Locally**, so no Apple Developer team is nee
 3. The app isn't signed or notarized. Right-click it and choose **Open**, or go to **System Settings → Privacy & Security** and click **Open Anyway**. If macOS says the app is damaged, run `xattr -dr com.apple.quarantine /path/to/MKVForge.app`.
 
 ## Versioning
-The version is MAJOR.MINOR.PATCH (shown in About MKVForge), plus a build number that goes up by 1 on every merged PR. Bump it in the same PR as the change with `scripts/bump-version.sh patch|minor|major`: patch for a bug fix or small tweak, minor for a new feature, and major for a major enhancement or breaking change (a new phase is usually minor). Docs-only and CI-only PRs don't bump. Each version gets an entry in CHANGELOG.md. Releases are tagged `mkvforge-vX.Y.Z` (for example `mkvforge-v0.8.2`).
+The version is MAJOR.MINOR.PATCH (shown in About MKVForge), plus a build number that goes up by 1 on every merged PR. Bump it in the same PR as the change with `scripts/bump-version.sh mkvforge patch|minor|major` from the repo root: patch for a bug fix or small tweak, minor for a new feature, and major for a major enhancement or breaking change (a new phase is usually minor). From `Apps/MKVForge`, `scripts/bump-version.sh patch|minor|major` forwards to that command. Docs-only and CI-only PRs don't bump. Each version gets an entry in CHANGELOG.md. Releases are tagged `mkvforge-vX.Y.Z` (for example `mkvforge-v0.8.2`).
 
 ## For developers
 From `Apps/MKVForge`:
@@ -45,6 +45,6 @@ swift build
 - On a Mac whose clone is in an iCloud Drive folder (such as `~/Documents` or `~/Desktop`), run `swift test --scratch-path /tmp/mkv-forge-build`, or keep the clone in a folder iCloud doesn't sync, such as `~/Developer`. Otherwise codesign rejects the test bundle (docs/LESSONS.md L30).
 - `SPEC.md` has the scope and the definition of done for the current phase.
 - `AGENTS.md` has the rules for coding agents. Read it before the first change.
-- `scripts/bump-version.sh --check` confirms the version agrees everywhere (CI runs it).
+- `scripts/bump-version.sh mkvforge --check` from the repo root confirms the version agrees everywhere (CI runs the wrapper in `Apps/MKVForge/scripts/`, which calls the same script). `./scripts/verify-linux.sh mkvforge` from the repo root runs this app's Linux checks.
 - `docs/PR_TEST_CHECKLIST.md` is the template for each PR's printable test sheet.
 - `TESTERS.md` is the guide for friends who test builds.
