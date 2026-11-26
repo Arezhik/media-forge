@@ -4,6 +4,7 @@ import Foundation
 import OSLog
 import MKVForgeCore
 import UniformTypeIdentifiers
+import MediaCore
 
 // App side of the exportable debug log (docs/LESSONS.md L13).
 

@@ -1,3 +1,4 @@
+import MediaTesting
 import XCTest
 
 // Base fixture. Playwright's test fixture / `beforeEach`.

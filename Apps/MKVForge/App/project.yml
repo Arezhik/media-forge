@@ -32,6 +32,8 @@ settings:
 packages:
   CorePackage:
     path: ..
+  MediaForge:
+    path: ../../../Packages/MediaForge
 targets:
   MKVForge:
     type: application
@@ -51,6 +53,8 @@ targets:
     dependencies:
       - package: CorePackage
         product: MKVForgeCore
+      - package: MediaForge
+        product: MediaCore
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.arezhik.MKVForge
@@ -96,6 +100,8 @@ targets:
           - "**/*.md"
     dependencies:
       - target: MKVForge
+      - package: MediaForge
+        product: MediaTesting
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.arezhik.MKVForgeUITests

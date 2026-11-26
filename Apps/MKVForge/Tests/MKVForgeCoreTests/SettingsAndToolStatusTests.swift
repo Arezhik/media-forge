@@ -1,4 +1,5 @@
 import XCTest
+import MediaCore
 @testable import MKVForgeCore
 
 final class AppSettingsTests: XCTestCase {
@@ -55,7 +56,7 @@ final class AppSettingsTests: XCTestCase {
     /// Q7: a remembered folder that's gone is shown as not chosen, and logged.
     func testMissingRememberedFolderIsNotChosen() throws {
         let logs = FileManager.default.temporaryDirectory.appendingPathComponent("mkvforge-log-\(UUID().uuidString)")
-        DebugLog.shared.configure(directory: logs)
+        DebugLog.shared.configure(appName: AppIdentity.name, directory: logs)
         defer {
             DebugLog.shared.reset()
             try? FileManager.default.removeItem(at: logs)

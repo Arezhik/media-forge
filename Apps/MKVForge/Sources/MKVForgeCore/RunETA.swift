@@ -1,4 +1,5 @@
 import Foundation
+import MediaCore
 
 // Time remaining for a running batch (issue #23; layout contract v2.4). Rules:
 // - The current file's remaining time is `elapsed × (100 − percent) / percent`.

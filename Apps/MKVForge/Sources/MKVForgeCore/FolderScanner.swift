@@ -1,4 +1,5 @@
 import Foundation
+import MediaCore
 
 // Folder scans (docs/scaffold.md, Split, Remux, Validation / Scan Rules). Rules:
 // - Top level only. Hidden and `._` files, subfolders, and other extensions are skipped.

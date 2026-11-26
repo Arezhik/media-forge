@@ -1,4 +1,5 @@
 import Foundation
+import MediaCore
 
 // Settings and remembered state (issue #5; layout contract v2 §1, §8). Rules:
 // - Folders are remembered per mode and role, as plain paths (no App Sandbox, so no

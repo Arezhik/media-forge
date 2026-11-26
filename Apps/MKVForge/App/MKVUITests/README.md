@@ -2,11 +2,10 @@
 
 Playwright-style page objects for `MKVForgeUITests`. Tests stay thin. Screens and regions own the locators.
 
-Every UI test lives in `Tests/` and subclasses `BaseUITest`. That includes `HelloWorldUITests`, `RemuxMatchOnMKANameUITests`, and `MainWindowSmokeUITests`. `UITestFixtureBuilder.swift` stays in this folder. Tests call it through `UITestFixtures` / `fixtures`.
+Every UI test lives in `Tests/` and subclasses `BaseUITest`. That includes `HelloWorldUITests`, `RemuxMatchOnMKANameUITests`, and `MainWindowSmokeUITests`. `UITestFixtureBuilder` lives in MediaTesting. Tests call it through `UITestFixtures` / `fixtures`.
 
 ```
 App/MKVUITests/
-├── UITestFixtureBuilder.swift         # temp folders and media; called through UITestFixtures
 ├── README.md
 ├── Tests/                             # every UI test; each subclasses BaseUITest
 │   ├── HelloWorldUITests.swift

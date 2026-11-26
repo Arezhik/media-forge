@@ -3,6 +3,7 @@ import Foundation
 import SwiftUI
 import UserNotifications
 import MKVForgeCore
+import MediaCore
 
 // The app's state and actions (docs/design/v1-layout-contract_v2.md, v2.1 addendum).
 // The rules live in MKVForgeCore (ModeState, Workflow, QuitFlow, StatusLines, …), which
@@ -91,7 +92,11 @@ final class AppModel: ObservableObject {
     init(defaults: UserDefaults = UITestingLaunch.defaults) {
         self.defaults = defaults
         matchUndo.model = self
-        DebugLog.shared.configure(directory: DebugLog.libraryLogsDirectory, mirror: { AppLog.write($0) })
+        DebugLog.shared.configure(
+            appName: AppIdentity.name,
+            directory: DebugLog.libraryLogsDirectory(appName: AppIdentity.name),
+            mirror: { AppLog.write($0) }
+        )
         let loaded = AppSettings.load(from: defaults)
         settings = loaded.settings
         activeMode = loaded.settings.activeMode
@@ -881,9 +886,10 @@ final class AppModel: ObservableObject {
             let environment = await Task.detached(priority: .userInitiated) {
                 DebugMachine.environment(settings: summary, toolStatus: status)
             }.value
-            let name = DebugLogDocument.fileName(at: Date())
+            let name = DebugLogDocument.fileName(appName: AppIdentity.name, at: Date())
             DebugLog.shared.record(.lifecycle, "Exporting debug log \(name)")
             let text = DebugLogDocument.document(
+                appName: AppIdentity.name,
                 environment: environment,
                 logText: DebugLog.shared.recentText(),
                 homeDirectory: NSHomeDirectory()

@@ -11,9 +11,9 @@ name: MKVForge CI
 on:
   push:
     branches: [main]
-    paths: ['Apps/MKVForge/**', '.github/workflows/mkvforge.yml']
+    paths: ['Apps/MKVForge/**', 'Packages/MediaForge/**', '.github/workflows/mkvforge.yml']
   pull_request:
-    paths: ['Apps/MKVForge/**', '.github/workflows/mkvforge.yml']
+    paths: ['Apps/MKVForge/**', 'Packages/MediaForge/**', '.github/workflows/mkvforge.yml']
 
 concurrency:
   group: mkvforge-${{ github.ref }}

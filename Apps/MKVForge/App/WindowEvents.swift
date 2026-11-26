@@ -1,6 +1,7 @@
 import AppKit
 import SwiftUI
 import MKVForgeCore
+import MediaCore
 
 // Two window patterns (docs/LESSONS.md L8).
 //

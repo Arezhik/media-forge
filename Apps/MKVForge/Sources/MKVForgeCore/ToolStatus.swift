@@ -1,4 +1,5 @@
 import Foundation
+import MediaCore
 
 // Where mkvmerge is, for the window and Settings (layout contract v2 §8, §9; L15). Rules:
 // - With no copy chosen in Settings, the automatic search finds it (ExternalTool.locate).
