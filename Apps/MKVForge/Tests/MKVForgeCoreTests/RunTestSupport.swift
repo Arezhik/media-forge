@@ -1,4 +1,5 @@
 import Foundation
+import MediaCore
 @testable import MKVForgeCore
 
 /// One scripted mkvmerge run.

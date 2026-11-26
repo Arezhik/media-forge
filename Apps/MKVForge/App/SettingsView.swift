@@ -1,4 +1,5 @@
 import SwiftUI
+import MediaCore
 import MKVForgeCore
 
 /// Opened from the app menu and ⌘, (docs/design/v1-layout-contract_v2.md §8). One pane,
@@ -69,7 +70,7 @@ struct SettingsView: View {
                     .accessibilityAddTraits(.isHeader)
             } footer: {
                 if model.toolStatus != .notFound {
-                    Text(ExternalTool.searchDescription())
+                    Text(ExternalTool.searchDescription(.primary))
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }

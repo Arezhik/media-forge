@@ -1,12 +1,16 @@
 import Foundation
 import MediaCore
-#if canImport(Darwin)
-import Darwin
-#elseif canImport(Glibc)
-import Glibc
-#elseif canImport(Musl)
-import Musl
-#endif
+
+extension ExternalToolSpec {
+    /// `mkvmerge` and `mkvextract` together. A partial install counts as missing.
+    /// PGS has no chosen-path override; it always searches.
+    public static let mkvToolNix = ExternalToolSpec(
+        name: "MKVToolNix",
+        executables: ["mkvmerge", "mkvextract"],
+        appBundlePrefix: "MKVToolNix",
+        versionArguments: ["--version"]
+    )
+}
 
 /// Paths to the two MKVToolNix commands this app shells out to.
 public struct MKVToolPaths: Equatable, Sendable {
@@ -42,12 +46,7 @@ public enum MKVToolNix {
     /// Looks in Homebrew's usual folders, an MKVToolNix app bundle, then `PATH`.
     /// Both tools have to be found. A partial install is treated as missing.
     public static func locate() -> MKVToolPaths? {
-        let names = (try? FileManager.default.contentsOfDirectory(atPath: "/Applications")) ?? []
-        return locate(
-            executableExists: { FileManager.default.isExecutableFile(atPath: $0) },
-            applications: names,
-            searchPath: ProcessInfo.processInfo.environment["PATH"] ?? ""
-        )
+        paths(ExternalTool.locate(.mkvToolNix))
     }
 
     /// `applications` is the names inside `/Applications`, such as `MKVToolNix.app`.
@@ -56,51 +55,24 @@ public enum MKVToolNix {
         applications: [String],
         searchPath: String
     ) -> MKVToolPaths? {
-        let bundles = applications
-            .filter { $0.hasPrefix("MKVToolNix") && $0.hasSuffix(".app") }
-            .sorted()
-        func find(_ name: String) -> String? {
-            for path in ["/opt/homebrew/bin/\(name)", "/usr/local/bin/\(name)"] where executableExists(path) {
-                return path
-            }
-            for bundle in bundles {
-                let path = "/Applications/\(bundle)/Contents/MacOS/\(name)"
-                if executableExists(path) { return path }
-            }
-            for directory in searchPath.split(separator: ":", omittingEmptySubsequences: true) {
-                let path = (String(directory) as NSString).appendingPathComponent(name)
-                if executableExists(path) { return path }
-            }
-            return nil
-        }
-        guard let mkvmerge = find("mkvmerge"), let mkvextract = find("mkvextract") else {
-            return nil
-        }
-        return MKVToolPaths(mkvmerge: mkvmerge, mkvextract: mkvextract)
+        paths(ExternalTool.locate(
+            .mkvToolNix,
+            executableExists: executableExists,
+            applications: applications,
+            searchPath: searchPath
+        ))
     }
 
     /// The first line of `mkvmerge --version`, such as `mkvmerge v86.0 ('Winter') 64-bit`.
     public static func version(of executable: String) -> String? {
-        let process = Process()
-        process.executableURL = URL(fileURLWithPath: executable)
-        process.arguments = ["--version"]
-        process.standardInput = FileHandle.nullDevice
-        let stdout = Pipe()
-        process.standardOutput = stdout
-        process.standardError = FileHandle.nullDevice
-        do {
-            try process.run()
-        } catch {
+        ExternalTool.version(of: executable, arguments: ExternalToolSpec.mkvToolNix.versionArguments)
+    }
+
+    private static func paths(_ located: ExternalToolPaths?) -> MKVToolPaths? {
+        guard let mkvmerge = located?["mkvmerge"], let mkvextract = located?["mkvextract"] else {
             return nil
         }
-        process.waitUntilExit()
-        guard process.terminationStatus == 0 else { return nil }
-        let data = (try? stdout.fileHandleForReading.readToEnd()) ?? Data()
-        guard let text = String(data: data, encoding: .utf8) else { return nil }
-        let line = text.split(whereSeparator: \.isNewline).first.map(String.init)?
-            .trimmingCharacters(in: .whitespacesAndNewlines)
-        guard let line, !line.isEmpty else { return nil }
-        return line
+        return MKVToolPaths(mkvmerge: mkvmerge, mkvextract: mkvextract)
     }
 }
 
@@ -118,13 +90,26 @@ public struct MKVCommandResult: Equatable, Sendable {
 }
 
 public enum MKVCommand {
+    /// Runs through MediaCore. The log category stays `.mkv`. A launch failure
+    /// stays `MKVFailure.couldNotStartTool` so the sentence the queue shows does not change.
+    /// `LC_ALL` comes from `ToolCommand`. An empty stderr line is not added; PGS did not log one.
     public static func run(executable: String, arguments: [String]) async throws -> MKVCommandResult {
-        let runner = CommandRunner()
-        return try await withTaskCancellationHandler {
-            try await runner.start(executable: executable, arguments: arguments)
-        } onCancel: {
-            runner.cancel()
+        let result: ToolCommandResult
+        do {
+            result = try await ToolCommand.run(
+                executable: executable,
+                arguments: arguments,
+                logCategory: .mkv,
+                logEmptyStandardError: false
+            )
+        } catch ToolFailure.couldNotStart {
+            throw MKVFailure.couldNotStartTool
         }
+        return MKVCommandResult(
+            status: result.status,
+            standardOutput: result.standardOutput,
+            standardError: result.standardError
+        )
     }
 
     /// `mkvmerge -J <file>`. The returned data is the JSON document.
@@ -217,179 +202,4 @@ public struct MKVNativeClient: Sendable {
             try MKVReader.extract(at: path, trackIDs: trackIDs, onProgress: progress)
         }
     )
-}
-
-/// Owns the running `Process` so a cancel from another task can terminate it.
-private final class CommandRunner: @unchecked Sendable {
-    private let lock = NSLock()
-    private var process: Process?
-    private var cancelled = false
-
-    func cancel() {
-        lock.lock()
-        cancelled = true
-        let process = self.process
-        lock.unlock()
-        guard let process else { return }
-        stop(process)
-    }
-
-    func start(executable: String, arguments: [String]) async throws -> MKVCommandResult {
-        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<MKVCommandResult, Error>) in
-            let resume = ResumeBox(continuation)
-            DispatchQueue.global(qos: .userInitiated).async {
-                let result = Result { try self.blocking(executable: executable, arguments: arguments) }
-                resume.resume(result)
-            }
-        }
-    }
-
-    private var isCancelled: Bool {
-        lock.lock()
-        defer { lock.unlock() }
-        return cancelled
-    }
-
-    /// Stores the process. Returns false when cancel already won.
-    private func adopt(_ process: Process) -> Bool {
-        lock.lock()
-        defer { lock.unlock() }
-        if cancelled { return false }
-        self.process = process
-        return true
-    }
-
-    /// `terminate()` is not enough on Linux when it is called off the thread that
-    /// launched the tool. SIGKILL makes Cancel stop mkvmerge and mkvextract immediately.
-    private func stop(_ process: Process) {
-        guard process.isRunning else { return }
-        let pid = process.processIdentifier
-        process.terminate()
-        if pid > 0 {
-            kill(pid, SIGKILL)
-        }
-    }
-
-    private func forget() {
-        lock.lock()
-        process = nil
-        lock.unlock()
-    }
-
-    private func blocking(executable: String, arguments: [String]) throws -> MKVCommandResult {
-        let command = MKVCommandFormatting.line(executable: executable, arguments: arguments)
-        if isCancelled {
-            MKVCommandFormatting.logCancelled(command)
-            throw CancellationError()
-        }
-        let process = Process()
-        process.executableURL = URL(fileURLWithPath: executable)
-        process.arguments = arguments
-        process.standardInput = FileHandle.nullDevice
-        let stdoutPipe = Pipe()
-        let stderrPipe = Pipe()
-        process.standardOutput = stdoutPipe
-        process.standardError = stderrPipe
-        guard adopt(process) else {
-            MKVCommandFormatting.logCancelled(command)
-            throw CancellationError()
-        }
-        DebugLog.shared.record(.mkv, "command \(command)")
-        do {
-            try process.run()
-        } catch {
-            forget()
-            DebugLog.shared.record(.error, "command \(command) could not start", isError: true)
-            throw MKVFailure.couldNotStartTool
-        }
-        if isCancelled {
-            stop(process)
-        }
-        let stdout = PipeReader(stdoutPipe.fileHandleForReading)
-        let stderr = PipeReader(stderrPipe.fileHandleForReading)
-        let group = DispatchGroup()
-        group.enter()
-        DispatchQueue.global(qos: .userInitiated).async {
-            stdout.readToEnd()
-            group.leave()
-        }
-        group.enter()
-        DispatchQueue.global(qos: .userInitiated).async {
-            stderr.readToEnd()
-            group.leave()
-        }
-        process.waitUntilExit()
-        group.wait()
-        let status = process.terminationStatus
-        forget()
-        let failed = status != 0
-        DebugLog.shared.record(.mkv, "exit \(status)", isError: failed)
-        if let stderrText = MKVCommandFormatting.stderrText(stderr.data) {
-            DebugLog.shared.record(.mkv, "stderr \(stderrText)", isError: failed)
-        }
-        if isCancelled {
-            MKVCommandFormatting.logCancelled(command)
-            throw CancellationError()
-        }
-        return MKVCommandResult(status: status, standardOutput: stdout.data, standardError: stderr.data)
-    }
-}
-
-/// How an MKVToolNix invocation is written into the debug log. Standard output stays out.
-private enum MKVCommandFormatting {
-    static func line(executable: String, arguments: [String]) -> String {
-        ([executable] + arguments).map { part in
-            if part.contains(where: { $0 == " " || $0 == "\"" }) {
-                return "\"\(part.replacingOccurrences(of: "\"", with: "\\\""))\""
-            }
-            return part
-        }.joined(separator: " ")
-    }
-
-    static func stderrText(_ data: Data) -> String? {
-        guard !data.isEmpty else { return nil }
-        let raw = String(data: data, encoding: .utf8) ?? String(decoding: data, as: UTF8.self)
-        let flat = raw.split(whereSeparator: \.isNewline).joined(separator: " ")
-        let trimmed = flat.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty else { return nil }
-        let limit = 2000
-        if trimmed.count <= limit { return trimmed }
-        return String(trimmed.prefix(limit)) + "…"
-    }
-
-    static func logCancelled(_ command: String) {
-        DebugLog.shared.record(.mkv, "command cancelled \(command)")
-    }
-}
-
-/// Reads a pipe on a background thread. `Pipe` and `FileHandle` are not sendable, so they stay in here.
-private final class PipeReader: @unchecked Sendable {
-    private let handle: FileHandle
-    private(set) var data = Data()
-
-    init(_ handle: FileHandle) {
-        self.handle = handle
-    }
-
-    func readToEnd() {
-        data = (try? handle.readToEnd()) ?? Data()
-    }
-}
-
-/// Resumes a continuation once. The process thread and a failure path must not both resume it.
-private final class ResumeBox<T: Sendable>: @unchecked Sendable {
-    private let lock = NSLock()
-    private var continuation: CheckedContinuation<T, Error>?
-
-    init(_ continuation: CheckedContinuation<T, Error>) {
-        self.continuation = continuation
-    }
-
-    func resume(_ result: Result<T, Error>) {
-        lock.lock()
-        let continuation = self.continuation
-        self.continuation = nil
-        lock.unlock()
-        continuation?.resume(with: result)
-    }
 }

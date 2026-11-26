@@ -5,7 +5,7 @@ Read this before the first change.
 
 ## Layout
 
-- `Packages/MediaForge` — canonical Swift package. Products: `MediaCore` (UITestingEnvironment, RollingLogStore, DebugLog with one category set, ProgressThrottle), `MediaUI`, and `MediaTesting` (UITestFixtureBuilder).
+- `Packages/MediaForge` — canonical Swift package. Products: `MediaCore` (UITestingEnvironment, RollingLogStore, DebugLog with one category set, ProgressThrottle, ExternalTool locator, ToolCommand runner), `MediaUI`, and `MediaTesting` (UITestFixtureBuilder).
 - `Apps/MKVForge` — MKV Forge (macOS 15), with its own package, version, and tags `mkvforge-vX.Y.Z`. Workflow: `.github/workflows/mkvforge.yml`.
 - `Apps/MP4SubRip` — MP4SubRip (macOS 14), with its own package, version, and tags `mp4subrip-vX.Y.Z`. Workflow: `.github/workflows/mp4subrip.yml`.
 - `Apps/PGS2SRT` — PGS2SRT (macOS 13), with its own package, version, and tags `pgs2srt-vX.Y.Z`. Workflow: `.github/workflows/pgs2srt.yml`.

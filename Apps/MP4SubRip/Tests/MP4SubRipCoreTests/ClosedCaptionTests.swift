@@ -1,4 +1,5 @@
 import XCTest
+import MediaCore
 @testable import MP4SubRipCore
 
 final class ClosedCaptionTests: XCTestCase {
@@ -350,7 +351,7 @@ final class ClosedCaptionTests: XCTestCase {
                 onSampleTime: { _ in }
             )
             XCTFail("expected ffmpeg to fail")
-        } catch let ToolFailure.failed(tool, status) {
+        } catch let FFmpegFailure.failed(tool, status) {
             XCTAssertEqual(tool, "ffmpeg")
             XCTAssertEqual(status, 1)
         }

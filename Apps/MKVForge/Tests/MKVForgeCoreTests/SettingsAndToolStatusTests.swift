@@ -123,7 +123,7 @@ final class ToolStatusTests: XCTestCase {
         XCTAssertEqual(status, .notFound)
         XCTAssertTrue(status.showsBanner)
         XCTAssertEqual(status.settingsStatus, "Not found")
-        XCTAssertEqual(status.locationHelp, ExternalTool.searchDescription())
+        XCTAssertEqual(status.locationHelp, ExternalTool.searchDescription(.primary))
     }
 
     func testChosenRuns() {
@@ -161,9 +161,9 @@ final class ToolStatusTests: XCTestCase {
     }
 
     func testSearchDescriptionListsTheRealSearchOrder() {
-        XCTAssertEqual(ExternalTool.searchDescription(),
+        XCTAssertEqual(ExternalTool.searchDescription(.primary),
                        "Looked in /opt/homebrew/bin, /usr/local/bin, /Applications/MKVToolNix*.app/Contents/MacOS and PATH.")
-        XCTAssertEqual(ExternalTool.searchLocations(), ["/opt/homebrew/bin", "/usr/local/bin", "/Applications/MKVToolNix*.app/Contents/MacOS", "PATH"])
+        XCTAssertEqual(ExternalTool.searchLocations(.primary), ["/opt/homebrew/bin", "/usr/local/bin", "/Applications/MKVToolNix*.app/Contents/MacOS", "PATH"])
     }
 }
 

@@ -1,74 +1,10 @@
 import XCTest
+import MediaCore
 @testable import MP4SubRipCore
 
+/// ffmpeg detection wording, the Settings choice, and the pick-time version check.
+/// Locator search order, custom-path resolution, and the process runner live in MediaCoreTests.
 final class ExternalToolTests: XCTestCase {
-    private let spec = ExternalToolSpec(name: "Demo", executables: ["demo", "demo-extract"], appBundlePrefix: "Demo")
-
-    func testHomebrewBeatsAppBundleAndPath() {
-        let existing: Set<String> = [
-            "/opt/homebrew/bin/demo", "/opt/homebrew/bin/demo-extract",
-            "/Applications/Demo.app/Contents/MacOS/demo", "/usr/bin/demo"
-        ]
-        let paths = ExternalTool.locate(spec, executableExists: { existing.contains($0) }, applications: ["Demo.app"], searchPath: "/usr/bin")
-        XCTAssertEqual(paths?["demo"], "/opt/homebrew/bin/demo")
-        XCTAssertEqual(paths?["demo-extract"], "/opt/homebrew/bin/demo-extract")
-    }
-
-    func testIntelHomebrewThenAppBundleThenPath() {
-        let existing: Set<String> = ["/usr/local/bin/demo", "/Applications/Demo 2.app/Contents/MacOS/demo-extract"]
-        let paths = ExternalTool.locate(spec, executableExists: { existing.contains($0) }, applications: ["Demo 2.app", "Other.app"], searchPath: "")
-        XCTAssertEqual(paths?["demo"], "/usr/local/bin/demo")
-        XCTAssertEqual(paths?["demo-extract"], "/Applications/Demo 2.app/Contents/MacOS/demo-extract")
-    }
-
-    func testHomebrewHitDoesNotListApplications() {
-        let spec = ExternalToolSpec(name: "ffmpeg", executables: ["ffmpeg"], appBundlePrefix: "ffmpeg")
-        var listed = false
-        let paths = ExternalTool.locateInstalled(
-            spec,
-            executableExists: { $0 == "/opt/homebrew/bin/ffmpeg" },
-            applicationNames: {
-                listed = true
-                return ["ffmpeg.app"]
-            },
-            searchPath: "/usr/bin"
-        )
-        XCTAssertEqual(paths?["ffmpeg"], "/opt/homebrew/bin/ffmpeg")
-        XCTAssertFalse(listed)
-    }
-
-    func testAppBundleStillBeatsPathWhenHomebrewIsMissing() {
-        let spec = ExternalToolSpec(name: "ffmpeg", executables: ["ffmpeg"], appBundlePrefix: "ffmpeg")
-        let bundle = "/Applications/ffmpeg.app/Contents/MacOS/ffmpeg"
-        let paths = ExternalTool.locateInstalled(
-            spec,
-            executableExists: { $0 == bundle || $0 == "/usr/bin/ffmpeg" },
-            applicationNames: { ["ffmpeg.app"] },
-            searchPath: "/usr/bin"
-        )
-        XCTAssertEqual(paths?["ffmpeg"], bundle)
-    }
-
-    func testRunnableFollowsARelativeSymlinkAndRejectsADirectory() throws {
-        let root = FileManager.default.temporaryDirectory
-            .appendingPathComponent("mp4subrip-tool-" + UUID().uuidString, isDirectory: true)
-        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
-        defer { try? FileManager.default.removeItem(at: root) }
-        let target = root.appendingPathComponent("ffmpeg")
-        try Data("#!/bin/sh\nexit 0\n".utf8).write(to: target)
-        try FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: target.path)
-        let bin = root.appendingPathComponent("bin", isDirectory: true)
-        try FileManager.default.createDirectory(at: bin, withIntermediateDirectories: true)
-        let link = bin.appendingPathComponent("ffmpeg")
-        try FileManager.default.createSymbolicLink(atPath: link.path, withDestinationPath: "../ffmpeg")
-        XCTAssertTrue(ExternalTool.isRunnable(link.path))
-        XCTAssertTrue(ExternalTool.isRunnable(target.path))
-        try FileManager.default.setAttributes([.posixPermissions: 0o644], ofItemAtPath: target.path)
-        XCTAssertFalse(ExternalTool.isRunnable(target.path))
-        XCTAssertFalse(ExternalTool.isRunnable(link.path))
-        XCTAssertFalse(ExternalTool.isRunnable(bin.path))
-    }
-
     func testDetectionLineAndHeaderShareOneResult() {
         let spec = ExternalToolSpec.primary
         let located = LocatedTool(
@@ -128,88 +64,6 @@ final class ExternalToolTests: XCTestCase {
         let unchosenFacts = ToolDetection.facts(spec: spec, located: nil, customPath: "")
         XCTAssertEqual(unchosenLine.message, "ffmpeg not chosen")
         XCTAssertEqual(unchosenFacts.map(\.value), ["not chosen", "not found"])
-    }
-
-    func testCustomPathWinsOverHomebrewAndPath() {
-        let spec = ExternalToolSpec.primary
-        let custom = "/Users/me/bin/ffmpeg"
-        let existing: Set<String> = [
-            custom,
-            "/opt/homebrew/bin/ffmpeg",
-            "/usr/local/bin/ffmpeg",
-            "/usr/bin/ffmpeg",
-            "/Applications/ffmpeg.app/Contents/MacOS/ffmpeg"
-        ]
-        let paths = ExternalTool.locate(
-            spec,
-            customPath: custom,
-            executableExists: { existing.contains($0) },
-            applications: ["ffmpeg.app"],
-            searchPath: "/usr/bin:/opt/homebrew/bin"
-        )
-        XCTAssertEqual(paths?["ffmpeg"], custom)
-    }
-
-    func testMissingOrUnrunnableCustomPathDoesNotUseAutomatic() {
-        let spec = ExternalToolSpec.primary
-        var listed = false
-        let paths = ExternalTool.locateInstalled(
-            spec,
-            customPath: "/Users/me/bin/ffmpeg",
-            executableExists: { $0 == "/opt/homebrew/bin/ffmpeg" || $0 == "/usr/bin/ffmpeg" },
-            applicationNames: {
-                listed = true
-                return ["ffmpeg.app"]
-            },
-            searchPath: "/usr/bin"
-        )
-        XCTAssertNil(paths)
-        XCTAssertFalse(listed)
-
-        let empty = ExternalTool.locateInstalled(
-            spec,
-            customPath: "",
-            executableExists: { $0 == "/opt/homebrew/bin/ffmpeg" },
-            applicationNames: {
-                listed = true
-                return ["ffmpeg.app"]
-            },
-            searchPath: "/usr/bin"
-        )
-        XCTAssertNil(empty)
-        XCTAssertFalse(listed)
-    }
-
-    func testCustomPathResolvesAppFolderAndFile() {
-        func resolve(_ path: String, existing: Set<String>) -> String? {
-            ExternalTool.resolveCustom(path, executable: "ffmpeg", executableExists: { existing.contains($0) })
-        }
-        XCTAssertEqual(
-            resolve("/Apps/ffmpeg.app", existing: ["/Apps/ffmpeg.app/Contents/MacOS/ffmpeg"]),
-            "/Apps/ffmpeg.app/Contents/MacOS/ffmpeg"
-        )
-        XCTAssertEqual(
-            resolve("/Apps/ffmpeg.app/", existing: ["/Apps/ffmpeg.app/Contents/MacOS/ffmpeg"]),
-            "/Apps/ffmpeg.app/Contents/MacOS/ffmpeg"
-        )
-        XCTAssertNil(resolve("/Apps/ffmpeg.app", existing: ["/Apps/ffmpeg.app/bin/ffmpeg"]))
-        XCTAssertEqual(
-            resolve("/Tools", existing: ["/Tools/bin/ffmpeg"]),
-            "/Tools/bin/ffmpeg"
-        )
-        XCTAssertEqual(
-            resolve("/Tools", existing: ["/Tools/ffmpeg", "/Tools/bin/ffmpeg"]),
-            "/Tools/ffmpeg"
-        )
-        XCTAssertEqual(
-            resolve("/Wrapped", existing: ["/Wrapped/Contents/MacOS/ffmpeg"]),
-            "/Wrapped/Contents/MacOS/ffmpeg"
-        )
-        XCTAssertEqual(
-            resolve("/Users/me/bin/ffmpeg", existing: ["/Users/me/bin/ffmpeg", "/opt/homebrew/bin/ffmpeg"]),
-            "/Users/me/bin/ffmpeg"
-        )
-        XCTAssertNil(resolve("/empty", existing: ["/opt/homebrew/bin/ffmpeg"]))
     }
 
     func testChosenExecutableMustReportFFmpeg() throws {
@@ -286,39 +140,8 @@ final class ExternalToolTests: XCTestCase {
             "The ffmpeg chosen in Settings can't be found. Choose it again in Settings."
         )
         XCTAssertEqual(
-            ToolFailure.notInstalled("ffmpeg").errorDescription,
+            FFmpegFailure.notInstalled("ffmpeg").errorDescription,
             SubtitleSkipReason.needsFFmpeg.message as String?
         )
     }
-
-    func testPartialInstallCountsAsMissing() {
-        let existing: Set<String> = ["/usr/bin/demo"]
-        XCTAssertNil(ExternalTool.locate(spec, executableExists: { existing.contains($0) }, applications: [], searchPath: "/usr/bin"))
-    }
-
-    func testStderrIsFlattenedAndCut() {
-        let long = String(repeating: "x", count: 2500)
-        XCTAssertEqual(ToolCommandFormatting.stderrText(Data("a\nb\n".utf8)), "a b")
-        XCTAssertEqual(ToolCommandFormatting.stderrText(Data(long.utf8))?.count, 2001)
-        XCTAssertNil(ToolCommandFormatting.stderrText(Data()))
-    }
-
-    #if !os(Windows)
-    func testRunReportsExitCodeAndCancels() async throws {
-        let result = try await ToolCommand.run(executable: "/bin/sh", arguments: ["-c", "echo out; echo err >&2; exit 3"])
-        XCTAssertEqual(result.status, 3)
-        XCTAssertEqual(String(decoding: result.standardOutput, as: UTF8.self), "out\n")
-
-        let task = Task { try await ToolCommand.run(executable: "/bin/sleep", arguments: ["30"]) }
-        try await Task.sleep(nanoseconds: 200_000_000)
-        let started = Date()
-        task.cancel()
-        do {
-            _ = try await task.value
-            XCTFail("cancel should throw")
-        } catch is CancellationError {
-            XCTAssertLessThan(Date().timeIntervalSince(started), 5)
-        }
-    }
-    #endif
 }

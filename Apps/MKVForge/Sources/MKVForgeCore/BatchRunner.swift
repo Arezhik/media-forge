@@ -15,10 +15,10 @@ import MediaCore
 // - Exit 0 = Done, 1 = Done · warning, 2 = Failed. Any other code (a signal) is Failed.
 // - Cancel (`requestStop`) lets the current file finish, then the rest are not run.
 //   Cancelling the Swift task (a hard stop, such as quitting) kills mkvmerge through
-//   `ToolCommand`, deletes the temp, and marks that row cancelled (L5).
-// - mkvmerge runs through `ToolCommand`, so it gets the UTF-8 locale (`ToolEnvironment`,
-//   L27). Its `Warning:` and `Error:` lines are on standard output, so they're logged
-//   here (L28).
+//   `MKVMergeLiveRun`, deletes the temp, and marks that row cancelled (L5).
+// - Mux runs through `MKVMergeLiveRun` (live `#GUI#progress`, UTF-8 locale). Identify
+//   uses `ToolCommand`. Warning and error lines are on standard output, so they're
+//   logged here (L28).
 // - The mux process is `mkvmerge --gui-mode`. That flag is not added to `mkvmerge -J`
 //   or `--version`. `#GUI#progress` becomes a throttled ETA on the batch caption.
 //   The throttle uses the runner's wall clock. Elapsed stays the mux time on the sample.
@@ -29,7 +29,7 @@ public protocol MKVMergeRunning: Sendable {
     func run(_ arguments: [String], onProgress: @escaping @Sendable (Int) -> Void) async throws -> ToolCommandResult
 }
 
-/// The installed mkvmerge, run through `ToolCommand` (logging, cancel, UTF-8 locale).
+/// The installed mkvmerge, run through `MKVMergeLiveRun` (live progress, cancel, UTF-8 locale).
 public struct MKVMergeProcess: MKVMergeRunning {
     public let executable: String
 
@@ -45,7 +45,7 @@ public struct MKVMergeProcess: MKVMergeRunning {
 
     public func run(_ arguments: [String], onProgress: @escaping @Sendable (Int) -> Void) async throws -> ToolCommandResult {
         let parser = GUIParserBox()
-        return try await ToolCommand.run(executable: executable, arguments: Self.muxArguments(arguments), onStdoutLine: { line in
+        return try await MKVMergeLiveRun.run(executable: executable, arguments: Self.muxArguments(arguments), onStdoutLine: { line in
             if let percent = parser.percent(in: line) {
                 onProgress(percent)
             }

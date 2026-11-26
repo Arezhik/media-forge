@@ -1,46 +1,14 @@
 import XCTest
+import MediaCore
 @testable import MKVForgeCore
 
-final class ExternalToolTests: XCTestCase {
-    private let spec = ExternalToolSpec(name: "Demo", executables: ["demo", "demo-extract"], appBundlePrefix: "Demo")
-
-    func testHomebrewBeatsAppBundleAndPath() {
-        let existing: Set<String> = [
-            "/opt/homebrew/bin/demo", "/opt/homebrew/bin/demo-extract",
-            "/Applications/Demo.app/Contents/MacOS/demo", "/usr/bin/demo"
-        ]
-        let paths = ExternalTool.locate(spec, executableExists: { existing.contains($0) }, applications: ["Demo.app"], searchPath: "/usr/bin")
-        XCTAssertEqual(paths?["demo"], "/opt/homebrew/bin/demo")
-        XCTAssertEqual(paths?["demo-extract"], "/opt/homebrew/bin/demo-extract")
-    }
-
-    func testIntelHomebrewThenAppBundleThenPath() {
-        let existing: Set<String> = ["/usr/local/bin/demo", "/Applications/Demo 2.app/Contents/MacOS/demo-extract"]
-        let paths = ExternalTool.locate(spec, executableExists: { existing.contains($0) }, applications: ["Demo 2.app", "Other.app"], searchPath: "")
-        XCTAssertEqual(paths?["demo"], "/usr/local/bin/demo")
-        XCTAssertEqual(paths?["demo-extract"], "/Applications/Demo 2.app/Contents/MacOS/demo-extract")
-    }
-
-    func testPartialInstallCountsAsMissing() {
-        let existing: Set<String> = ["/usr/bin/demo"]
-        XCTAssertNil(ExternalTool.locate(spec, executableExists: { existing.contains($0) }, applications: [], searchPath: "/usr/bin"))
-    }
-
-    func testStderrIsFlattenedAndCut() {
-        let long = String(repeating: "x", count: 2500)
-        XCTAssertEqual(ToolCommandFormatting.stderrText(Data("a\nb\n".utf8)), "a b")
-        XCTAssertEqual(ToolCommandFormatting.stderrText(Data(long.utf8))?.count, 2001)
-        XCTAssertNil(ToolCommandFormatting.stderrText(Data()))
-    }
-
+/// The live mux reader stays in MKV Forge. Locator and collect-at-exit runs are
+/// covered by MediaCoreTests.
+final class MKVMergeLiveRunTests: XCTestCase {
     #if !os(Windows)
-    func testRunReportsExitCodeAndCancels() async throws {
-        let result = try await ToolCommand.run(executable: "/bin/sh", arguments: ["-c", "echo out; echo err >&2; exit 3"])
-        XCTAssertEqual(result.status, 3)
-        XCTAssertEqual(String(decoding: result.standardOutput, as: UTF8.self), "out\n")
-
+    func testLiveRunSplitsProgressLinesAndCancels() async throws {
         let box = LineBox()
-        let split = try await ToolCommand.run(
+        let split = try await MKVMergeLiveRun.run(
             executable: "/bin/sh",
             arguments: ["-c", "printf '#GUI#progress 10%%\\r#GUI#progress 20%%\\n'; printf 'tail\\n'; printf 'err-not-stdout\\n' >&2"]
         ) { line in
@@ -51,7 +19,7 @@ final class ExternalToolTests: XCTestCase {
         XCTAssertFalse(String(decoding: split.standardOutput, as: UTF8.self).contains("err-not-stdout"))
         XCTAssertTrue(String(decoding: split.standardError, as: UTF8.self).contains("err-not-stdout"))
 
-        let task = Task { try await ToolCommand.run(executable: "/bin/sleep", arguments: ["30"]) }
+        let task = Task { try await MKVMergeLiveRun.run(executable: "/bin/sleep", arguments: ["30"]) }
         try await Task.sleep(nanoseconds: 200_000_000)
         let started = Date()
         task.cancel()
@@ -63,15 +31,6 @@ final class ExternalToolTests: XCTestCase {
         }
     }
     #endif
-
-    func testToolsAlwaysGetAUTF8Locale() {
-        let environment = ToolEnvironment.forTools(inheriting: ["PATH": "/usr/bin", "LC_ALL": "C", "LANG": "de_DE.UTF-8"])
-        XCTAssertEqual(environment["LC_ALL"], ToolEnvironment.utf8Locale)
-        XCTAssertEqual(environment["PATH"], "/usr/bin")
-        XCTAssertEqual(environment["LANG"], "de_DE.UTF-8")
-        XCTAssertEqual(ToolEnvironment.forTools(inheriting: [:])["LC_ALL"], ToolEnvironment.utf8Locale)
-        XCTAssertTrue(ToolEnvironment.utf8Locale.hasSuffix(".UTF-8"))
-    }
 
     func testStdoutSplitterSplitsOnCRAndLFAcrossChunks() {
         var splitter = StdoutLineSplitter()
@@ -135,7 +94,7 @@ final class ExternalToolTests: XCTestCase {
         printf '#GUI#progress 100%%\\n'
         printf 'gate-seen %s\\n' "$seen"
         """
-        let result = try await ToolCommand.run(executable: "/bin/sh", arguments: ["-c", script]) { line in
+        let result = try await MKVMergeLiveRun.run(executable: "/bin/sh", arguments: ["-c", script]) { line in
             box.add(line)
             if line.contains("11%") {
                 XCTAssertTrue(FileManager.default.createFile(atPath: gate.path, contents: Data()))

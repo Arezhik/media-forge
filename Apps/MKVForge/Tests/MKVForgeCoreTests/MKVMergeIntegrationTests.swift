@@ -1,4 +1,5 @@
 import XCTest
+import MediaCore
 @testable import MKVForgeCore
 
 /// Runs the real mkvmerge on a small file generated at test time: a 108-byte VP8 stub
