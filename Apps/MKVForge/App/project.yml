@@ -1,6 +1,6 @@
 # Source of truth for App/MKVForge.xcodeproj (docs/LESSONS.md L19, L33). Never hand-edit
 # project.pbxproj: change this file, then `brew install xcodegen; cd App && xcodegen generate`
-# (XcodeGen 2.48.0) in a clone folder named mkv-forge, and commit both. A second run must
+# (XcodeGen 2.48.0) from Apps/MKVForge (the folder reference is named MKVForge), and commit both. A second run must
 # change nothing. Only scripts/bump-version.sh edits the version lines in both.
 # The Xcode project must not sit next to Package.swift, and the package must not be
 # named MKVForge, or Xcode reports the products as missing.

@@ -63,6 +63,7 @@
 
 /* Begin PBXFileReference section */
 		04A17AAAA8986EB8B5E5D3AA /* SettingsEssentialsUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsEssentialsUITests.swift; sourceTree = "<group>"; };
+		09273C4882CEA8D31E0A3095 /* MKVForge */ = {isa = PBXFileReference; lastKnownFileType = folder; name = MKVForge; path = ..; sourceTree = SOURCE_ROOT; };
 		0D576B60D15BB3A9F84A8579 /* DebugLogSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugLogSupport.swift; sourceTree = "<group>"; };
 		0E310675747612E45C1DC6D3 /* RemuxExistingOutputUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemuxExistingOutputUITests.swift; sourceTree = "<group>"; };
 		1496BB0D61ABEEFD71BF9129 /* MKVForge.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MKVForge.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -99,7 +100,6 @@
 		BCCD941874875EEB52AD11CB /* ShowReadySplitUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShowReadySplitUITests.swift; sourceTree = "<group>"; };
 		C8D491A04A8E2B6CCB670B83 /* UITestingLaunch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UITestingLaunch.swift; sourceTree = "<group>"; };
 		D8DF373DACD8A87D7E85CFEF /* MainWindowSmokeUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainWindowSmokeUITests.swift; sourceTree = "<group>"; };
-		DA3C4B98FB3BE0BDBABCAF61 /* mkv-forge */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "mkv-forge"; path = ..; sourceTree = SOURCE_ROOT; };
 		E28EA4CFE3B3345DB6747F48 /* QueueRowComponent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QueueRowComponent.swift; sourceTree = "<group>"; };
 		E82F4FFF71F2B06C94E19C4A /* RemuxChooseMatchUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemuxChooseMatchUITests.swift; sourceTree = "<group>"; };
 		F447CFD14FB3908E89E386E9 /* WindowEvents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowEvents.swift; sourceTree = "<group>"; };
@@ -181,7 +181,7 @@
 		A2454ED86F21AF0371544297 /* Packages */ = {
 			isa = PBXGroup;
 			children = (
-				DA3C4B98FB3BE0BDBABCAF61 /* mkv-forge */,
+				09273C4882CEA8D31E0A3095 /* MKVForge */,
 			);
 			name = Packages;
 			sourceTree = "<group>";
