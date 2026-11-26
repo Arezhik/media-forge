@@ -1,27 +1,26 @@
 import XCTest
-import PGSCore
+@testable import PGSCore
+import MediaCore
 
+/// The walk lives in MediaCore. These checks lock this app's extensions, notice
+/// wording, and the document types Finder uses for Open With.
 final class FileIntakeTests: XCTestCase {
-    func testFolderSearchKeepsSupFilesAndIgnoresOtherTypesInside() {
-        let listing = MapListing(directories: [
-            "/films": ["/films/Movie.sup", "/films/nested", "/films/Extra.mkv", "/films/notes.txt"],
-            "/films/nested": ["/films/nested/Two.SUP"]
-        ])
-        let result = FileIntake.collect(paths: ["/films"], listing: listing.listing)
-        XCTAssertEqual(result.sourcePaths, ["/films/Movie.sup", "/films/nested/Two.SUP", "/films/Extra.mkv"])
-        XCTAssertEqual(result.notices, [])
-    }
-
     func testExplicitMkvIsQueuedAndOtherFilesAreNoted() {
-        let result = FileIntake.collect(
+        let result = SubtitleFiles.collect(
             paths: ["/films/Movie.mkv", "/films/Poster.jpg", "/films/Movie.sup", "/films/Movie.sup"],
             listing: MapListing(directories: [:]).listing
         )
         XCTAssertEqual(result.sourcePaths, ["/films/Movie.mkv", "/films/Movie.sup"])
         XCTAssertEqual(result.notices, [
-            .notSubtitle(path: "/films/Poster.jpg")
+            .unsupported(path: "/films/Poster.jpg")
         ])
-        XCTAssertEqual(result.notices[0].message, "Poster.jpg is not a .sup or .mkv file, so it was skipped.")
+        XCTAssertEqual(
+            result.notices[0].message(fileDescription: SubtitleFiles.fileDescription),
+            "Poster.jpg is not a .sup or .mkv file, so it was skipped."
+        )
+        XCTAssertTrue(result.notices[0].isFile)
+        XCTAssertEqual(result.notices[0].path, "/films/Poster.jpg")
+        XCTAssertEqual(SubtitleFiles.acceptedExtensions, ["sup", "mkv"])
     }
 
     func testEmptyAndUnreadableFolders() {
@@ -29,14 +28,21 @@ final class FileIntakeTests: XCTestCase {
             directories: ["/empty": []],
             unreadable: ["/locked"]
         )
-        let empty = FileIntake.collect(paths: ["/empty/"], listing: listing.listing)
+        let empty = SubtitleFiles.collect(paths: ["/empty/"], listing: listing.listing)
         XCTAssertEqual(empty.sourcePaths, [])
-        XCTAssertEqual(empty.notices, [.noSubtitles(folderName: "empty")])
-        XCTAssertEqual(empty.notices[0].message, "No .sup or .mkv files were found in empty.")
+        XCTAssertEqual(empty.notices, [.noMatchingFiles(folderName: "empty")])
+        XCTAssertEqual(
+            empty.notices[0].message(fileDescription: SubtitleFiles.fileDescription),
+            "No .sup or .mkv files were found in empty."
+        )
+        XCTAssertFalse(empty.notices[0].isFile)
 
-        let locked = FileIntake.collect(paths: ["/locked"], listing: listing.listing)
+        let locked = SubtitleFiles.collect(paths: ["/locked"], listing: listing.listing)
         XCTAssertEqual(locked.notices, [.unreadableFolder(folderName: "locked")])
-        XCTAssertEqual(locked.notices[0].message, "Could not look inside locked.")
+        XCTAssertEqual(
+            locked.notices[0].message(fileDescription: SubtitleFiles.fileDescription),
+            "Could not look inside locked."
+        )
     }
 
     func testDockAndOpenWithAcceptSupFilesAndFolders() throws {
@@ -64,39 +70,6 @@ final class FileIntakeTests: XCTestCase {
         XCTAssertEqual(types.first?["CFBundleTypeExtensions"] as? [String], ["sup"])
         XCTAssertGreaterThanOrEqual(types.count, 3)
         XCTAssertEqual(types[1]["LSItemContentTypes"] as? [String], ["public.folder"])
-    }
-
-    func testADirectoryLinkBackToItsParentDoesNotLoop() {
-        let listing = MapListing(
-            directories: [
-                "/films": ["/films/Movie.sup", "/films/loop"],
-                "/films/loop": ["/films/loop"]
-            ],
-            identities: ["/films/loop": "/films"]
-        )
-        let result = FileIntake.collect(paths: ["/films", "/films"], listing: listing.listing)
-        XCTAssertEqual(result.sourcePaths, ["/films/Movie.sup"])
-        XCTAssertEqual(result.notices, [])
-        XCTAssertEqual(listing.reads, ["/films"])
-    }
-
-    func testLiveListingFindsNestedSupFilesAndSkipsHiddenOnes() throws {
-        let root = FileManager.default.temporaryDirectory.appendingPathComponent("pgs-intake-\(UUID().uuidString)")
-        let nested = root.appendingPathComponent("nested")
-        try FileManager.default.createDirectory(at: nested, withIntermediateDirectories: true)
-        defer { try? FileManager.default.removeItem(at: root) }
-        XCTAssertTrue(FileManager.default.createFile(atPath: root.appendingPathComponent("A.sup").path, contents: Data([1])))
-        XCTAssertTrue(FileManager.default.createFile(atPath: nested.appendingPathComponent("B.SUP").path, contents: Data([2])))
-        XCTAssertTrue(FileManager.default.createFile(atPath: root.appendingPathComponent("C.mkv").path, contents: Data([3])))
-        XCTAssertTrue(FileManager.default.createFile(atPath: root.appendingPathComponent(".hidden.sup").path, contents: Data([4])))
-
-        let result = FileIntake.collect(paths: [root.path], listing: .live)
-        XCTAssertEqual(result.sourcePaths.sorted(), [
-            root.appendingPathComponent("A.sup").path,
-            root.appendingPathComponent("C.mkv").path,
-            nested.appendingPathComponent("B.SUP").path
-        ].sorted())
-        XCTAssertEqual(result.notices, [])
     }
 }
 

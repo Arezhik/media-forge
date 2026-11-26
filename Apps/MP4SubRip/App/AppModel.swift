@@ -170,7 +170,11 @@ final class AppModel: ObservableObject {
         }
         Task { @MainActor in
             let result = await Task.detached(priority: .userInitiated) {
-                FileIntake.collect(paths: paths, listing: .live)
+                FileIntake.collect(
+                    paths: paths,
+                    accepted: AppIdentity.inputExtensions,
+                    listing: .live
+                )
             }.value
             self.receiveIntake(result, dropped: paths.count, joinRun: joinRun)
         }
@@ -187,8 +191,9 @@ final class AppModel: ObservableObject {
         let marked = QueueList.markingNewRowsForProbe(addition.items, existingIDs: existingIDs)
         items = marked.items
         for notice in result.notices {
-            banners.append(notice.message)
-            DebugLog.shared.record(.queue, "Notice: \(notice.message)", isWarning: true)
+            let text = notice.message(fileDescription: AppIdentity.inputDescription)
+            banners.append(text)
+            DebugLog.shared.record(.queue, "Notice: \(text)", isWarning: true)
         }
         DebugLog.shared.record(.queue, "Added \(addition.addedCount) of \(dropped) dropped or opened items")
         if !addition.duplicateIDs.isEmpty {
