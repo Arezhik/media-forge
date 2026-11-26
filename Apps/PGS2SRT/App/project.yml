@@ -63,6 +63,8 @@ targets:
         product: VisionOCR
       - package: MediaForge
         product: MediaCore
+      - package: MediaForge
+        product: MediaUI
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.pgs2srt.PGS2SRT

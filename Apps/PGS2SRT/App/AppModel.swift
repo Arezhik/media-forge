@@ -1,6 +1,7 @@
 import AppKit
 import Combine
 import MediaCore
+import MediaUI
 import Foundation
 import PGSCore
 import UniformTypeIdentifiers
@@ -202,7 +203,7 @@ final class AppModel: ObservableObject {
                 )
             }
             // An empty root selects the file in the main viewer. A parent folder opens a new one.
-            _ = NSWorkspace.shared.selectFile(url.path, inFileViewerRootedAtPath: "")
+            Reveal.selectFile(path: url.path)
         case let .alert(alert):
             let source = sourcePath
             Task { @MainActor in
@@ -240,29 +241,24 @@ final class AppModel: ObservableObject {
     }
 
     func showOpenPanel() {
-        let panel = NSOpenPanel()
-        panel.title = "Open Subtitles"
-        panel.message = "Choose .sup files, .mkv files, or a folder."
-        panel.prompt = "Open"
-        panel.canChooseFiles = true
-        panel.canChooseDirectories = true
-        panel.allowsMultipleSelection = true
-        panel.allowedContentTypes = Self.openableTypes
-        guard panel.runModal() == .OK else { return }
-        importURLs(panel.urls)
+        guard let urls = FilePanels.chooseFiles(
+            title: "Open Subtitles",
+            message: "Choose .sup files, .mkv files, or a folder.",
+            prompt: "Open",
+            canChooseDirectories: true,
+            allowsMultipleSelection: true,
+            allowedContentTypes: Self.openableTypes
+        ) else { return }
+        importURLs(urls)
     }
 
     func chooseOutputFolder() -> String? {
-        let panel = NSOpenPanel()
-        panel.title = "Output Folder"
-        panel.message = "Converted .srt files will be written in this folder."
-        panel.prompt = "Choose"
-        panel.canChooseFiles = false
-        panel.canChooseDirectories = true
-        panel.allowsMultipleSelection = false
-        panel.canCreateDirectories = true
-        guard panel.runModal() == .OK, let url = panel.url else { return nil }
-        return url.path
+        FilePanels.chooseFolder(
+            title: "Output Folder",
+            message: "Converted .srt files will be written in this folder.",
+            prompt: "Choose",
+            canCreateDirectories: true
+        )?.path
     }
 
     func updatePreferences(_ preferences: ConversionPreferences) {
