@@ -1,4 +1,5 @@
 import AppKit
+import MediaCore
 import MP4SubRipCore
 
 /// Receives files opened from the Dock or from Finder's Open With.

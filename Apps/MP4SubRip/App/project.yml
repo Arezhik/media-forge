@@ -32,6 +32,8 @@ settings:
 packages:
   CorePackage:
     path: ..
+  MediaForge:
+    path: ../../../Packages/MediaForge
 targets:
   MP4SubRip:
     type: application
@@ -51,6 +53,8 @@ targets:
     dependencies:
       - package: CorePackage
         product: MP4SubRipCore
+      - package: MediaForge
+        product: MediaCore
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.arezhik.MP4SubRip
@@ -91,6 +95,8 @@ targets:
       - path: MP4UITests
     dependencies:
       - target: MP4SubRip
+      - package: MediaForge
+        product: MediaTesting
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.arezhik.MP4SubRipUITests

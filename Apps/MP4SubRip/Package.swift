@@ -11,10 +11,24 @@ let package = Package(
     products: [
         .library(name: "MP4SubRipCore", targets: ["MP4SubRipCore"])
     ],
+    dependencies: [
+        .package(path: "../../Packages/MediaForge")
+    ],
     targets: [
         // Core logic only: no AppKit, SwiftUI, or Vision imports, so `swift test`
         // runs on Linux (cloud agents and the Linux CI job) as well as on a Mac.
-        .target(name: "MP4SubRipCore"),
-        .testTarget(name: "MP4SubRipCoreTests", dependencies: ["MP4SubRipCore"])
+        .target(
+            name: "MP4SubRipCore",
+            dependencies: [
+                .product(name: "MediaCore", package: "MediaForge")
+            ]
+        ),
+        .testTarget(
+            name: "MP4SubRipCoreTests",
+            dependencies: [
+                "MP4SubRipCore",
+                .product(name: "MediaCore", package: "MediaForge")
+            ]
+        )
     ]
 )

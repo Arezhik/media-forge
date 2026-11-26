@@ -1,4 +1,5 @@
 import Foundation
+import MediaCore
 
 // Time remaining for a running batch (issue #13, ported from mkv-forge #23).
 // Rules:

@@ -1,5 +1,6 @@
 import AppKit
 import Darwin
+import MediaCore
 import Foundation
 import OSLog
 import MP4SubRipCore

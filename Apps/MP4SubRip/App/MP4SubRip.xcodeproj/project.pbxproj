@@ -7,7 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0593E514E352C7184A0882DA /* MediaCore in Frameworks */ = {isa = PBXBuildFile; productRef = 6618C7F804EFC8979B68E38C /* MediaCore */; };
 		1F31CB18F1A0762F36AB41F2 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F57E97EF02F83C7F69DF0E36 /* Assets.xcassets */; };
+		3F3D2C0969E3D135695C4F76 /* MediaTesting in Frameworks */ = {isa = PBXBuildFile; productRef = F368ED1D7BA23C3133A8A517 /* MediaTesting */; };
 		4148A100B04AA2A23CD3C680 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE613AFBC70440AE80065227 /* SettingsView.swift */; };
 		46D82E39AC672F759807363E /* WindowEvents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1EDF7F1C67101F6E78909643 /* WindowEvents.swift */; };
 		5CAF3DDAF0D89312A4B449FE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05B82AD68FAC7C6DB19DF330 /* AppDelegate.swift */; };
@@ -16,7 +18,6 @@
 		7D927AB6FC643565185F9620 /* HelloWorldUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9072CB7B9DFDDDCE2D25745 /* HelloWorldUITests.swift */; };
 		B03720F58E12F0BD5004D6C8 /* DebugLogSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9456220548F18AF182996979 /* DebugLogSupport.swift */; };
 		B22E364959132C25F6085AB4 /* Phase3ModeAndFeedbackUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C58A9427BE32BC488CFFFE86 /* Phase3ModeAndFeedbackUITests.swift */; };
-		BE57E1DA07C72EF7C99E5483 /* UITestFixtureBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D962DCD0D9C144ABEE40E37 /* UITestFixtureBuilder.swift */; };
 		E71559FD6EAD6E845D9AE183 /* MP4SubRipCore in Frameworks */ = {isa = PBXBuildFile; productRef = 5C6A8FC626F65C192C9CD94E /* MP4SubRipCore */; };
 		EB1B02E406225B1E2713C383 /* AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24255DE297AE82DC80E922F2 /* AppModel.swift */; };
 		F1848E6E5715D6AEABE5F7C1 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 084F56A8F03FBA28B2193E86 /* ContentView.swift */; };
@@ -39,24 +40,33 @@
 		24255DE297AE82DC80E922F2 /* AppModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppModel.swift; sourceTree = "<group>"; };
 		69F749644A2410040DE1C750 /* MP4SubRip */ = {isa = PBXFileReference; lastKnownFileType = folder; name = MP4SubRip; path = ..; sourceTree = SOURCE_ROOT; };
 		6C0E9A2495EBDFF179D9B5D3 /* MP4SubRip.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MP4SubRip.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		7D962DCD0D9C144ABEE40E37 /* UITestFixtureBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UITestFixtureBuilder.swift; sourceTree = "<group>"; };
 		939F0297BED8320C0C920EF9 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		9456220548F18AF182996979 /* DebugLogSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugLogSupport.swift; sourceTree = "<group>"; };
 		AC68C7D2A959F4F949F46154 /* MP4SubRipApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MP4SubRipApp.swift; sourceTree = "<group>"; };
 		ACE73ACD94D5B8833412F665 /* UITestingLaunch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UITestingLaunch.swift; sourceTree = "<group>"; };
 		AE613AFBC70440AE80065227 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		C58A9427BE32BC488CFFFE86 /* Phase3ModeAndFeedbackUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Phase3ModeAndFeedbackUITests.swift; sourceTree = "<group>"; };
+		CAC7522D2E62AAF6AA33F9E1 /* MediaForge */ = {isa = PBXFileReference; lastKnownFileType = folder; name = MediaForge; path = ../../../Packages/MediaForge; sourceTree = SOURCE_ROOT; };
 		D397C16711F3A92675B5A372 /* MP4SubRipUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MP4SubRipUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		F57E97EF02F83C7F69DF0E36 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		F9072CB7B9DFDDDCE2D25745 /* HelloWorldUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HelloWorldUITests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		4D4FB220628792163F71987D /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3F3D2C0969E3D135695C4F76 /* MediaTesting in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		A167EF782C3272F83E8C005E /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 				E71559FD6EAD6E845D9AE183 /* MP4SubRipCore in Frameworks */,
+				0593E514E352C7184A0882DA /* MediaCore in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -68,7 +78,6 @@
 			children = (
 				F9072CB7B9DFDDDCE2D25745 /* HelloWorldUITests.swift */,
 				C58A9427BE32BC488CFFFE86 /* Phase3ModeAndFeedbackUITests.swift */,
-				7D962DCD0D9C144ABEE40E37 /* UITestFixtureBuilder.swift */,
 			);
 			path = MP4UITests;
 			sourceTree = "<group>";
@@ -87,6 +96,7 @@
 		C7E88DBCFD938053340D6E94 /* Packages */ = {
 			isa = PBXGroup;
 			children = (
+				CAC7522D2E62AAF6AA33F9E1 /* MediaForge */,
 				69F749644A2410040DE1C750 /* MP4SubRip */,
 			);
 			name = Packages;
@@ -136,6 +146,7 @@
 			name = MP4SubRip;
 			packageProductDependencies = (
 				5C6A8FC626F65C192C9CD94E /* MP4SubRipCore */,
+				6618C7F804EFC8979B68E38C /* MediaCore */,
 			);
 			productName = MP4SubRip;
 			productReference = 6C0E9A2495EBDFF179D9B5D3 /* MP4SubRip.app */;
@@ -146,6 +157,7 @@
 			buildConfigurationList = 1A246603AA535BFC4A472100 /* Build configuration list for PBXNativeTarget "MP4SubRipUITests" */;
 			buildPhases = (
 				D4321D246BD4A2A7D3A15576 /* Sources */,
+				4D4FB220628792163F71987D /* Frameworks */,
 			);
 			buildRules = (
 			);
@@ -154,6 +166,7 @@
 			);
 			name = MP4SubRipUITests;
 			packageProductDependencies = (
+				F368ED1D7BA23C3133A8A517 /* MediaTesting */,
 			);
 			productName = MP4SubRipUITests;
 			productReference = D397C16711F3A92675B5A372 /* MP4SubRipUITests.xctest */;
@@ -188,6 +201,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				6B056DC1FE0A9F5079AF9E33 /* XCLocalSwiftPackageReference ".." */,
+				9EA66AAB46872534F10197CF /* XCLocalSwiftPackageReference "../../../Packages/MediaForge" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = EC53722C3B43BF791D788560 /* Products */;
@@ -233,7 +247,6 @@
 			files = (
 				7D927AB6FC643565185F9620 /* HelloWorldUITests.swift in Sources */,
 				B22E364959132C25F6085AB4 /* Phase3ModeAndFeedbackUITests.swift in Sources */,
-				BE57E1DA07C72EF7C99E5483 /* UITestFixtureBuilder.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -515,12 +528,24 @@
 			isa = XCLocalSwiftPackageReference;
 			relativePath = ..;
 		};
+		9EA66AAB46872534F10197CF /* XCLocalSwiftPackageReference "../../../Packages/MediaForge" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ../../../Packages/MediaForge;
+		};
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
 		5C6A8FC626F65C192C9CD94E /* MP4SubRipCore */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = MP4SubRipCore;
+		};
+		6618C7F804EFC8979B68E38C /* MediaCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = MediaCore;
+		};
+		F368ED1D7BA23C3133A8A517 /* MediaTesting */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = MediaTesting;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

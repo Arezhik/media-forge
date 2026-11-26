@@ -1,3 +1,4 @@
+import MediaTesting
 import XCTest
 
 /// Pareto critical path for Phase 3: the queue window, the Mode picker, and Extract Subtitles.
@@ -11,6 +12,11 @@ final class Phase3ModeAndFeedbackUITests: XCTestCase {
 
     override func setUpWithError() throws {
         continueAfterFailure = false
+        // MediaTesting cannot always import XCTest. Install the skip here so a
+        // missing ffmpeg still skips the UI test instead of failing it.
+        UITestFixtureBuilder.setMissingFFmpegHandler { message in
+            XCTSkip(message)
+        }
         fixtures = try UITestFixtureBuilder()
         // Intake shows the file in the queue. Extraction does not start until Extract Subtitles.
         try fixtures.createDummyFile(in: fixtures.input, named: "sample.mp4")

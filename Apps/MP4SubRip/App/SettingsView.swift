@@ -1,4 +1,5 @@
 import AppKit
+import MediaCore
 import SwiftUI
 import UniformTypeIdentifiers
 import MP4SubRipCore
