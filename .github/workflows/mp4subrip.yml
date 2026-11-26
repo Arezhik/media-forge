@@ -10,9 +10,9 @@ name: MP4SubRip CI
 on:
   push:
     branches: [main]
-    paths: ['Apps/MP4SubRip/**', 'Packages/MediaForge/**', '.github/workflows/mp4subrip.yml']
+    paths: ['Apps/MP4SubRip/**', 'Packages/MediaForge/**', 'scripts/**', '.github/workflows/mp4subrip.yml']
   pull_request:
-    paths: ['Apps/MP4SubRip/**', 'Packages/MediaForge/**', '.github/workflows/mp4subrip.yml']
+    paths: ['Apps/MP4SubRip/**', 'Packages/MediaForge/**', 'scripts/**', '.github/workflows/mp4subrip.yml']
 
 concurrency:
   group: mp4subrip-${{ github.ref }}
@@ -32,7 +32,9 @@ jobs:
         uses: actions/checkout@v7
 
       - name: Version is in sync
-        # project.pbxproj, project.yml, and CHANGELOG.md must agree (scripts/bump-version.sh).
+        # project.pbxproj, project.yml, and CHANGELOG.md must agree.
+        # Apps/MP4SubRip/scripts/bump-version.sh forwards to the repo-root
+        # scripts/bump-version.sh mp4subrip.
         run: bash scripts/bump-version.sh --check
 
       - name: Build number is above the base branch

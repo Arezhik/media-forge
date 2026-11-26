@@ -114,7 +114,7 @@ Run uses the Debug build, which includes only the chip in the Mac you are using 
 
 The decoder lives in a Swift package named **PGS2SRTKit** (`Package.swift` in `Apps/PGS2SRT`). The Xcode project is named PGS2SRT and lives in `App/`, one folder down, so it is not sitting in the same folder as that package. Xcode’s window gets confused when the package and the project share a name and a folder: the command line can still resolve the package, but the window says the products are missing, and a Debug build then tries to read a module built for a different Mac target. The window is a normal macOS app (not an iPad app, not Mac Catalyst). Debug builds only the chip in the Mac you are using. Release still builds for both Apple silicon and Intel. The `.xcodeproj` is already generated and checked in, so you can open it and press Run.
 
-`App/project.yml` is a recipe for [XcodeGen](https://github.com/yonaskolb/XcodeGen). You can ignore it. It is only there so a developer can regenerate the Xcode project later (`./scripts/verify-linux.sh` from `Apps/PGS2SRT`, XcodeGen 2.48.0). The local package folder reference is named `PGS2SRT`.
+`App/project.yml` is a recipe for [XcodeGen](https://github.com/yonaskolb/XcodeGen). You can ignore it. It is only there so a developer can regenerate the Xcode project later (`./scripts/verify-linux.sh` from `Apps/PGS2SRT`, which forwards to `scripts/verify-linux.sh pgs2srt` at the repo root, XcodeGen 2.48.0). The local package folder reference is named `PGS2SRT`. Never hand-edit `project.pbxproj`. The version lines are the exception: change them with `scripts/bump-version.sh pgs2srt` from the repo root.
 
 `AGENTS.md` has the rules for coding agents (and a short project map). Read it before the first change.
 
@@ -156,7 +156,7 @@ A broken file stops with a message that says what was wrong and where, instead o
 
 ## For developers
 
-Releases of this app are tagged `pgs2srt-vX.Y.Z` (this version is `pgs2srt-v0.3.1`, build 8).
+The version is MAJOR.MINOR.PATCH, plus a build number (this version is `pgs2srt-v0.3.1`, build 8). From the repo root, bump a user-visible change with `scripts/bump-version.sh pgs2srt patch|minor|major`: patch for a bug fix or small tweak, minor for a new feature, and major for a major enhancement or breaking change (a new phase is usually minor). Every bump also adds 1 to the build number. Docs-only and CI-only PRs don't bump. From `Apps/PGS2SRT`, `scripts/bump-version.sh` forwards to that command. This app has no `CHANGELOG.md`. `scripts/bump-version.sh pgs2srt --check` still requires `App/project.yml` and `project.pbxproj` to agree, and it does not create a changelog. CI allows an unchanged version and build. The build must rise when the version changes, and the build must not go down. Releases are tagged `pgs2srt-vX.Y.Z`.
 
 From `Apps/PGS2SRT`, with Swift 5.9 or newer:
 
