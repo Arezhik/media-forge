@@ -6,6 +6,10 @@ Every merged PR that changes the shipped app bumps the version in the same PR wi
 
 ## [Unreleased]
 
+## [0.9.0] - 2026-11-26 (build 13)
+### Changed
+- The minimum system is macOS 15. macOS 14 is no longer supported (#1).
+
 ## [0.8.2] - 2026-11-26 (build 12)
 ### Changed
 - ffmpeg is found and run through the shared MediaCore tool locator and runner. Behavior is unchanged (#5).
