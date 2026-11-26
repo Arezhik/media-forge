@@ -1,5 +1,6 @@
 import AppKit
 import Foundation
+import MediaCore
 import PGSCore
 
 /// Opt-in trace for #35 and #30. Off unless `PGS2SRT_DIAGNOSTICS` or the

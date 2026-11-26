@@ -175,3 +175,38 @@ public enum ConversionPreferenceStore {
         )
     }
 }
+
+extension ConversionPreferences {
+    /// One line for the debug log. A folder path is still full here; the log shortens the home folder.
+    public var logDescription: String {
+        let place: String
+        switch placement {
+        case .nextToSource:
+            place = "next to the source file"
+        case let .folder(path):
+            place = path.isEmpty ? "a folder that has not been chosen" : "folder \(path)"
+        }
+        let existing: String
+        switch existingFile {
+        case .overwrite:
+            existing = "overwrite"
+        case .addNumber:
+            existing = "add a number"
+        case .skip:
+            existing = "skip"
+        }
+        let italics = experimentalItalics ? "on" : "off"
+        let choose = chooseMKVTrack ? "on" : "off"
+        let when = saveTiming == .afterReview ? "hold for review" : "save right away"
+        let notifications: String
+        switch batchNotification {
+        case .whenBatchFinishes:
+            notifications = "when a batch finishes"
+        case .onlyOnFailure:
+            notifications = "only when something fails"
+        case .never:
+            notifications = "off"
+        }
+        return "language \(language), save \(place), if the .srt exists \(existing), \(concurrency) pictures at a time, italics \(italics), choose MKV track \(choose), after conversion \(when), notifications \(notifications)"
+    }
+}

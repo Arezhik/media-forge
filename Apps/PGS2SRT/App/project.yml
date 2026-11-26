@@ -32,6 +32,8 @@ settings:
 packages:
   PGSCorePackage:
     path: ..
+  MediaForge:
+    path: ../../../Packages/MediaForge
 targets:
   PGS2SRT:
     type: application
@@ -59,6 +61,8 @@ targets:
         product: PGSCore
       - package: PGSCorePackage
         product: VisionOCR
+      - package: MediaForge
+        product: MediaCore
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.pgs2srt.PGS2SRT
@@ -134,6 +138,8 @@ targets:
       - path: P2SUITests
     dependencies:
       - target: PGS2SRT
+      - package: MediaForge
+        product: MediaTesting
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.pgs2srt.PGS2SRTUITests

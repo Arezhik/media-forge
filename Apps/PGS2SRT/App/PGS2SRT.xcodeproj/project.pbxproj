@@ -10,6 +10,7 @@
 		1FC8EE6CE714119BF739E318 /* IssueDiagnosticLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE667445FEF49956B476B08E /* IssueDiagnosticLog.swift */; };
 		2CC09C1C7A9CCD380B0CD334 /* PGSCore in Frameworks */ = {isa = PBXBuildFile; productRef = BB2561138E57D040F3EA914C /* PGSCore */; };
 		37CA7397C38B315F22E70154 /* VisionOCR in Frameworks */ = {isa = PBXBuildFile; productRef = CD6D0404609CCEF8D5099AC4 /* VisionOCR */; };
+		3B606161F0681F5BE909B069 /* MediaTesting in Frameworks */ = {isa = PBXBuildFile; productRef = E1F6CB9808D0C6E694C69A83 /* MediaTesting */; };
 		4F3BC5240CF449F299C4DFED /* CueTextEditor.swift in Sources */ = {isa = PBXBuildFile; fileRef = F174FADF49F79DE59DD274B9 /* CueTextEditor.swift */; };
 		5655ECB26B8EC1E623202168 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 088EC1EB401E40E110B61E58 /* ContentView.swift */; };
 		64C3066E2213D86925850965 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53426FD9A8516E79D50009F8 /* SettingsView.swift */; };
@@ -22,8 +23,8 @@
 		BFCF8EE42578FCC9C3C07557 /* ReviewWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD0B66D179ABB3841EC90534 /* ReviewWindow.swift */; };
 		C4BFF063E986F3C7944BF240 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 6BA2AF6045D61B8F6C7A401F /* Assets.xcassets */; };
 		C61915848D5B358A3F139864 /* PGS2SRTApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14BBC33ADB45DD9569486789 /* PGS2SRTApp.swift */; };
-		D05953CC9A1819601129C33C /* UITestFixtureBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6283504DCF794F48814E8A1 /* UITestFixtureBuilder.swift */; };
 		E26BD97F94B6A533C302637B /* ReviewWindowDelegateProxy.m in Sources */ = {isa = PBXBuildFile; fileRef = 3804615A0580AD285E5648D8 /* ReviewWindowDelegateProxy.m */; };
+		E4DA8BF0ED25DBAEA64AF96E /* MediaCore in Frameworks */ = {isa = PBXBuildFile; productRef = 34429CAC15DCCD3313769E05 /* MediaCore */; };
 		F98908730E6B085DA8539DCE /* HelloWorldUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 503CB9507B4D5A38E2081CB2 /* HelloWorldUITests.swift */; };
 		FDD0C3889CFC4EC67471D1A9 /* AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D48F84F763A969232E1F173B /* AppModel.swift */; };
 /* End PBXBuildFile section */
@@ -44,6 +45,7 @@
 		3804615A0580AD285E5648D8 /* ReviewWindowDelegateProxy.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ReviewWindowDelegateProxy.m; sourceTree = "<group>"; };
 		503CB9507B4D5A38E2081CB2 /* HelloWorldUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HelloWorldUITests.swift; sourceTree = "<group>"; };
 		53426FD9A8516E79D50009F8 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		53685ACFBED306E3F5ADFFFB /* MediaForge */ = {isa = PBXFileReference; lastKnownFileType = folder; name = MediaForge; path = ../../../Packages/MediaForge; sourceTree = SOURCE_ROOT; };
 		62768C56DABA94C28D080050 /* PGS2SRT-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "PGS2SRT-Bridging-Header.h"; sourceTree = "<group>"; };
 		661BD66372C350983C3B59AF /* PGS2SRTCLI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PGS2SRTCLI.swift; sourceTree = "<group>"; };
 		6BA2AF6045D61B8F6C7A401F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -52,7 +54,6 @@
 		88FCCF7582A151BFF36FE4CE /* PGS2SRT.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PGS2SRT.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		8F630CEFE46790BBB409D33F /* UITestingLaunch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UITestingLaunch.swift; sourceTree = "<group>"; };
 		9E4C571CE16BB8DB4778E604 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
-		B6283504DCF794F48814E8A1 /* UITestFixtureBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UITestFixtureBuilder.swift; sourceTree = "<group>"; };
 		BA5CB42CD5C41B83824AFB9C /* DebugLogSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugLogSupport.swift; sourceTree = "<group>"; };
 		BE667445FEF49956B476B08E /* IssueDiagnosticLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IssueDiagnosticLog.swift; sourceTree = "<group>"; };
 		CD0B66D179ABB3841EC90534 /* ReviewWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReviewWindow.swift; sourceTree = "<group>"; };
@@ -64,12 +65,21 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		44B2C8EEE74B9E3596430041 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3B606161F0681F5BE909B069 /* MediaTesting in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		8CA726338C98E39D07A48FAB /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 				AAFAE1218132559B23634E7B /* PGSCore in Frameworks */,
 				94F4A9837F19A92CFC7B6385 /* VisionOCR in Frameworks */,
+				E4DA8BF0ED25DBAEA64AF96E /* MediaCore in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -88,6 +98,7 @@
 		06DE32F7224E05641D4D5F99 /* Packages */ = {
 			isa = PBXGroup;
 			children = (
+				53685ACFBED306E3F5ADFFFB /* MediaForge */,
 				CECA0AEF85B9ADCB83F0558C /* PGS2SRT */,
 			);
 			name = Packages;
@@ -157,7 +168,6 @@
 			isa = PBXGroup;
 			children = (
 				503CB9507B4D5A38E2081CB2 /* HelloWorldUITests.swift */,
-				B6283504DCF794F48814E8A1 /* UITestFixtureBuilder.swift */,
 			);
 			path = P2SUITests;
 			sourceTree = "<group>";
@@ -210,6 +220,7 @@
 			packageProductDependencies = (
 				9E4CAFC4DD918D94C19BB38E /* PGSCore */,
 				A365E27F7A9106C982DAB80C /* VisionOCR */,
+				34429CAC15DCCD3313769E05 /* MediaCore */,
 			);
 			productName = PGS2SRT;
 			productReference = 88FCCF7582A151BFF36FE4CE /* PGS2SRT.app */;
@@ -220,6 +231,7 @@
 			buildConfigurationList = D5EE48D4EC50343B95B2E2E3 /* Build configuration list for PBXNativeTarget "PGS2SRTUITests" */;
 			buildPhases = (
 				7E2994A7622248211C49B03A /* Sources */,
+				44B2C8EEE74B9E3596430041 /* Frameworks */,
 			);
 			buildRules = (
 			);
@@ -228,6 +240,7 @@
 			);
 			name = PGS2SRTUITests;
 			packageProductDependencies = (
+				E1F6CB9808D0C6E694C69A83 /* MediaTesting */,
 			);
 			productName = PGS2SRTUITests;
 			productReference = 6EA3E8EBFC8C4512B11CD65C /* PGS2SRTUITests.xctest */;
@@ -264,6 +277,7 @@
 			mainGroup = 5BC0DD8448792D8BD5393371;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
+				E4B8752F9540B52CE35551FC /* XCLocalSwiftPackageReference "../../../Packages/MediaForge" */,
 				A949C3908EC77E1A43D01A07 /* XCLocalSwiftPackageReference ".." */,
 			);
 			preferredProjectObjectVersion = 77;
@@ -313,7 +327,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				F98908730E6B085DA8539DCE /* HelloWorldUITests.swift in Sources */,
-				D05953CC9A1819601129C33C /* UITestFixtureBuilder.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -678,9 +691,17 @@
 			isa = XCLocalSwiftPackageReference;
 			relativePath = ..;
 		};
+		E4B8752F9540B52CE35551FC /* XCLocalSwiftPackageReference "../../../Packages/MediaForge" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ../../../Packages/MediaForge;
+		};
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		34429CAC15DCCD3313769E05 /* MediaCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = MediaCore;
+		};
 		9E4CAFC4DD918D94C19BB38E /* PGSCore */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = PGSCore;
@@ -696,6 +717,10 @@
 		CD6D0404609CCEF8D5099AC4 /* VisionOCR */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = VisionOCR;
+		};
+		E1F6CB9808D0C6E694C69A83 /* MediaTesting */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = MediaTesting;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

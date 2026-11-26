@@ -12,9 +12,9 @@ name: PGS2SRT CI
 on:
   push:
     branches: [main]
-    paths: ['Apps/PGS2SRT/**', '.github/workflows/pgs2srt.yml']
+    paths: ['Apps/PGS2SRT/**', 'Packages/MediaForge/**', '.github/workflows/pgs2srt.yml']
   pull_request:
-    paths: ['Apps/PGS2SRT/**', '.github/workflows/pgs2srt.yml']
+    paths: ['Apps/PGS2SRT/**', 'Packages/MediaForge/**', '.github/workflows/pgs2srt.yml']
 
 concurrency:
   group: pgs2srt-${{ github.ref }}

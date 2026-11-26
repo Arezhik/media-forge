@@ -1,3 +1,4 @@
+import MediaCore
 import XCTest
 @testable import PGSCore
 
@@ -835,7 +836,7 @@ final class ConversionQueueTests: XCTestCase {
             DebugLog.shared.reset()
             try? FileManager.default.removeItem(at: directory)
         }
-        DebugLog.shared.configure(directory: directory, homeDirectory: "/Users/ada")
+        DebugLog.shared.configure(appName: AppIdentity.name, directory: directory, homeDirectory: "/Users/ada")
 
         let mkv = MKVDouble(json: englishThenJapanese)
         let queue = await makeQueue(script: Script(), mkv: mkv.client()) { _ in

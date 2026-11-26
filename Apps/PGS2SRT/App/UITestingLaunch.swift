@@ -1,4 +1,5 @@
 import Foundation
+import MediaCore
 import PGSCore
 
 /// Launch hooks for XCUITest. Active only when the process was started with
