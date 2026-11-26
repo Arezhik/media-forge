@@ -4,7 +4,7 @@ import UniformTypeIdentifiers
 import MP4SubRipCore
 
 /// The single queue window: a drop screen when empty, the queue otherwise.
-/// The deployment target is macOS 14, so the queue is a SwiftUI `Table`.
+/// The deployment target is macOS 15, so the queue is a SwiftUI `Table`.
 /// Column show/hide is left out; it is optional for 0.7.0.
 struct ContentView: View {
     @EnvironmentObject private var model: AppModel

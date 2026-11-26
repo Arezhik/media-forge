@@ -6,7 +6,7 @@ Created 2026-11-04. Keep this short. Coding agents work from it, so update it wh
 One or two sentences: who it's for and what it does.
 
 ## Decisions
-- Platform: macOS 14.0+, universal (arm64 + x86_64), SwiftUI, unsigned CI build.
+- Platform: macOS 15.0+, universal (arm64 + x86_64), SwiftUI, unsigned CI build.
 - Bundle ID: `com.arezhik.MP4SubRip` (don't change it after testers install the app).
 - Input: .mp4 files and folders, from the window, Add Files (⌘O), the Dock, and Open With. Adding a file queues it. Extract Subtitles runs the queue.
 - Output: next to the input by default, or a folder chosen from the Save to bar or Settings. Up to 3 recent folders are remembered, with a security-scoped bookmark. Save to is disabled during a run. Not sandboxed.

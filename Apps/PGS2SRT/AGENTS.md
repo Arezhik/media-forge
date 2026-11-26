@@ -1,5 +1,5 @@
 # Rules for this repo (macOS app)
-- Native Swift/SwiftUI macOS app, universal (arm64 + x86_64), unsigned, not sandboxed. Minimum macOS 13.0. Local Debug is built with Xcode 27.
+- Native Swift/SwiftUI macOS app, universal (arm64 + x86_64), unsigned, not sandboxed. Minimum macOS 15.0. Local Debug is built with Xcode 27.
 - You run on Linux and can't run Xcode, the app, or Apple Vision. Put convertible logic in the Swift package. `PGSCore` stays free of AppKit/SwiftUI/Vision so `swift test` runs on Linux. `VisionOCR` and live OCR need a Mac (CI `macos-tests` job).
 - The Swift package `PGS2SRTKit` lives in `Apps/PGS2SRT`. Don't rename the package to the app's name, and don't move the `.xcodeproj` out of `App/`. Never hand-edit `App/PGS2SRT.xcodeproj/project.pbxproj`. To add, rename, or remove an app file, update `App/project.yml` and run `./scripts/verify-linux.sh` from `Apps/PGS2SRT` (it forwards to the repo-root `scripts/verify-linux.sh pgs2srt`), then commit both. Open `Apps/PGS2SRT/App/PGS2SRT.xcodeproj`, never `Package.swift`, for the windowed app. The only `project.pbxproj` edits that are allowed are the version lines written by `scripts/bump-version.sh pgs2srt`.
 - Don't set `ARCHS` for Debug. Debug follows the run destination (`ONLY_ACTIVE_ARCH=YES`). Release stays universal.
@@ -11,7 +11,7 @@
 - Don't replace a window's delegate with a plain Swift object. Prefer observing `NSWindow` notifications. The review window uses `ReviewWindowDelegateProxy` (ObjC, bridging header). If you extend it, list every selector you implement, keep unknown delegate messages from crashing, and cover new forwarding with `ReviewDelegateProxyTests`.
 - Don't set window properties from `layout()`.
 - Reveal in Finder checks the file exists first, uses `activateFileViewerSelecting` so Finder selects the file in the normal window (not a huge single-file window), and logs the call.
-- Every toolbar item is also in the menu bar. Settings opens with `SettingsLink` or `openSettings` (macOS 14+ / 26). Don't use APIs that only work on older macOS for the Settings button.
+- Every toolbar item is also in the menu bar. Settings opens with `SettingsLink` or `openSettings`. Don't use APIs that only work on older macOS for the Settings button.
 - Dock drops and Open With reuse the one open window. Folders walk subfolders. Dropped `.sup` / `.mkv` files start converting when queued (this app does not wait for an Extract button).
 - Clear Finished and the row ✕ act only on finished, failed, skipped, or canceled rows. Never delete files on disk. An empty queue shows the drop screen. No confirmation.
 - Existing output: Overwrite asks once per batch with "Apply to all". Never ask per file mid-batch. Add a number and Skip do not ask. Two files in one batch that would share an output name get distinct names.
@@ -32,7 +32,7 @@
 - Push to a feature branch `grok/<slug>`, then open a PR with `gh pr create --fill` (or `--draft` for work in progress) because CI runs on pull requests. Check CI with `gh pr checks` or `gh run list` only if `gh auth status` succeeds. No version bump, no CHANGELOG change.
 
 ## This project
-- Repo `Arezhik/media-forge`, app path `Apps/PGS2SRT`. App PGS2SRT, bundle ID `com.pgs2srt.PGS2SRT`, macOS 13.0+. Tags `pgs2srt-vX.Y.Z`. Workflow `.github/workflows/pgs2srt.yml`.
+- Repo `Arezhik/media-forge`, app path `Apps/PGS2SRT`. App PGS2SRT, bundle ID `com.pgs2srt.PGS2SRT`, macOS 15.0+. Tags `pgs2srt-vX.Y.Z`. Workflow `.github/workflows/pgs2srt.yml`.
 - Package `PGS2SRTKit` (libraries `PGSCore`, `VisionOCR`; tools `pgs2srt`, `pgsdump`; tests `PGSCoreTests` and macOS-only `ReviewDelegateProxyTests`). Xcode project `App/PGS2SRT.xcodeproj`, scheme `PGS2SRT`. Optional UI smoke: `App/P2SUITests`.
 - Version: `scripts/bump-version.sh pgs2srt --current` from the repo root, or `scripts/bump-version.sh --current` from `Apps/PGS2SRT` (0.3.1, build 8; see About and the debug-log header). There is no CHANGELOG.md. History is in merged PR descriptions and README.
 - CI artifact: `PGS2SRT-universal.zip`. Universal app job uses the `xcode-27` runner; Vision unit tests stay on `macos-latest` (hosted Xcode 27 images have broken `VNRecognizeTextRequest`).

@@ -7,8 +7,8 @@ Read this before the first change.
 
 - `Packages/MediaForge` — canonical Swift package. Products: `MediaCore` (UITestingEnvironment, RollingLogStore, DebugLog with one category set, ProgressThrottle, ExternalTool locator, ToolCommand runner), `MediaUI`, and `MediaTesting` (UITestFixtureBuilder).
 - `Apps/MKVForge` — MKV Forge (macOS 15), with its own package, version, and tags `mkvforge-vX.Y.Z`. Workflow: `.github/workflows/mkvforge.yml`.
-- `Apps/MP4SubRip` — MP4SubRip (macOS 14), with its own package, version, and tags `mp4subrip-vX.Y.Z`. Workflow: `.github/workflows/mp4subrip.yml`.
-- `Apps/PGS2SRT` — PGS2SRT (macOS 13), with its own package, version, and tags `pgs2srt-vX.Y.Z`. Workflow: `.github/workflows/pgs2srt.yml`.
+- `Apps/MP4SubRip` — MP4SubRip (macOS 15), with its own package, version, and tags `mp4subrip-vX.Y.Z`. Workflow: `.github/workflows/mp4subrip.yml`.
+- `Apps/PGS2SRT` — PGS2SRT (macOS 15), with its own package, version, and tags `pgs2srt-vX.Y.Z`. Workflow: `.github/workflows/pgs2srt.yml`.
 - `scripts/` — shared local checks. `scripts/bump-version.sh <app>` checks or bumps one app (`mkvforge`, `mp4subrip`, or `pgs2srt`) and tags `<app>-vX.Y.Z`. `scripts/verify-linux.sh` runs MediaForge and the root umbrella, then the three apps, when given `all` or no arguments. `package` is MediaForge and the umbrella only. An app name runs that app. `Apps/<App>/scripts/bump-version.sh` and `verify-linux.sh` forward to these. `Apps/MKVForge/scripts/check-project.sh` stays an app script.
 - `.github/workflows/ci.yml` — Linux and macOS `swift test` / `swift build` for MediaForge and the umbrella.
 - `.github/workflows/mkvforge.yml` — MKVForge Linux tests, macOS tests, and the universal app.
@@ -28,8 +28,8 @@ so `.github/workflows/ci.yml` keeps testing MediaForge and the umbrella.
 
 ## Locked rules
 
-- MediaForge floor is macOS 13.
-- Apps keep their own deployment targets: PGS 13, MP4 14, MKV 15. Newer UI APIs are availability-gated or stay in the app.
+- MediaForge floor is macOS 15.
+- All apps and MediaForge target macOS 15+. Newer UI APIs are availability-gated or stay in the app.
 - Swift 6 strict concurrency and warnings-as-errors. Pass `-Xswiftc -strict-concurrency=complete -Xswiftc -warnings-as-errors` on every `swift test` and `swift build`.
 - Never hand-edit `project.pbxproj`. Edit `project.yml` and regenerate with XcodeGen.
 - App engines stay in the apps: PGS OCR/review, MP4 caption engines, MKV scan/remux matching, `ConversionQueue` / `BatchRunner`, and track pickers.

@@ -1,5 +1,5 @@
 # Rules for this repo (macOS app; from PGS2SRT lessons)
-- Native Swift/SwiftUI macOS app, universal (arm64 + x86_64), unsigned, not sandboxed. Minimum macOS 14.0.
+- Native Swift/SwiftUI macOS app, universal (arm64 + x86_64), unsigned, not sandboxed. Minimum macOS 15.0.
 - You run on Linux and can't run Xcode, the app, or AVFoundation. Put logic in the Swift package (no AppKit, SwiftUI, AVFoundation, or Vision) and cover it with `swift test`. The macOS jobs in `.github/workflows/mp4subrip.yml` are the real app build check. Probe helpers and parsers that don't need AVFoundation stay in the package so Linux can still test them.
 - The Linux gate is the "MP4SubRip Linux tests" job in `.github/workflows/mp4subrip.yml` (repo root; working directory `Apps/MP4SubRip`): `bash scripts/bump-version.sh --check`, then `swift test` and `swift build`, both with `-Xswiftc -strict-concurrency=complete -Xswiftc -warnings-as-errors`. `scripts/bump-version.sh` here forwards to the repo-root `scripts/bump-version.sh mp4subrip`. The workflow also runs when `scripts/**` changes. Run them before you open the PR. From the repo root, `./scripts/verify-linux.sh mp4subrip` is the same app gate.
 - Don't rename the package to the app's name, and don't move the `.xcodeproj` out of `App/`. The Swift package `MP4SubRipKit` lives in `Apps/MP4SubRip`. The thin SwiftUI app is `Apps/MP4SubRip/App/MP4SubRip.xcodeproj`. Never hand-edit `App/MP4SubRip.xcodeproj/project.pbxproj`. To add, rename, or remove an app file, update `App/project.yml` and run `./scripts/verify-linux.sh` from `Apps/MP4SubRip`, then commit both. Open `Apps/MP4SubRip/App/MP4SubRip.xcodeproj`, never `Package.swift`, for the windowed app. Regenerate from `Apps/MP4SubRip` (the local package's folder reference takes that directory's name, `MP4SubRip`).
@@ -36,7 +36,7 @@
 - Push to a feature branch `grok/<slug>`, then open a PR with `gh pr create --fill` (or `--draft` for work in progress) because CI runs on pull requests. Check CI with `gh pr checks` or `gh run list` only if `gh auth status` succeeds. No version bump, no CHANGELOG change.
 
 ## This project
-- Repo `Arezhik/media-forge`, app path `Apps/MP4SubRip`. App MP4SubRip, bundle ID `com.arezhik.MP4SubRip`, macOS 14.0+. Tags `mp4subrip-vX.Y.Z`. Workflow `.github/workflows/mp4subrip.yml`.
+- Repo `Arezhik/media-forge`, app path `Apps/MP4SubRip`. App MP4SubRip, bundle ID `com.arezhik.MP4SubRip`, macOS 15.0+. Tags `mp4subrip-vX.Y.Z`. Workflow `.github/workflows/mp4subrip.yml`.
 - Package `MP4SubRipKit` (module `MP4SubRipCore`, tests `MP4SubRipCoreTests`). Xcode project `Apps/MP4SubRip/App/MP4SubRip.xcodeproj`, scheme `MP4SubRip`.
 - Version: `scripts/bump-version.sh mp4subrip --current` from the repo root, or `scripts/bump-version.sh --current` from `Apps/MP4SubRip` (started at 0.1.0, build 1). History: CHANGELOG.md. Decision log: notes.md.
 - Scope: SPEC.md. Test sheet template: docs/PR_TEST_CHECKLIST.md. Tester guide: TESTERS.md. CI artifact: `MP4SubRip-universal.zip`.

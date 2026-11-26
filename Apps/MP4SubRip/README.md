@@ -1,6 +1,6 @@
 # MP4SubRip
 
-A native macOS app (SwiftUI, macOS 14.0 or later, universal for Apple silicon and Intel).
+A native macOS app (SwiftUI, macOS 15.0 or later, universal for Apple silicon and Intel).
 Add an MP4, then click Extract Subtitles. The app writes the embedded text subtitles out as .srt files.
 
 ## Use the window
