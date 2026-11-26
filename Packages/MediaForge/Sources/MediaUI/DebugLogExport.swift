@@ -32,6 +32,9 @@ public enum DebugLogExport {
             self.allowedContentTypes = allowedContentTypes
         }
 
+        /// `NSSavePanel` members are main-actor isolated. Nested types do not inherit
+        /// `DebugLogExport`'s isolation, so this writer is marked on its own.
+        @MainActor
         public func apply(to panel: NSSavePanel) {
             panel.title = title
             panel.prompt = prompt

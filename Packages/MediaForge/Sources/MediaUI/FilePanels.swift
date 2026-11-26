@@ -112,6 +112,9 @@ public struct OpenPanelOptions: Equatable, Sendable {
         )
     }
 
+    /// `NSOpenPanel` members are main-actor isolated. This struct stays a Sendable
+    /// value; only the writer that touches the panel hops to the main actor.
+    @MainActor
     public func apply(to panel: NSOpenPanel) {
         if let title { panel.title = title }
         if let message { panel.message = message }
@@ -286,10 +289,19 @@ public enum FilePanels {
         }
     }
 
-    /// Holds the panel so the sheet callback can be `@Sendable` without moving AppKit state early.
+    /// Holds the panel and completion so the sheet callback can be `@Sendable`
+    /// without moving AppKit state early. AppKit runs that callback on the main thread.
     private final class PanelBox: @unchecked Sendable {
         let panel: NSOpenPanel
-        init(_ panel: NSOpenPanel) { self.panel = panel }
+        let completion: @MainActor (NSApplication.ModalResponse, NSOpenPanel) -> Void
+
+        init(
+            _ panel: NSOpenPanel,
+            completion: @escaping @MainActor (NSApplication.ModalResponse, NSOpenPanel) -> Void
+        ) {
+            self.panel = panel
+            self.completion = completion
+        }
     }
 
     private static func run(
@@ -299,10 +311,10 @@ public enum FilePanels {
     ) {
         let panel = NSOpenPanel()
         options.apply(to: panel)
-        let box = PanelBox(panel)
+        let box = PanelBox(panel, completion: completion)
         let finish: @Sendable (NSApplication.ModalResponse) -> Void = { response in
             MainActor.assumeIsolated {
-                completion(response, box.panel)
+                box.completion(response, box.panel)
             }
         }
         if let window {

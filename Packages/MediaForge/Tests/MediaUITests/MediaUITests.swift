@@ -16,6 +16,7 @@ final class MediaUITests: XCTestCase {
 import AppKit
 import UniformTypeIdentifiers
 
+@MainActor
 final class OpenPanelOptionsTests: XCTestCase {
     func testFolderOptionsMapOntoThePanel() {
         let directory = URL(fileURLWithPath: "/Users/me/Movies", isDirectory: true)
@@ -149,6 +150,7 @@ final class FileDropParsingTests: XCTestCase {
     }
 }
 
+@MainActor
 final class DebugLogSaveOptionsTests: XCTestCase {
     func testSaveOptionsMapOntoThePanel() {
         let options = DebugLogExport.SaveOptions(
