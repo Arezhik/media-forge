@@ -18,7 +18,12 @@ struct IntakeBannerComponent {
         let found = UITestPoll.until(timeout) {
             self.matches(fragment)
         }
-        XCTAssertTrue(found, "The intake banner never showed \(fragment)", file: file, line: line)
+        XCTAssertTrue(
+            found,
+            "The intake banner never showed \(fragment). It showed \(visibleText())",
+            file: file,
+            line: line
+        )
     }
 
     func assertAbsent(
@@ -40,5 +45,11 @@ struct IntakeBannerComponent {
             return true
         }
         return window.staticTexts.matchingLabelOrValue(containing: fragment).firstMatch.exists
+    }
+
+    private func visibleText() -> String {
+        let identified = app.mainWindow.staticTexts["intakeBanner"]
+        guard identified.exists else { return "" }
+        return identified.uiText
     }
 }

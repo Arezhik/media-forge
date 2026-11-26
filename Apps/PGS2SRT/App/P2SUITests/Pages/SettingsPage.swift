@@ -9,9 +9,8 @@ import XCTest
 @MainActor
 final class SettingsPage: BasePage {
     override var root: XCUIElement {
-        app.windows.matching(
-            NSPredicate(format: "title CONTAINS[c] %@ OR label CONTAINS[c] %@", "Settings", "Settings")
-        ).firstMatch
+        SettingsWindowQuery.resolve(in: app)
+            ?? app.windows.matching(SettingsWindowQuery.titlePredicate).firstMatch
     }
 
     @discardableResult
@@ -26,11 +25,10 @@ final class SettingsPage: BasePage {
     }
 
     func waitForSettingsChrome(timeout: TimeInterval = UITestTimeout.standard) {
-        let page = self
         let found = UITestPoll.until(timeout) {
-            page.root.exists && page.root.staticTexts.matchingLabelOrValue(containing: "Output").firstMatch.exists
+            SettingsWindowQuery.resolve(in: self.app) != nil
         }
-        XCTAssertTrue(found, "The Settings window never showed the Output section. \(diagnostics())")
+        XCTAssertTrue(found, "The Settings window never showed up. \(diagnostics())")
     }
 
     func selectTab(_ title: String) {
@@ -40,8 +38,13 @@ final class SettingsPage: BasePage {
             root.tabs[title],
             root.radioButtons[title],
             root.toolbars.buttons[title],
+            root.toolbars.radioButtons[title],
+            root.tabBars.buttons[title],
+            root.tabBars.radioButtons[title],
             root.segmentedControls.buttons.matching(predicate).firstMatch,
             root.radioGroups.radioButtons.matching(predicate).firstMatch,
+            root.outlines.buttons.matching(predicate).firstMatch,
+            root.collectionViews.buttons.matching(predicate).firstMatch,
         ]
         guard let tab = UITestWait.firstExisting(candidates, timeout: UITestTimeout.standard) else {
             XCTFail("The \(title) tab never showed up")
@@ -79,8 +82,11 @@ final class SettingsPage: BasePage {
     }
 
     func clickChooseMKVTrack() {
-        switchControl("chooseMKVTrackToggle", fallback: "Choose subtitle tracks")
-            .clickWhenReady(message: "The MKV track switch never showed up")
+        clickSwitch(
+            "chooseMKVTrackToggle",
+            fallback: "Choose subtitle tracks",
+            message: "The MKV track switch never showed up"
+        )
     }
 
     func requireLanguageEnglish(file: StaticString = #filePath, line: UInt = #line) {
@@ -102,20 +108,33 @@ final class SettingsPage: BasePage {
     }
 
     func clickItalics() {
-        switchControl("italicsToggle", fallback: "Detect italics")
-            .clickWhenReady(message: "The italics switch never showed up")
+        clickSwitch(
+            "italicsToggle",
+            fallback: "Detect italics",
+            message: "The italics switch never showed up"
+        )
     }
 
     func incrementPictures() {
         let stepper = identified("concurrencyStepper", types: [.stepper, .group, .other]) ?? root.steppers.firstMatch
         stepper.requireExists(timeout: UITestTimeout.standard, message: "The pictures stepper never showed up")
-        let increment = firstButton(named: ["Increment", "increment", "Increase"], in: stepper)
-            ?? firstButton(named: ["Increment", "increment", "Increase"], in: root)
-        guard let increment else {
-            XCTFail("The pictures stepper increment never showed up")
+        reveal(stepper)
+        let buttons = stepper.buttons.allElementsBoundByIndex
+        if buttons.count >= 2 {
+            // A vertical stepper's upper button increments. A horizontal one's trailing button does.
+            let spreadY = abs(buttons[0].frame.midY - buttons[1].frame.midY)
+            let spreadX = abs(buttons[0].frame.midX - buttons[1].frame.midX)
+            let increment: XCUIElement
+            if spreadY >= spreadX {
+                increment = buttons.min { $0.frame.midY < $1.frame.midY } ?? buttons[0]
+            } else {
+                increment = buttons.max { $0.frame.midX < $1.frame.midX } ?? buttons[0]
+            }
+            clickHittable(increment)
             return
         }
-        increment.click()
+        // The stepper's own top half is the increment segment when it has no child buttons.
+        stepper.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.25)).click()
     }
 
     func requireNotificationChoice(file: StaticString = #filePath, line: UInt = #line) {
@@ -138,6 +157,47 @@ final class SettingsPage: BasePage {
         return root.popUpButtons.firstMatch
     }
 
+    /// Mini switches exist and report a value, but `click()` says they are not hittable
+    /// while the General pane is clipped. Scroll the form, then click the label or the knob.
+    private func clickSwitch(_ identifier: String, fallback: String, message: String) {
+        let toggle = switchControl(identifier, fallback: fallback)
+        toggle.requireExists(timeout: UITestTimeout.standard, message: message)
+        reveal(toggle)
+        if toggle.isHittable {
+            toggle.click()
+            return
+        }
+        let label = root.staticTexts.matchingLabelOrValue(containing: fallback).firstMatch
+        if label.exists {
+            reveal(label)
+            if label.isHittable {
+                label.click()
+                return
+            }
+        }
+        clickHittable(toggle)
+    }
+
+    private func reveal(_ element: XCUIElement) {
+        guard !element.isHittable else { return }
+        let scroll = root.scrollViews.firstMatch
+        var attempt = 0
+        while !element.isHittable && scroll.exists && attempt < 3 {
+            scroll.swipeUp()
+            attempt += 1
+        }
+    }
+
+    /// `click()` scrolls the wrong view when a control is clipped, then fails as not hittable.
+    /// A coordinate click hits the control's frame without that scroll.
+    private func clickHittable(_ element: XCUIElement) {
+        if element.isHittable {
+            element.click()
+            return
+        }
+        element.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).click()
+    }
+
     private func switchControl(_ identifier: String, fallback: String) -> XCUIElement {
         if let control = identified(identifier, types: [.switch, .checkBox]) {
             return control
@@ -150,18 +210,54 @@ final class SettingsPage: BasePage {
         UITestWait.firstExisting(UITestQuery.identified(identifier, in: root, types: types), timeout: UITestTimeout.short)
     }
 
-    private func firstButton(named titles: [String], in root: XCUIElement) -> XCUIElement? {
-        for title in titles {
-            let candidates = [root.buttons[title], root.steppers.buttons[title]]
-            if let found = UITestWait.firstExisting(candidates, timeout: UITestTimeout.short) {
-                return found
-            }
+    private func diagnostics() -> String {
+        let windows = app.windows.allElementsBoundByIndex.map { window in
+            "window title '\(window.title)' label '\(window.label)' id '\(window.identifier)'"
         }
+        let dialogs = app.dialogs.allElementsBoundByIndex.map { dialog in
+            "dialog title '\(dialog.title)' label '\(dialog.label)' id '\(dialog.identifier)'"
+        }
+        let described = windows + dialogs
+        if described.isEmpty { return "No windows." }
+        return described.joined(separator: "; ")
+    }
+}
+
+/// Finds the Settings window when its title is the selected pane, not "Settings".
+@MainActor
+private enum SettingsWindowQuery {
+    static let titlePredicate = NSPredicate(
+        format: "title CONTAINS[c] %@ OR label CONTAINS[c] %@ OR identifier == %@",
+        "Settings",
+        "Settings",
+        "pgs2srt.settings"
+    )
+
+    static func resolve(in app: XCUIApplication) -> XCUIElement? {
+        let identified = app.windows["pgs2srt.settings"]
+        if identified.exists { return identified }
+        let titled = app.windows.matching(titlePredicate).firstMatch
+        if titled.exists { return titled }
+        if let match = app.windows.allElementsBoundByIndex.first(where: containsSettingsChrome) {
+            return match
+        }
+        let dialog = app.dialogs["pgs2srt.settings"]
+        if dialog.exists { return dialog }
+        let titledDialog = app.dialogs.matching(titlePredicate).firstMatch
+        if titledDialog.exists { return titledDialog }
         return nil
     }
 
-    private func diagnostics() -> String {
-        guard root.exists else { return "No Settings window." }
-        return "Window title '\(root.title)' label '\(root.label)'."
+    private static func containsSettingsChrome(_ window: XCUIElement) -> Bool {
+        if window.popUpButtons["existingFilePicker"].exists { return true }
+        if window.menuButtons["existingFilePicker"].exists { return true }
+        if window.buttons["existingFilePicker"].exists { return true }
+        if window.staticTexts.matchingLabelOrValue(containing: "Save .srt files").firstMatch.exists {
+            return true
+        }
+        if window.staticTexts.matchingLabelOrValue(containing: "If the .srt already exists").firstMatch.exists {
+            return true
+        }
+        return window.staticTexts.matchingLabelOrValue(containing: "Output").firstMatch.exists
     }
 }

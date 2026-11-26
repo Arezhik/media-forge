@@ -38,12 +38,21 @@ enum UITestQuery {
 
 @MainActor
 extension XCUIApplication {
-    /// The main window while Settings may also be open.
+    /// The queue window while Settings may also be open.
     ///
-    /// `windows["PGS2SRT"]` checks identifier or title. The SwiftUI window often
-    /// fails that check. An empty title still matches.
+    /// The queue window's accessibility identifier is `pgs2srt.queue`.
+    /// The Settings title bar names the selected pane, so a title filter is not enough.
     var mainWindow: XCUIElement {
-        windows.matching(
+        let marked = windows["pgs2srt.queue"]
+        if marked.exists { return marked }
+        if let queue = windows.allElementsBoundByIndex.first(where: { window in
+            window.staticTexts["settingsSummary"].exists
+                || window.groups["emptyDrop"].exists
+                || window.otherElements["emptyDrop"].exists
+        }) {
+            return queue
+        }
+        return windows.matching(
             NSPredicate(format: "NOT (title CONTAINS[c] %@)", "Settings")
         ).firstMatch
     }

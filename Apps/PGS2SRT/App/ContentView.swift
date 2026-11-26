@@ -371,9 +371,11 @@ private final class QueueWindowClaim: NSView {
         if IssueDiagnosticLog.enabled {
             let changed = host.map { $0.identifier != QueueWindow.marker } ?? false
             host?.identifier = QueueWindow.marker
+            host?.setAccessibilityIdentifier(QueueWindow.marker.rawValue)
             IssueDiagnosticLog.recordWindowMarker(hadWindow: host != nil, identifierChanged: changed)
         } else {
             host?.identifier = QueueWindow.marker
+            host?.setAccessibilityIdentifier(QueueWindow.marker.rawValue)
         }
     }
 }

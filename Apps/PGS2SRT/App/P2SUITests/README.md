@@ -35,7 +35,7 @@ Do not seed `createValidPGSFile` as input. A real `.sup` starts conversion, incl
 
 ## Window queries
 
-Do not look up the window with `app.windows["PGS2SRT"]`. Use `app.mainWindow` (title does not contain `Settings`). Do not walk `descendants(matching: .any)`.
+Do not look up the window with `app.windows["PGS2SRT"]`. Use `app.mainWindow` (accessibility identifier `pgs2srt.queue`). The Settings window is `pgs2srt.settings`; its title bar names the selected pane. Do not walk `descendants(matching: .any)`.
 
 SwiftUI `Text` exposes its string as `value`. Use `matchingLabelOrValue`. Never use raw `containing`.
 
@@ -61,7 +61,7 @@ Toolbar titles are `Open…` (ellipsis), `Cancel All`, and `Clear Finished`. The
 
 `MainWindowSmokeUITests` checks the window, the drop screen, the empty-folder banner, and the seeded output summary. It dismisses the banner.
 
-`UnsupportedFileUITests` seeds `notes.txt`. The banner says that file is not a `.sup` or `.mkv`. The folder also has no subtitle, so the empty-folder sentence can appear too. No queue row.
+`UnsupportedFileUITests` seeds `notes.txt` in the input folder. A folder drop ignores that file. The banner says no `.sup` or `.mkv` files were found in `input`. There is no per-file skip banner and no queue row.
 
 `EmptySUPFailureUITests` seeds `sample.sup`. The row fails with `The PGS file is empty.` The footer contains `1 failed`. Clear Finished brings the drop screen back.
 
