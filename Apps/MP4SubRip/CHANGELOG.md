@@ -6,6 +6,10 @@ Every merged PR that changes the shipped app bumps the version in the same PR wi
 
 ## [Unreleased]
 
+## [0.8.2] - 2026-11-26 (build 12)
+### Changed
+- ffmpeg is found and run through the shared MediaCore tool locator and runner. Behavior is unchanged (#5).
+
 ## [0.8.1] - 2026-11-26 (build 11)
 ### Changed
 - The debug log, progress throttle, and UI-test fixture helper now live in MediaForge. Behavior is unchanged (#4).
