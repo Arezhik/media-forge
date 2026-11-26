@@ -1,11 +1,7 @@
-#if canImport(SwiftUI)
-import SwiftUI
-#endif
-
-/// Placeholder for MediaUI.
+/// Marker for the thin AppKit helpers (drop, open panels, reveal, debug-log export).
 ///
-/// SwiftUI stays behind `canImport(SwiftUI)` so this target builds on Linux,
-/// where CI runs `swift test`. The view below is compiled only where SwiftUI exists.
+/// Those helpers stay behind `canImport(AppKit)` so this target still builds on Linux,
+/// where CI runs `swift test`. Nothing here draws a new layout.
 public enum MediaUIMarker: Sendable {
     public static let moduleName = "MediaUI"
 
@@ -15,14 +11,3 @@ public enum MediaUIMarker: Sendable {
     public static let swiftUIAvailable = false
     #endif
 }
-
-#if canImport(SwiftUI)
-@MainActor
-public struct MediaUIPlaceholder: View {
-    public init() {}
-
-    public var body: some View {
-        EmptyView()
-    }
-}
-#endif

@@ -16,7 +16,7 @@ let package = Package(
         // UITestingEnvironment, RollingLogStore, DebugLog, ProgressThrottle,
         // ExternalTool, ToolCommand, and FileIntake live here.
         .target(name: "MediaCore"),
-        // SwiftUI is behind `#if canImport(SwiftUI)` in Sources/MediaUI.
+        // AppKit and SwiftUI stay behind `#if canImport(...)` in Sources/MediaUI.
         .target(name: "MediaUI"),
         // UITestFixtureBuilder. XCTest is behind `#if canImport(XCTest)` so Linux builds it.
         .target(name: "MediaTesting"),
