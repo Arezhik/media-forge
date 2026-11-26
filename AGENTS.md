@@ -45,7 +45,7 @@ swift test --package-path Packages/MediaForge -Xswiftc -strict-concurrency=compl
 swift build --package-path Packages/MediaForge -Xswiftc -strict-concurrency=complete -Xswiftc -warnings-as-errors
 ```
 
-On a Linux machine with no Swift toolchain, `./scripts/verify-linux.sh` prints that GitHub Actions will run those commands and exits 0.
+When `swift` is on PATH, `./scripts/verify-linux.sh` runs the MediaForge `swift test` and `swift build` commands above, then the root umbrella `swift test`, with the same strict flags. On a Linux machine with no Swift toolchain, it prints that GitHub Actions will run those commands and exits 0. It does not run the three app packages.
 
 ## Where you run
 
