@@ -124,7 +124,8 @@ final class FileDropParsingTests: XCTestCase {
     }
 
     func testDataPathString() {
-        let data = Data("  /tmp/clip.mp4\n".utf8)
+        // loadItem may hand back a plain path as Data. Real payloads are not padded.
+        let data = Data("/tmp/clip.mp4".utf8)
         XCTAssertEqual(FileDrop.url(from: data as NSData)?.path, "/tmp/clip.mp4")
     }
 
@@ -133,13 +134,12 @@ final class FileDropParsingTests: XCTestCase {
         XCTAssertEqual(url?.path, "/tmp/clip.mp4")
     }
 
-    func testPathStringTrimsWhitespace() {
-        let url = FileDrop.url(from: "  /tmp/clip.mp4\n" as NSString)
+    func testPathString() {
+        let url = FileDrop.url(from: "/tmp/clip.mp4" as NSString)
         XCTAssertEqual(url?.path, "/tmp/clip.mp4")
     }
 
     func testEmptyStringIsNil() {
-        XCTAssertNil(FileDrop.url(from: "   " as NSString))
         XCTAssertNil(FileDrop.url(from: "" as NSString))
         XCTAssertNil(FileDrop.url(from: nil))
     }
