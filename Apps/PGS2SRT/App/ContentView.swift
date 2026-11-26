@@ -296,23 +296,9 @@ struct ContentView: View {
 
 /// The Settings toolbar button, drawn the same way as Open…, Cancel All, and Clear Finished.
 ///
-/// macOS 14 and later open the Settings scene with `openSettings`. The older
-/// `showSettingsWindow:` action no longer does that, and macOS asks for
-/// SettingsLink instead. macOS 13 still opens Settings with that action.
+/// The Settings scene opens with `openSettings`. The older `showSettingsWindow:`
+/// action no longer does that.
 private struct SettingsToolbarButton: View {
-    var body: some View {
-        if #available(macOS 14.0, *) {
-            SettingsToolbarButtonMacOS14()
-        } else {
-            Button("Settings…") {
-                NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
-            }
-        }
-    }
-}
-
-@available(macOS 14.0, *)
-private struct SettingsToolbarButtonMacOS14: View {
     @Environment(\.openSettings) private var openSettings
 
     var body: some View {
