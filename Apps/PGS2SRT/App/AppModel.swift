@@ -681,11 +681,7 @@ enum QueueWindow {
             keeper.deminiaturize(nil)
         }
         keeper.makeKeyAndOrderFront(nil)
-        if #available(macOS 14, *) {
-            NSApp.activate()
-        } else {
-            NSApp.activate(ignoringOtherApps: true)
-        }
+        NSApp.activate()
     }
 
     @MainActor

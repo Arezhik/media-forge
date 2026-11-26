@@ -6,7 +6,7 @@ The decoder, the SRT writer, and Apple Vision text recognition are in place. On 
 
 The app is for Mac, and it is built as a universal binary so it runs on both Apple silicon and Intel. The decoder itself is plain Swift, with no Apple-only code, so a Windows version can share it later.
 
-Minimum system: macOS 13 Ventura. Open the project in Xcode 27.
+Minimum system: macOS 15. Open the project in Xcode 27.
 
 ## Use the window
 

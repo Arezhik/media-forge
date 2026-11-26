@@ -2,13 +2,13 @@
 
 Monorepo for a shared Swift package and three native macOS media apps.
 
-- **MediaForge** (`Packages/MediaForge`) — libraries `MediaCore`, `MediaUI`, and `MediaTesting`. The package floor is macOS 13. `MediaCore` and `MediaTesting` build on Linux. `MediaUI` uses SwiftUI only where that framework is available. `MediaCore` holds `UITestingEnvironment`, `RollingLogStore`, `DebugLog` (one category set for every app), and `ProgressThrottle`. `MediaTesting` holds `UITestFixtureBuilder`.
+- **MediaForge** (`Packages/MediaForge`) — libraries `MediaCore`, `MediaUI`, and `MediaTesting`. The package floor is macOS 15. `MediaCore` and `MediaTesting` build on Linux. `MediaUI` uses SwiftUI only where that framework is available. `MediaCore` holds `UITestingEnvironment`, `RollingLogStore`, `DebugLog` (one category set for every app), and `ProgressThrottle`. `MediaTesting` holds `UITestFixtureBuilder`.
 - **Apps**
   - `Apps/MKVForge` — MKV Forge (macOS 15). Own package, XcodeGen project, and version (0.8.2, build 11). CI: `.github/workflows/mkvforge.yml` (workflow name MKVForge CI). Release tags: `mkvforge-vX.Y.Z`.
-  - `Apps/MP4SubRip` — MP4SubRip (macOS 14). Own package, XcodeGen project, and version (0.8.1, build 11). CI: `.github/workflows/mp4subrip.yml` (workflow name MP4SubRip CI). Release tags: `mp4subrip-vX.Y.Z`.
-  - `Apps/PGS2SRT` — PGS2SRT (macOS 13). Own package, XcodeGen project, and version (0.3.1, build 8). CI: `.github/workflows/pgs2srt.yml` (workflow name PGS2SRT CI). Release tags: `pgs2srt-vX.Y.Z`.
+  - `Apps/MP4SubRip` — MP4SubRip (macOS 15). Own package, XcodeGen project, and version (0.8.1, build 11). CI: `.github/workflows/mp4subrip.yml` (workflow name MP4SubRip CI). Release tags: `mp4subrip-vX.Y.Z`.
+  - `Apps/PGS2SRT` — PGS2SRT (macOS 15). Own package, XcodeGen project, and version (0.3.1, build 8). CI: `.github/workflows/pgs2srt.yml` (workflow name PGS2SRT CI). Release tags: `pgs2srt-vX.Y.Z`.
 
-Each app keeps its own deployment target, semver, build number, and tag (`mkvforge-vX.Y.Z` for MKV Forge, `mp4subrip-vX.Y.Z` for MP4SubRip, `pgs2srt-vX.Y.Z` for PGS2SRT).
+Every app targets macOS 15. Each app keeps its own semver, build number, and tag (`mkvforge-vX.Y.Z` for MKV Forge, `mp4subrip-vX.Y.Z` for MP4SubRip, `pgs2srt-vX.Y.Z` for PGS2SRT).
 
 The root `Package.swift` is a thin umbrella over `Packages/MediaForge`. It does not contain the library sources. The canonical package, and the one root CI (`.github/workflows/ci.yml`) tests, is `Packages/MediaForge`. `Apps/MKVForge/Package.swift`, `Apps/MP4SubRip/Package.swift`, and `Apps/PGS2SRT/Package.swift` are separate packages. MKVForge tests run in `.github/workflows/mkvforge.yml`. MP4SubRip tests run in `.github/workflows/mp4subrip.yml`. PGS2SRT tests run in `.github/workflows/pgs2srt.yml`.
 

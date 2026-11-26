@@ -7,7 +7,7 @@ import PackageDescription
 let package = Package(
     name: "media-forge",
     platforms: [
-        .macOS(.v13)
+        .macOS("15.0")
     ],
     dependencies: [
         .package(path: "Packages/MediaForge")

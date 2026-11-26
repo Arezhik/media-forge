@@ -57,7 +57,7 @@ private enum SettingsPane: String {
 }
 
 private enum SettingsSymbol {
-    /// `text.viewfinder` is not on every macOS 13 system. The older symbol is the fallback.
+    /// Fall back when `text.viewfinder` is missing on this system.
     static var recognition: String {
         if NSImage(systemSymbolName: "text.viewfinder", accessibilityDescription: nil) != nil {
             return "text.viewfinder"

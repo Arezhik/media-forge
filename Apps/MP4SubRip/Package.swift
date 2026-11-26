@@ -6,7 +6,7 @@ let package = Package(
     // products when the package and the project share a name and a folder.
     name: "MP4SubRipKit",
     platforms: [
-        .macOS("14.0")
+        .macOS("15.0")
     ],
     products: [
         .library(name: "MP4SubRipCore", targets: ["MP4SubRipCore"])

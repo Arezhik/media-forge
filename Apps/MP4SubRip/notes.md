@@ -35,6 +35,9 @@ Times in Mountain time (MT).
 - Overlapping cues are split at each edge and joined when neighboring slices have the same text. Identical windows become one cue. tx3g is unchanged.
 - A last cue under one second grows to max(1.5 s, 60 ms × visible characters), capped at 6 s. Movie duration is not passed through: that needs a new `extract` argument, so the ending is not capped at the movie.
 
+## 2026-11-26: Minimum OS is macOS 15
+- The package, the app, and the Xcode deployment target are macOS 15.0+. The 2026-11-04 line records the original macOS 14.0+ scaffold.
+
 <!-- Template for each entry:
 ## YYYY-MM-DD ~H:MM PM MT: PR #N (what it does)
 - Agent: bc-…, branch cursor/…

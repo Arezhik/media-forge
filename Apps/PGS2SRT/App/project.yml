@@ -8,7 +8,7 @@ name: PGS2SRT
 options:
   bundleIdPrefix: com.pgs2srt
   deploymentTarget:
-    macOS: "13.0"
+    macOS: "15.0"
   # Off: with `path: .`, intermediate groups leave files under random TEMP_ IDs
   # so every `xcodegen generate` writes a different project (same as mkv-forge L33).
   createIntermediateGroups: false
@@ -16,7 +16,7 @@ options:
 settings:
   # XcodeGen ignores plain keys next to configs:, so project-wide keys go under base:.
   base:
-    MACOSX_DEPLOYMENT_TARGET: "13.0"
+    MACOSX_DEPLOYMENT_TARGET: "15.0"
     SDKROOT: macosx
     SUPPORTED_PLATFORMS: macosx
     SUPPORTS_MACCATALYST: NO
@@ -70,8 +70,8 @@ targets:
         GENERATE_INFOPLIST_FILE: YES
         # Document types (Blu-ray .sup, folders, and .mkv) live in Info.plist.
         INFOPLIST_FILE: Info.plist
-        MARKETING_VERSION: "0.3.2"
-        CURRENT_PROJECT_VERSION: "9"
+        MARKETING_VERSION: "0.4.0"
+        CURRENT_PROJECT_VERSION: "10"
         CODE_SIGN_STYLE: Manual
         CODE_SIGN_IDENTITY: "-"
         CODE_SIGNING_REQUIRED: NO
@@ -88,7 +88,7 @@ targets:
           - "$(inherited)"
           - "$(SRCROOT)/ReviewDelegateProxy/include"
         ENABLE_PREVIEWS: YES
-        MACOSX_DEPLOYMENT_TARGET: "13.0"
+        MACOSX_DEPLOYMENT_TARGET: "15.0"
       configs:
         Debug:
           ONLY_ACTIVE_ARCH: YES
@@ -112,14 +112,14 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: com.pgs2srt.pgs2srt
         PRODUCT_NAME: pgs2srt
         GENERATE_INFOPLIST_FILE: YES
-        MARKETING_VERSION: "0.3.2"
-        CURRENT_PROJECT_VERSION: "9"
+        MARKETING_VERSION: "0.4.0"
+        CURRENT_PROJECT_VERSION: "10"
         CODE_SIGN_STYLE: Manual
         CODE_SIGN_IDENTITY: "-"
         CODE_SIGNING_REQUIRED: NO
         CODE_SIGNING_ALLOWED: YES
         ENABLE_HARDENED_RUNTIME: NO
-        MACOSX_DEPLOYMENT_TARGET: "13.0"
+        MACOSX_DEPLOYMENT_TARGET: "15.0"
         SWIFT_VERSION: "5.0"
         SKIP_INSTALL: YES
         LD_RUNPATH_SEARCH_PATHS:
@@ -147,7 +147,7 @@ targets:
         TEST_TARGET_NAME: PGS2SRT
         CODE_SIGN_STYLE: Manual
         CODE_SIGN_IDENTITY: "-"
-        MACOSX_DEPLOYMENT_TARGET: "13.0"
+        MACOSX_DEPLOYMENT_TARGET: "15.0"
 schemes:
   PGS2SRT-UITests:
     build:

@@ -27,7 +27,7 @@ let package = Package(
     // products when the package and the project share a name and a folder.
     name: "PGS2SRTKit",
     platforms: [
-        .macOS(.v13)
+        .macOS("15.0")
     ],
     products: [
         .library(name: "PGSCore", targets: ["PGSCore"]),
