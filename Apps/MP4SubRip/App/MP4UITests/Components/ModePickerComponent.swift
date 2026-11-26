@@ -12,6 +12,13 @@ struct ModePickerComponent {
     @discardableResult
     func select(_ title: String, timeout: TimeInterval = UITestTimeout.standard) -> Self {
         let picker = resolved(timeout: timeout)
+        // A narrow save bar uses the menu-style picker. The choices are menu items,
+        // not segments, until the menu is open.
+        if picker.elementType == .popUpButton || picker.elementType == .menuButton {
+            picker.clickWhenReady(message: "The Mode picker never showed up")
+            app.menuItems[title].clickWhenReady(message: "The \(title) choice never showed up")
+            return self
+        }
         let predicate = NSPredicate(format: "label == %@ OR title == %@ OR value == %@", title, title, title)
         let segments = [
             picker.buttons.matching(predicate).firstMatch,
@@ -20,11 +27,14 @@ struct ModePickerComponent {
             app.mainWindow.radioButtons[title],
             app.mainWindow.buttons[title],
         ]
-        guard let segment = UITestWait.firstExisting(segments, timeout: UITestTimeout.standard) else {
-            XCTFail("The \(title) segment never showed up")
+        if let segment = UITestWait.firstExisting(segments, timeout: UITestTimeout.short) {
+            segment.click()
             return self
         }
-        segment.click()
+        // Segmented controls on macOS sometimes have no child buttons.
+        // One at a Time is the leading half. Parallel is the trailing half.
+        let dx: CGFloat = title == "Parallel" ? 0.75 : 0.25
+        picker.coordinate(withNormalizedOffset: CGVector(dx: dx, dy: 0.5)).click()
         return self
     }
 

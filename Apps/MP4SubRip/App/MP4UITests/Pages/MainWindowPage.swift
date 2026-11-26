@@ -41,7 +41,22 @@ final class MainWindowPage: BasePage {
     }
 
     func dismissBanner() {
-        toolbarButton(exact: "Dismiss").clickWhenReady(message: "The Dismiss button never showed up")
+        // Link-styled SwiftUI buttons are links, not toolbar buttons.
+        let predicate = NSPredicate(
+            format: "label == %@ OR title == %@ OR value == %@ OR identifier == %@",
+            "Dismiss", "Dismiss", "Dismiss", "dismissBanner"
+        )
+        let candidates = [
+            root.links.matching(predicate).firstMatch,
+            root.buttons.matching(predicate).firstMatch,
+            app.links.matching(predicate).firstMatch,
+            app.buttons.matching(predicate).firstMatch,
+        ]
+        guard let button = UITestWait.firstExisting(candidates, timeout: UITestTimeout.standard) else {
+            XCTFail("The Dismiss button never showed up")
+            return
+        }
+        button.click()
     }
 
     private func primaryButton() -> XCUIElement {

@@ -19,7 +19,7 @@ final class SettingsEssentialsUITests: BaseUITest {
 
         XCTContext.runActivity(named: "Output folder and existing-file picker") { _ in
             settings.waitForSettingsChrome()
-            settings.requireOutputPath(contains: "output")
+            settings.requireOutputPath(contains: "/output")
             settings.requireExistingFile(contains: "Skip")
             settings.chooseExistingFile("Overwrite it")
             settings.chooseExistingFile("Skip that file")

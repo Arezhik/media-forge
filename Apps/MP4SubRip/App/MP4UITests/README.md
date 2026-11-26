@@ -49,7 +49,7 @@ There is no blocking tool banner. ffmpeg reports a path or `Not found` in Settin
 
 `MainWindowSmokeUITests` checks the drop screen, the empty-folder banner, and a disabled Extract button.
 
-`UnsupportedFileUITests` seeds `notes.txt` and expects the skip banner.
+`UnsupportedFileUITests` seeds `notes.txt` in the input folder. A folder drop ignores that file. The banner says no `.mp4` files were found in `input`. There is no per-file skip banner and no queue row.
 
 `DummyMP4QueueUITests` seeds `sample.mp4`, checks Save to, and checks that Extract is enabled only while the row is Pending.
 

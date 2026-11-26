@@ -1,7 +1,9 @@
 import XCTest
 
-// A file that is not .mp4 becomes a banner, not a queue row.
-// The folder also has no movie, so the empty-folder sentence can appear too.
+// `notes.txt` is inside the launched input folder. A folder drop ignores
+// files that are not .mp4, so this file is not a skipped row and does not
+// get its own banner. The folder has no movie, so the empty-folder banner
+// is the notice.
 
 @MainActor
 final class UnsupportedFileUITests: BaseUITest {
@@ -9,15 +11,16 @@ final class UnsupportedFileUITests: BaseUITest {
         try fixtures.createDummyFile(in: fixtures.input, named: "notes.txt")
     }
 
-    func testUnsupportedFileShowsSkipBannerAndNoRow() {
+    func testUnsupportedFileInsideFolderShowsEmptyBannerAndNoRow() {
         let page = MainWindowPage(app: app)
 
         XCTContext.runActivity(named: "Drop screen stays up") { _ in
             page.waitForDropScreen()
         }
 
-        XCTContext.runActivity(named: "Skip banner names the file") { _ in
-            page.banner.requireFragment("notes.txt is not a .mp4 file, so it was skipped.")
+        XCTContext.runActivity(named: "Empty-folder banner, not a per-file skip") { _ in
+            page.banner.requireFragment("No .mp4 files were found in input.")
+            page.banner.assertAbsent("notes.txt is not a .mp4 file")
         }
 
         XCTContext.runActivity(named: "No queue row") { _ in
