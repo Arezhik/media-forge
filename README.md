@@ -57,6 +57,6 @@ PGS2SRT checks, from `Apps/PGS2SRT`:
 ./scripts/verify-linux.sh
 ```
 
-On Linux without Swift installed, the root `./scripts/verify-linux.sh` prints the GitHub Actions commands and exits 0. GitHub Actions runs the package tests on Linux (`swift:6.2.4`) and on macOS. MKVForge's workflow is `.github/workflows/mkvforge.yml`. MP4SubRip's workflow is `.github/workflows/mp4subrip.yml`. PGS2SRT's workflow is `.github/workflows/pgs2srt.yml`.
+When `swift` is on PATH, the root `./scripts/verify-linux.sh` runs the MediaForge and umbrella commands above. On Linux without Swift installed, it prints the GitHub Actions commands and exits 0. It does not run the three app packages. Each app's `./scripts/verify-linux.sh` regenerates that app's Xcode project with XcodeGen when a binary is available, runs the app's non-Swift checks, and runs `swift test` and `swift build` with the same strict flags when `swift` is on PATH. GitHub Actions runs the package tests on Linux (`swift:6.2.4`) and on macOS. MKVForge's workflow is `.github/workflows/mkvforge.yml`. MP4SubRip's workflow is `.github/workflows/mp4subrip.yml`. PGS2SRT's workflow is `.github/workflows/pgs2srt.yml`.
 
 Agents: read `AGENTS.md` before changing the repo.

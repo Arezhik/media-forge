@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
-# Phase 0 Linux gate. This VM often has no Swift toolchain.
+# Phase 0 Linux gate for MediaForge and the root umbrella.
+# When swift is on PATH, run the same strict test and build commands as CI.
+# When swift is absent, print those commands and exit 0.
+# This script does not run the three app packages.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
