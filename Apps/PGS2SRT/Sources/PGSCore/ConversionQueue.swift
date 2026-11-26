@@ -297,7 +297,7 @@ public final class ConversionQueue {
     /// `outputFolder`, when set, is where this batch of files is written instead of the saved place.
     @discardableResult
     public func add(paths: [String], outputFolder: String? = nil) -> [IntakeNotice] {
-        let intake = FileIntake.collect(paths: paths, listing: services.listing)
+        let intake = SubtitleFiles.collect(paths: paths, listing: services.listing)
         let fresh = intake.sourcePaths.filter { !isActive($0) }
         if !fresh.isEmpty {
             finishedLine = nil
@@ -322,7 +322,7 @@ public final class ConversionQueue {
                 name: name,
                 status: .waiting
             )
-            if FileIntake.isMkv(path) && chooseTrack == nil {
+            if SubtitleFiles.isMkv(path) && chooseTrack == nil {
                 item.awaitsTrackList = true
             }
             items.append(item)
@@ -339,17 +339,17 @@ public final class ConversionQueue {
                 id: id,
                 sourcePath: path,
                 name: FileIntake.lastComponent(path),
-                status: .skipped(notice.message)
+                status: .skipped(notice.message(fileDescription: SubtitleFiles.fileDescription))
             ))
-            DebugLog.shared.record(.queue, "Skipped \(notice.message)")
+            DebugLog.shared.record(.queue, "Skipped \(notice.message(fileDescription: SubtitleFiles.fileDescription))")
             if batchOpen {
                 batchIDs.insert(id)
                 batch.skipped += 1
             }
         }
         for notice in intake.notices where !notice.isFile {
-            banners.append(notice.message)
-            DebugLog.shared.record(.queue, notice.message)
+            banners.append(notice.message(fileDescription: SubtitleFiles.fileDescription))
+            DebugLog.shared.record(.queue, notice.message(fileDescription: SubtitleFiles.fileDescription))
         }
         publish()
         if !fresh.isEmpty {
@@ -626,12 +626,12 @@ public final class ConversionQueue {
             return
         }
         let outputFolder = outputFolderOverrides.removeValue(forKey: source)
-        let kind = FileIntake.isMkv(source) ? "mkv" : "sup"
+        let kind = SubtitleFiles.isMkv(source) ? "mkv" : "sup"
         DebugLog.shared.record(.queue, "Start \(fileName) (\(kind)) \(preferences.logDescription)")
         if let outputFolder, !outputFolder.isEmpty {
             DebugLog.shared.record(.queue, "Output folder override \(outputFolder) for \(fileName)")
         }
-        if FileIntake.isMkv(source) {
+        if SubtitleFiles.isMkv(source) {
             await performMKV(id: id, source: source, outputFolder: outputFolder)
         } else {
             await performSup(id: id, source: source, outputFolder: outputFolder)
@@ -1539,8 +1539,8 @@ public final class ConversionQueue {
     }
 
     private static func fileKind(_ path: String) -> String {
-        if FileIntake.isMkv(path) { return "mkv" }
-        if FileIntake.isSup(path) { return "sup" }
+        if SubtitleFiles.isMkv(path) { return "mkv" }
+        if SubtitleFiles.isSup(path) { return "sup" }
         let ext = (path as NSString).pathExtension.lowercased()
         return ext.isEmpty ? "file" : ext
     }

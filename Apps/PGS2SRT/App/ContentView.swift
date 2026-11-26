@@ -2,6 +2,7 @@ import AppKit
 import SwiftUI
 import UniformTypeIdentifiers
 import PGSCore
+import MediaUI
 
 struct ContentView: View {
     @EnvironmentObject private var model: AppModel
@@ -242,17 +243,9 @@ struct ContentView: View {
     }
 
     private func handleDrop(_ providers: [NSItemProvider]) -> Bool {
-        let fileProviders = providers.filter {
-            $0.hasItemConformingToTypeIdentifier(UTType.fileURL.identifier)
-        }
-        guard !fileProviders.isEmpty else { return false }
+        guard FileDrop.hasFileURL(providers) else { return false }
         Task {
-            var urls: [URL] = []
-            for provider in fileProviders {
-                if let url = await Self.loadURL(from: provider) {
-                    urls.append(url)
-                }
-            }
+            let urls = await FileDrop.loadFileURLs(from: providers)
             if !urls.isEmpty {
                 await MainActor.run {
                     model.importURLs(urls)
@@ -260,39 +253,6 @@ struct ContentView: View {
             }
         }
         return true
-    }
-
-    private static func loadURL(from provider: NSItemProvider) async -> URL? {
-        await withCheckedContinuation { continuation in
-            let once = ResumeOnce()
-            provider.loadItem(forTypeIdentifier: UTType.fileURL.identifier, options: nil) { item, _ in
-                once.run {
-                    continuation.resume(returning: url(from: item))
-                }
-            }
-        }
-    }
-
-    /// Pure path parsing. The drop callback is not on the main actor.
-    private nonisolated static func url(from item: NSSecureCoding?) -> URL? {
-        if let url = item as? URL { return url }
-        if let data = item as? Data {
-            if let url = URL(dataRepresentation: data, relativeTo: nil) { return url }
-            if let string = String(data: data, encoding: .utf8) {
-                return url(fromPathOrFileURL: string)
-            }
-        }
-        if let string = item as? NSString {
-            return url(fromPathOrFileURL: string as String)
-        }
-        return nil
-    }
-
-    private nonisolated static func url(fromPathOrFileURL string: String) -> URL? {
-        let trimmed = string.trimmingCharacters(in: .whitespacesAndNewlines)
-        if trimmed.hasPrefix("file:") { return URL(string: trimmed) }
-        if trimmed.isEmpty { return nil }
-        return URL(fileURLWithPath: trimmed)
     }
 }
 
@@ -366,18 +326,6 @@ private final class QueueWindowClaim: NSView {
     }
 }
 
-private final class ResumeOnce: @unchecked Sendable {
-    private let lock = NSLock()
-    private var done = false
-
-    func run(_ body: () -> Void) {
-        lock.lock()
-        let shouldRun = !done
-        done = true
-        lock.unlock()
-        if shouldRun { body() }
-    }
-}
 
 private struct QueueRow: View {
     let item: ConversionItem
