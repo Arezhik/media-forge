@@ -36,11 +36,33 @@ body:
       label: Description
     validations:
       required: true
-
   - type: textarea
     id: steps
     attributes:
       label: Steps to reproduce / expected vs. actual
+      description: Bugs only. Replace the example with what happened to you.
+      value: |
+        ## Steps
+        1. Open the app and drag in `snack-time.mkv`
+        2. Click **Make Hummus**
+        3. Wait patiently, like a responsible snacker
+
+        ## Expected
+        A smooth, creamy dip. Possibly a pita.
+
+        ## Actual
+        The hummus achieved sentience, demanded more garlic, and exploded.
+
+        ## Optional
+        ### Pics
+        Drag screenshots here (crime-scene photos of the hummus welcome)
+
+        ### Video
+        Screen recording of the incident
+
+        ### Logs
+        Paste the debug log (Help > Export Debug Log)
+      render: markdown
     validations:
       required: false
 
