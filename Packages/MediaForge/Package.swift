@@ -14,7 +14,7 @@ let package = Package(
     targets: [
         // No AppKit, SwiftUI, or Vision, so Linux `swift test` builds this.
         // UITestingEnvironment, RollingLogStore, DebugLog, ProgressThrottle,
-        // ExternalTool, ToolCommand, and FileIntake live here.
+        // ExternalTool, ToolCommand, FileIntake, and ETAWording live here.
         .target(name: "MediaCore"),
         // AppKit and SwiftUI stay behind `#if canImport(...)` in Sources/MediaUI.
         .target(name: "MediaUI"),

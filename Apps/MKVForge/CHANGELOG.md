@@ -6,6 +6,10 @@ Every merged PR that changes the shipped app bumps the version in the same PR wi
 
 ## [Unreleased]
 
+## [0.8.5] - 2026-11-26 (build 14)
+### Changed
+- The "About N left" ETA sentence now comes from shared MediaCore wording. The estimate itself is unchanged (#7).
+
 ## [0.8.4] - 2026-11-26 (build 13)
 ### Changed
 - Folder and file pickers, Show in Finder, the tool picker, and debug-log export use shared MediaUI helpers. Behavior is unchanged (#6).

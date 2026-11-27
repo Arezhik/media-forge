@@ -82,10 +82,21 @@ MKVForge also has `HelloWorldUITests`, `RemuxChooseMatchUITests`, `RemuxMatchOnM
 
 `PGSCoreTests` and `MP4SubRipCoreTests` can follow the same shape without becoming UI tests.
 
-- One shared fixture builder. `UITestFixtureBuilder` already creates `input/`, `output/`, `video/`, and `audio/` and can write a dummy file, a valid container, a valid `.srt`, or a minimal `.sup`. Unit tests that still hand-roll those bytes should call the builder, or a sibling that does not import XCTest.
+- One shared fixture builder. `UITestFixtureBuilder` already creates `input/`, `output/`, `video/`, and `audio/` and can write a dummy file, a valid container, a valid `.srt`, or a minimal `.sup`. A review of the app unit tests found no helper that hand-rolls those same bytes. `SyntheticSUP` builds specific segments (palette, objects, crops, bad lengths). Scan and engine tests write path-specific contents (`"abc"`, a partial `.srt`, a shell script). Those stay local. App `FileIntakeTests` only lock each app's extensions and wording; the walk already lives in MediaCore.
 - Names match the behavior (`FileIntakeTests`, `OutputReservationTests`), the way UI tests match the workflow (`EmptySUPFailureUITests`).
 - A test sets up data, then calls one function. It does not also launch a process unless the test is about that process.
 - Skip when a tool is missing (`XCTSkip` / the builder's missing-ffmpeg handler) instead of failing the machine that does not have ffmpeg.
+
+## Duplicates reviewed
+
+Moved: the identical ETA sentence (`About N seconds left` and the minute and hour forms) from MKVForge and MP4SubRip `RunETA` into `MediaCore.ETAWording`. Each app still computes the seconds. `RunETA.sentence` forwards to it, so the existing wording tests stay.
+
+Left, because they are not exact copies:
+
+- `RunETA` sample types and remaining-time math. MKVForge uses one file's percent. MP4SubRip uses parallel slots and unmeasured c608 files. PGS2SRT has no ETA sentence.
+- `AppIdentity`, `QueueItem`, and `BatchSummary`. Names, extensions, and fields differ.
+- `DebugLogSupport`, `UITestingLaunch`, `WindowEvents`, and the open-file inbox. Some methods match, and the files do not (suite names, tool facts, delegate forwarding, diagnostics).
+- `QueueWindowClaim`. PGS2SRT also writes an accessibility identifier and a diagnostic log. MP4SubRip only sets the window identifier.
 
 `BaseUITest`, `BasePage`, `XCUIElement+UITest`, and the intake-banner and settings-window helpers now live in `MediaTesting`. Queue copy, mode titles, and tool banners stay in the apps.
 
@@ -93,4 +104,4 @@ MKVForge also has `HelloWorldUITests`, `RemuxChooseMatchUITests`, `RemuxMatchOnM
 
 `.github/workflows/release.yml` publishes to this repo's single Releases page. It runs on a push to `main` when `Apps/<app>/**`, `Packages/MediaForge/**`, or the workflow file changes, and from Actions → Run workflow (`app`: `all`, `mkvforge`, `mp4subrip`, or `pgs2srt`). It does not run on pull requests.
 
-For each affected app it reads the version with `bash scripts/bump-version.sh <app> --current`. It skips the app when the tag `<app>-v<version>` already exists (`mkvforge-v0.8.4`, `mp4subrip-v0.9.1`, `pgs2srt-v0.4.1`). Otherwise a `macos-latest` job builds the unsigned universal Release app, zips `<App>-<version>-universal.zip`, and creates that tag with `gh release create`. The title is `<App> <version>`. The notes are that version's CHANGELOG section. PGS2SRT has no CHANGELOG, so the note is the app name and version. A version bump that lands on `main` is what cuts a new release. Docs-only and CI-only changes do not bump, so they do not create a new tag.
+For each affected app it reads the version with `bash scripts/bump-version.sh <app> --current`. It skips the app when the tag `<app>-v<version>` already exists (`mkvforge-v0.8.5`, `mp4subrip-v0.9.2`, `pgs2srt-v0.4.1`). Otherwise a `macos-latest` job builds the unsigned universal Release app, zips `<App>-<version>-universal.zip`, and creates that tag with `gh release create`. The title is `<App> <version>`. The notes are that version's CHANGELOG section. PGS2SRT has no CHANGELOG, so the note is the app name and version. A version bump that lands on `main` is what cuts a new release. Docs-only and CI-only changes do not bump, so they do not create a new tag.
