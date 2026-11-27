@@ -1,3 +1,4 @@
+import MediaTesting
 import XCTest
 
 // Empty input folder. The banner is the fixture. Extract stays off.

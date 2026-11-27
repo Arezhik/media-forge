@@ -1,3 +1,4 @@
+import MediaTesting
 import XCTest
 
 // Settings essentials. UITEST_OUTPUT_DIR is the chosen folder.

@@ -17,7 +17,8 @@ open class SettingsPage: BasePage {
     open var settingsWindowIdentifier: String? { nil }
 
     /// `Self.init` in `open(in:)` needs a required initializer. Subclasses inherit this.
-    public required init(app: XCUIApplication) {
+    /// `BasePage` already declares `init(app:)`, so this override must say so.
+    public required override init(app: XCUIApplication) {
         super.init(app: app)
     }
 

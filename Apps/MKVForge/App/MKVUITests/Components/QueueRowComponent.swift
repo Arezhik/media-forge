@@ -151,10 +151,6 @@ final class QueueRowComponent: MediaTesting.QueueRowComponent {
         return hits.prefix(6).map { describe($0) }.joined(separator: "; ")
     }
 
-    private func named(_ name: String) -> NSPredicate {
-        NSPredicate(format: "label == %@ OR value == %@ OR title == %@", name, name, name)
-    }
-
     /// `Include <stem>`. Checkboxes first, then switches.
     private func includeCheckbox(timeout: TimeInterval) -> XCUIElement? {
         let name = "Include \(stem)"
