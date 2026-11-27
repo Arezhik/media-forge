@@ -1,0 +1,161 @@
+# Sets the issue title and app/type labels from the user report form
+# (.github/ISSUE_TEMPLATE/report.yml). Agent-task and free-form issues are ignored.
+# Updating the title fires issues: edited; this job does not write the title again
+# when it already matches, so that follow-up run is a no-op.
+# Listens only to issue events, so it does not run app CI or release.
+name: Issue title and labels
+
+on:
+  issues:
+    types: [opened, edited]
+
+permissions:
+  issues: write
+
+jobs:
+  title-and-labels:
+    name: Set title and labels
+    runs-on: ubuntu-latest
+    steps:
+      - name: Apply report form title and labels
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issue = context.payload.issue;
+            const body = (issue && issue.body) || "";
+            if (!body.includes("### App") || !body.includes("### Short summary")) {
+              core.info("Skipping: issue body is not the report form.");
+              return;
+            }
+
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const issue_number = issue.number;
+
+            function fieldValue(text, label) {
+              const lines = text.split(/\r?\n/);
+              const heading = `### ${label}`;
+              const start = lines.indexOf(heading);
+              if (start === -1) return "";
+              let i = start + 1;
+              if (i < lines.length && lines[i] === "") i += 1;
+              const value = [];
+              for (; i < lines.length; i++) {
+                if (lines[i].startsWith("### ")) break;
+                value.push(lines[i]);
+              }
+              while (value.length > 0 && value[value.length - 1] === "") value.pop();
+              const joined = value.join("\n").trim();
+              if (joined === "_No response_") return "";
+              return joined;
+            }
+
+            function firstLine(text) {
+              if (!text) return "";
+              const line = text.split(/\n/, 1)[0].trim();
+              if (line === "_No response_") return "";
+              return line;
+            }
+
+            const app = firstLine(fieldValue(body, "App"));
+            const type = firstLine(fieldValue(body, "Type"));
+            const summary = firstLine(fieldValue(body, "Short summary"));
+
+            const APP_LABEL = {
+              MKVForge: "app:mkvforge",
+              MP4SubRip: "app:mp4subrip",
+              PGS2SRT: "app:pgs2srt",
+            };
+            const TYPE_LABEL = {
+              Bug: "bug",
+              Feature: "feature",
+            };
+            const LABEL_COLOR = {
+              bug: "d73a4a",
+              feature: "1a7f37",
+              "app:mkvforge": "5319e7",
+              "app:mp4subrip": "0e8a16",
+              "app:pgs2srt": "1d76db",
+            };
+
+            const desiredApp = APP_LABEL[app] || "";
+            const desiredType = TYPE_LABEL[type] || "";
+
+            if (desiredApp && summary) {
+              let title = `[${app}]: ${summary}`;
+              if (title.length > 256) {
+                title = title.slice(0, 256).trimEnd();
+              }
+              if (title !== issue.title) {
+                await github.rest.issues.update({ owner, repo, issue_number, title });
+                core.info("Updated issue title.");
+              } else {
+                core.info("Title already matches; not updating.");
+              }
+            } else {
+              core.info("Skipping title update: app or short summary is missing.");
+            }
+
+            function labelNames(labels) {
+              const names = [];
+              for (const label of labels || []) {
+                names.push(typeof label === "string" ? label : label.name);
+              }
+              return names;
+            }
+
+            const current = labelNames(issue.labels);
+            const toAdd = [];
+            if (desiredType && !current.includes(desiredType)) toAdd.push(desiredType);
+            if (desiredApp && !current.includes(desiredApp)) toAdd.push(desiredApp);
+
+            async function ensureLabel(name) {
+              try {
+                await github.rest.issues.getLabel({ owner, repo, name });
+              } catch (error) {
+                if (error.status !== 404) throw error;
+                try {
+                  await github.rest.issues.createLabel({
+                    owner,
+                    repo,
+                    name,
+                    color: LABEL_COLOR[name],
+                  });
+                } catch (createError) {
+                  if (createError.status !== 422) throw createError;
+                }
+              }
+            }
+
+            for (const name of toAdd) {
+              await ensureLabel(name);
+            }
+            if (toAdd.length > 0) {
+              await github.rest.issues.addLabels({
+                owner,
+                repo,
+                issue_number,
+                labels: toAdd,
+              });
+              core.info(`Added labels: ${toAdd.join(", ")}`);
+            }
+
+            const toRemove = [];
+            if (desiredType) {
+              for (const other of ["bug", "feature"]) {
+                if (other !== desiredType && current.includes(other)) toRemove.push(other);
+              }
+            }
+            if (desiredApp) {
+              for (const name of current) {
+                if (name.startsWith("app:") && name !== desiredApp) toRemove.push(name);
+              }
+            }
+            for (const name of toRemove) {
+              try {
+                await github.rest.issues.removeLabel({ owner, repo, issue_number, name });
+                core.info(`Removed label: ${name}`);
+              } catch (error) {
+                if (error.status !== 404) throw error;
+              }
+            }
