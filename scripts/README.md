@@ -6,9 +6,9 @@ Shared Linux checks for the monorepo. Run them from the repo root.
 
 ```bash
 ./scripts/verify-linux.sh            # all (the default)
-./scripts/verify-linux.sh all        # MediaForge, the root umbrella, then mkvforge, mp4subrip, and pgs2srt
+./scripts/verify-linux.sh all        # MediaForge, the root umbrella, then mkvforge, mp4subrip, pgs2srt, and mediaforgecatalog
 ./scripts/verify-linux.sh package    # MediaForge and the root umbrella only
-./scripts/verify-linux.sh mkvforge   # one app: mkvforge, mp4subrip, or pgs2srt
+./scripts/verify-linux.sh mkvforge   # one app: mkvforge, mp4subrip, pgs2srt, or mediaforgecatalog
 ```
 
 `all` and `package` use the same strict flags as CI:
@@ -37,7 +37,7 @@ If `swift` is not installed, the package portion prints that the GitHub Actions 
 ./scripts/bump-version.sh <app> --rebase <ref> patch|minor|major [--dry-run]
 ```
 
-`<app>` is exactly one of `mkvforge`, `mp4subrip`, or `pgs2srt`.
+`<app>` is exactly one of `mkvforge`, `mp4subrip`, `pgs2srt`, or `mediaforgecatalog`. `mediaforgecatalog` is the internal catalog and is not released.
 
 SemVer: `patch` for a bug fix or small tweak, `minor` for a new feature, `major` for a major enhancement or breaking change. A new phase is usually `minor`. Every bump also adds 1 to the build number. Docs-only and CI-only PRs don't bump. Release tags are `<app>-vX.Y.Z` (`mkvforge-vX.Y.Z`, `mp4subrip-vX.Y.Z`, `pgs2srt-vX.Y.Z`), never a bare `vX.Y.Z`.
 

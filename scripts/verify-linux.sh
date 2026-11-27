@@ -2,10 +2,10 @@
 # verify-linux.sh: Linux-host verification for the media-forge monorepo.
 #
 # Usage (from the repo root):
-#   scripts/verify-linux.sh                 MediaForge, the root umbrella, then all three apps
+#   scripts/verify-linux.sh                 MediaForge, the root umbrella, then all apps
 #   scripts/verify-linux.sh all             same as no arguments
 #   scripts/verify-linux.sh package         MediaForge and the root umbrella only
-#   scripts/verify-linux.sh <app>           one app: mkvforge, mp4subrip, or pgs2srt
+#   scripts/verify-linux.sh <app>           one app: mkvforge, mp4subrip, pgs2srt, or mediaforgecatalog
 #
 # Apps/<App>/scripts/verify-linux.sh is a wrapper that selects that app and
 # forwards every argument here.
@@ -40,9 +40,9 @@ if [ "$#" -gt 1 ]; then
 fi
 
 case "$TARGET" in
-  all|package|mkvforge|mp4subrip|pgs2srt) ;;
+  all|package|mkvforge|mp4subrip|pgs2srt|mediaforgecatalog) ;;
   *)
-    echo "verify-linux: unknown target '$TARGET' (use all, package, mkvforge, mp4subrip, or pgs2srt)" >&2
+    echo "verify-linux: unknown target '$TARGET' (use all, package, mkvforge, mp4subrip, pgs2srt, or mediaforgecatalog)" >&2
     exit 1
     ;;
 esac
@@ -52,6 +52,7 @@ app_root_for() {
     mkvforge) printf '%s\n' "$REPO/Apps/MKVForge" ;;
     mp4subrip) printf '%s\n' "$REPO/Apps/MP4SubRip" ;;
     pgs2srt) printf '%s\n' "$REPO/Apps/PGS2SRT" ;;
+    mediaforgecatalog) printf '%s\n' "$REPO/Apps/MediaForgeCatalog" ;;
     *)
       echo "verify-linux: unknown app $1" >&2
       exit 1
@@ -167,9 +168,10 @@ case "$TARGET" in
     verify_app mkvforge
     verify_app mp4subrip
     verify_app pgs2srt
+    verify_app mediaforgecatalog
     echo "verify-linux: all targets passed"
     ;;
-  mkvforge|mp4subrip|pgs2srt)
+  mkvforge|mp4subrip|pgs2srt|mediaforgecatalog)
     verify_app "$TARGET"
     ;;
 esac
