@@ -32,8 +32,9 @@ so `.github/workflows/ci.yml` keeps testing MediaForge and the umbrella.
 - All apps and MediaForge target macOS 15+. Newer UI APIs are availability-gated or stay in the app.
 - Swift 6 strict concurrency and warnings-as-errors. Pass `-Xswiftc -strict-concurrency=complete -Xswiftc -warnings-as-errors` on every `swift test` and `swift build`.
 - Never hand-edit `project.pbxproj`. Edit `project.yml` and regenerate with XcodeGen.
-- App engines stay in the apps: PGS OCR/review, MP4 caption engines, MKV scan/remux matching, `ConversionQueue` / `BatchRunner`, and track pickers.
-- Each app keeps its own semver and build number, and per-app tags `mkvforge-vX.Y.Z` (MKV Forge is 0.8.2, build 11), `mp4subrip-vX.Y.Z` (MP4SubRip is 0.8.1, build 11), and `pgs2srt-vX.Y.Z` (PGS2SRT is 0.3.1, build 8). There is no single monorepo `vX.Y.Z`.
+- Shared features go into `Packages/MediaForge` first. App-specific engines stay in the apps: PGS OCR/review, MP4 caption engines, MKV scan/remux matching, `ConversionQueue` / `BatchRunner`, and track pickers.
+- Releases use per-app tags `<app>-vX.Y.Z` (for example `mkvforge-v0.8.5`) via `.github/workflows/release.yml` on push to `main`. Not a single monorepo `vX.Y.Z`. There is one shared Releases page. Each app keeps its own semver and build number: MKV Forge is 0.8.2 (build 11), MP4SubRip is 0.8.1 (build 11), and PGS2SRT is 0.3.1 (build 8).
+- The MediaForgeCatalog demo/catalog app is deferred and is not part of epic #1. Do not start it.
 - One PR per phase. Green CI is required. Arezhik tests on a Mac before merge.
 - `MediaCore` and `MediaTesting` stay Linux-buildable: no AppKit, SwiftUI, or Vision imports. `MediaUI` may import SwiftUI only inside `#if canImport(SwiftUI)`, with a Linux-safe type outside that guard, so Linux `swift test` still passes.
 - CI pins Swift 6.2.4 (`container: image: swift:6.2.4` on the Linux job), matching mkv-forge, pgs2srt, and mp4-sub-rip. Change that pin only together with this file.
