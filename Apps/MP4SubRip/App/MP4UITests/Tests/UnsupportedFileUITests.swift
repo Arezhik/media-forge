@@ -1,3 +1,4 @@
+import MediaTesting
 import XCTest
 
 // `notes.txt` is inside the launched input folder. A folder drop ignores

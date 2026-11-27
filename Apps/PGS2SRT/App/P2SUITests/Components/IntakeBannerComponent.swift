@@ -1,55 +1,55 @@
+import MediaTesting
 import XCTest
 
-// Component: one intake notice under the header.
-// Identifier `intakeBanner` is on the notice text. The sentence is the value.
-// Do not walk `descendants(matching: .any)`.
+// One intake notice. Identifier `intakeBanner` is on the notice text.
+// The sentence is the value. PGS joins label and value (`uiLabelAndValue`).
+// The queue window is `queueWindow`: Settings titles the selected pane,
+// so `app.mainWindow`'s title filter can land on that pane.
 
 /// The notice shown for an empty folder or a file that is not a subtitle.
 @MainActor
-struct IntakeBannerComponent {
-    let app: XCUIApplication
-
-    func requireFragment(
+final class IntakeBannerComponent: MediaTesting.IntakeBannerComponent {
+    override func requireFragment(
         _ fragment: String,
         timeout: TimeInterval = UITestTimeout.standard,
         file: StaticString = #filePath,
         line: UInt = #line
     ) {
         let found = UITestPoll.until(timeout) {
-            self.matches(fragment)
+            self.matchesFragment(fragment)
         }
         XCTAssertTrue(
             found,
-            "The intake banner never showed \(fragment). It showed \(visibleText())",
+            "The intake banner never showed \(fragment). It showed \(visibleBannerText())",
             file: file,
             line: line
         )
     }
 
-    func assertAbsent(
+    override func assertAbsent(
         _ fragment: String,
         timeout: TimeInterval = UITestTimeout.standard,
         file: StaticString = #filePath,
         line: UInt = #line
     ) {
         let gone = UITestPoll.until(timeout) {
-            !self.matches(fragment)
+            !self.matchesFragment(fragment)
         }
         XCTAssertTrue(gone, "The intake banner still showed \(fragment)", file: file, line: line)
     }
 
-    private func matches(_ fragment: String) -> Bool {
-        let window = app.mainWindow
-        let identified = window.staticTexts["intakeBanner"]
-        if identified.exists && identified.uiText.contains(fragment) {
+    private func matchesFragment(_ fragment: String) -> Bool {
+        let window = app.queueWindow
+        let identified = window.staticTexts[bannerIdentifier]
+        if identified.exists && identified.uiLabelAndValue.contains(fragment) {
             return true
         }
         return window.staticTexts.matchingLabelOrValue(containing: fragment).firstMatch.exists
     }
 
-    private func visibleText() -> String {
-        let identified = app.mainWindow.staticTexts["intakeBanner"]
+    private func visibleBannerText() -> String {
+        let identified = app.queueWindow.staticTexts[bannerIdentifier]
         guard identified.exists else { return "" }
-        return identified.uiText
+        return identified.uiLabelAndValue
     }
 }

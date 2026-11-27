@@ -1,3 +1,4 @@
+import MediaTesting
 import XCTest
 
 // Settings essentials. The UI-test defaults are cleared on launch, then the

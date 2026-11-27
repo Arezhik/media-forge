@@ -1,3 +1,4 @@
+import MediaTesting
 import XCTest
 
 // Show Ready in Remux. One unmatched video is Issue. One prefix-matched pair is Ready.

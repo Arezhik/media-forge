@@ -41,6 +41,8 @@ If `swift` is not installed, the package portion prints that the GitHub Actions 
 
 SemVer: `patch` for a bug fix or small tweak, `minor` for a new feature, `major` for a major enhancement or breaking change. A new phase is usually `minor`. Every bump also adds 1 to the build number. Docs-only and CI-only PRs don't bump. Release tags are `<app>-vX.Y.Z` (`mkvforge-vX.Y.Z`, `mp4subrip-vX.Y.Z`, `pgs2srt-vX.Y.Z`), never a bare `vX.Y.Z`.
 
+`.github/workflows/release.yml` creates a tag on this repo's single Releases page when that tag does not exist yet. It runs on a push to `main` (paths: `Apps/<app>/**`, `Packages/MediaForge/**`, and the workflow file) and on `workflow_dispatch` (`app`: `all`, `mkvforge`, `mp4subrip`, or `pgs2srt`). It does not run on pull requests. The version comes from `./scripts/bump-version.sh <app> --current`. The asset is `<App>-<version>-universal.zip`. Notes are that version's CHANGELOG section. PGS2SRT has no CHANGELOG, so the note is the app name and version. A version bump that lands on `main` is what cuts a new release.
+
 `--check` requires `App/*.xcodeproj/project.pbxproj` and `App/project.yml` to agree. MKV Forge and MP4SubRip also require a `CHANGELOG.md` section for that version. PGS2SRT has no `CHANGELOG.md`. `--check` still requires the two project files to agree, and a bump does not create a changelog.
 
 `--check-against <ref>` passes when the version and build are unchanged, or when the build is higher than `<ref>`'s. It fails when the build goes down, or when the version changes without a new build.

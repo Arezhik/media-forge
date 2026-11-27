@@ -1,27 +1,14 @@
+import MediaTesting
 import XCTest
 
 // Page: Settings. Output placement, existing-file policy, and ffmpeg.
+// Opening the window and finding it live on `MediaTesting.SettingsPage`.
 // Open it from the MP4SubRip menu. Do not click Choose… or Choose Folder.
 
 /// Settings window. Locators assume the window is up, except `open(in:)`.
 @MainActor
-final class SettingsPage: BasePage {
-    override var root: XCUIElement {
-        app.windows.matching(
-            NSPredicate(format: "title CONTAINS[c] %@ OR label CONTAINS[c] %@", "Settings", "Settings")
-        ).firstMatch
-    }
-
-    @discardableResult
-    static func open(in app: XCUIApplication) -> SettingsPage {
-        let appMenu = app.menuBars.firstMatch.menuBarItems["MP4SubRip"]
-        appMenu.clickWhenReady(message: "The MP4SubRip application menu never showed up")
-        let item = appMenu.menuItems.matching(
-            NSPredicate(format: "label CONTAINS %@ OR title CONTAINS %@", "Settings", "Settings")
-        ).firstMatch
-        item.clickWhenReady(message: "The Settings menu item never showed up")
-        return SettingsPage(app: app)
-    }
+final class SettingsPage: MediaTesting.SettingsPage {
+    override class var menuTitle: String { "MP4SubRip" }
 
     func waitForSettingsChrome(timeout: TimeInterval = UITestTimeout.standard) {
         let page = self
@@ -52,7 +39,7 @@ final class SettingsPage: BasePage {
     func requireExistingFile(contains fragment: String, file: StaticString = #filePath, line: UInt = #line) {
         let popup = existingFilePopup()
         popup.requireExists(timeout: UITestTimeout.standard, message: "The existing-file picker never showed up", file: file, line: line)
-        XCTAssertTrue(popup.uiText.contains(fragment), "Existing-file picker showed \(popup.uiText)", file: file, line: line)
+        XCTAssertTrue(popup.uiMenuText.contains(fragment), "Existing-file picker showed \(popup.uiMenuText)", file: file, line: line)
     }
 
     func chooseExistingFile(_ title: String) {
@@ -60,9 +47,9 @@ final class SettingsPage: BasePage {
         app.menuItems[title].clickWhenReady(message: "The \(title) choice never showed up")
         let needle = title.components(separatedBy: " ").first ?? title
         let shown = UITestPoll.until(UITestTimeout.standard) {
-            self.existingFilePopup().uiText.contains(needle)
+            self.existingFilePopup().uiMenuText.contains(needle)
         }
-        XCTAssertTrue(shown, "Existing-file picker did not show \(title). It showed \(existingFilePopup().uiText)")
+        XCTAssertTrue(shown, "Existing-file picker did not show \(title). It showed \(existingFilePopup().uiMenuText)")
     }
 
     func requireOutputPath(contains fragment: String, file: StaticString = #filePath, line: UInt = #line) {
@@ -104,7 +91,7 @@ final class SettingsPage: BasePage {
 
     private func diagnostics() -> String {
         guard root.exists else { return "No Settings window." }
-        let texts = root.staticTexts.allElementsBoundByIndex.prefix(8).map(\.uiText).joined(separator: " | ")
+        let texts = root.staticTexts.allElementsBoundByIndex.prefix(8).map(\.uiMenuText).joined(separator: " | ")
         return "Window title '\(root.title)' label '\(root.label)'. Texts: \(texts)."
     }
 }

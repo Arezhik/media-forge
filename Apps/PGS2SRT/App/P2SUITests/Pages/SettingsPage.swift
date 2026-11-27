@@ -1,27 +1,24 @@
+import MediaTesting
 import XCTest
 
 // Page: the Settings window (General, Recognition, Notifications).
+// Opening the window and finding it live on `MediaTesting.SettingsPage`.
 // Open it from the PGS2SRT application menu. Do not click Choose… or Open System Settings.
+// The title bar names the selected pane, so `root` keeps the `pgs2srt.settings` lookup.
 // Controls are this window's buttons, pop-ups, switches, and steppers.
 // Do not query `app.descendants`. That snapshot includes the main window and times out.
 
 /// Settings window. Locators assume the window is up, except `open(in:)`.
 @MainActor
-final class SettingsPage: BasePage {
+final class SettingsPage: MediaTesting.SettingsPage {
+    override class var menuTitle: String { "PGS2SRT" }
+
+    /// Window identifier. The title is the selected pane, not "Settings".
+    override var settingsWindowIdentifier: String? { "pgs2srt.settings" }
+
     override var root: XCUIElement {
         SettingsWindowQuery.resolve(in: app)
             ?? app.windows.matching(SettingsWindowQuery.titlePredicate).firstMatch
-    }
-
-    @discardableResult
-    static func open(in app: XCUIApplication) -> SettingsPage {
-        let appMenu = app.menuBars.firstMatch.menuBarItems["PGS2SRT"]
-        appMenu.clickWhenReady(message: "The PGS2SRT application menu never showed up")
-        let item = appMenu.menuItems.matching(
-            NSPredicate(format: "label CONTAINS %@ OR title CONTAINS %@", "Settings", "Settings")
-        ).firstMatch
-        item.clickWhenReady(message: "The Settings menu item never showed up")
-        return SettingsPage(app: app)
     }
 
     func waitForSettingsChrome(timeout: TimeInterval = UITestTimeout.standard) {
@@ -56,7 +53,7 @@ final class SettingsPage: BasePage {
     func requireExistingFile(contains fragment: String, file: StaticString = #filePath, line: UInt = #line) {
         let popup = existingFilePopup()
         popup.requireExists(timeout: UITestTimeout.standard, message: "The existing-file picker never showed up", file: file, line: line)
-        XCTAssertTrue(popup.uiText.contains(fragment), "Existing-file picker showed \(popup.uiText)", file: file, line: line)
+        XCTAssertTrue(popup.uiLabelAndValue.contains(fragment), "Existing-file picker showed \(popup.uiLabelAndValue)", file: file, line: line)
     }
 
     func chooseExistingFile(_ title: String) {
@@ -65,9 +62,9 @@ final class SettingsPage: BasePage {
         let item = app.menuItems[title]
         item.clickWhenReady(message: "The \(title) choice never showed up")
         let shown = UITestPoll.until(UITestTimeout.standard) {
-            self.existingFilePopup().uiText.contains(title.components(separatedBy: " ").first ?? title)
+            self.existingFilePopup().uiLabelAndValue.contains(title.components(separatedBy: " ").first ?? title)
         }
-        XCTAssertTrue(shown, "The existing-file picker did not show \(title). It showed \(existingFilePopup().uiText)")
+        XCTAssertTrue(shown, "The existing-file picker did not show \(title). It showed \(existingFilePopup().uiLabelAndValue)")
     }
 
     func requireChooseMKVTrack(isOn: Bool, file: StaticString = #filePath, line: UInt = #line) {
@@ -93,7 +90,7 @@ final class SettingsPage: BasePage {
         let popup = identified("languagePicker", types: [.popUpButton, .button, .menuButton])
             ?? root.popUpButtons.firstMatch
         popup.requireExists(timeout: UITestTimeout.standard, message: "The language picker never showed up", file: file, line: line)
-        XCTAssertTrue(popup.uiText.contains("English"), "Language picker showed \(popup.uiText)", file: file, line: line)
+        XCTAssertTrue(popup.uiLabelAndValue.contains("English"), "Language picker showed \(popup.uiLabelAndValue)", file: file, line: line)
     }
 
     func requireItalics(isOn: Bool, file: StaticString = #filePath, line: UInt = #line) {

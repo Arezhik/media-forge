@@ -1,3 +1,4 @@
+import MediaTesting
 import XCTest
 
 // Rewritten from Phase3ModeAndFeedbackUITests.

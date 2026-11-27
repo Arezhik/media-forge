@@ -50,6 +50,7 @@ fi
 
 if [ "$USE_POM" -eq 1 ]; then
   cat > "$TEST_FILE" <<EOF
+import MediaTesting
 import XCTest
 
 // Thin test. Launch, fixtures, and teardown live on BaseUITest.

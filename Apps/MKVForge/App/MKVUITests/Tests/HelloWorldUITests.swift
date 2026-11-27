@@ -1,3 +1,4 @@
+import MediaTesting
 import XCTest
 
 /// Dummy files stay in the queue after Scan (empty-file issue) and never need mkvmerge.

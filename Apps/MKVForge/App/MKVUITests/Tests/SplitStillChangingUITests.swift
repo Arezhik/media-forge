@@ -1,3 +1,4 @@
+import MediaTesting
 import XCTest
 
 // UIT-P2-01. A file touched in the last minute cannot be Ready.

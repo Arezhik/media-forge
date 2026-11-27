@@ -1,3 +1,4 @@
+import MediaTesting
 import XCTest
 
 // Component: the bottom bar. Summary, batch progress, Show Ready, and Show in Finder.

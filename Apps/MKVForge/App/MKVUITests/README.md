@@ -2,7 +2,7 @@
 
 Playwright-style page objects for `MKVForgeUITests`. Tests stay thin. Screens and regions own the locators.
 
-Every UI test lives in `Tests/` and subclasses `BaseUITest`. That includes `HelloWorldUITests`, `RemuxMatchOnMKANameUITests`, and `MainWindowSmokeUITests`. `UITestFixtureBuilder` lives in MediaTesting. Tests call it through `UITestFixtures` / `fixtures`.
+Every UI test lives in `Tests/` and subclasses this app's `BaseUITest`. That includes `HelloWorldUITests`, `RemuxMatchOnMKANameUITests`, and `MainWindowSmokeUITests`. `UITestFixtureBuilder` lives in MediaTesting. Tests call it through `UITestFixtures` / `fixtures`.
 
 ```
 App/MKVUITests/
@@ -11,11 +11,22 @@ App/MKVUITests/
 │   ├── HelloWorldUITests.swift
 │   ├── MainWindowSmokeUITests.swift
 │   └── RemuxMatchOnMKANameUITests.swift
-├── Pages/                             # one class per major screen
-├── Components/                        # reusable UI regions
-├── Helpers/                           # waits, extensions, fixture forwarder
-└── Base/                              # BasePage and BaseUITest
+├── Pages/                             # app screens; they subclass MediaTesting pages
+├── Components/                        # app-specific regions
+└── Base/                              # thin BaseUITest subclass (launch environment only)
 ```
+
+## Shared in MediaTesting
+
+`import MediaTesting`. Shared types compile only on macOS with XCTest. This app's `BaseUITest` subclasses `MediaTesting.BaseUITest` and returns `UITestFixtures.mkvForgeEnvironment` (source, output, video, and audio). Do not copy the shared files into the app.
+
+Shared: `BaseUITest` (launch, `prepareFixtures()`, teardown), `BasePage`, `MainWindowPage` (window and toolbar), `SettingsPage` (application menu, then the settings window), `UITestFixtures`, `UITestTimeout`, `UITestQuery`, `UITestWait`, `UITestPoll`, `XCUIElement` helpers (`uiText`, `uiMenuText`, `uiLabelAndValue`), `QueueRowComponent` (row lookup), and `ModePickerComponent` (click a segment). `IntakeBannerComponent` is shared for the other apps. MKVForge does not use it.
+
+Kept here: `ToolBannerComponent`, `FolderFieldComponent`, `BottomBarComponent`, `SplitPage`, `RemuxPage`, mode titles (Split / Remux) and `modePicker`, queue badge copy plus Include, Choose Match, and Unmatch, and the Settings sections.
+
+## Adding a test
+
+From `Apps/MKVForge`, run `./scripts/scaffold-xcuitest.sh <FlowName>`. The new file subclasses this `BaseUITest`, overrides `prepareFixtures() async throws`, and does not override `setUp` or call `app.launch()`. Put locators on a page or component in this target. Subclass the MediaTesting type when the screen shares that chrome. Keep assertions in the test. Keep edge cases in `MKVForgeCoreTests`.
 
 ## Playwright mapping
 
@@ -23,9 +34,9 @@ App/MKVUITests/
 | --- | --- |
 | `Pages/` | page objects. A page owns locators and actions for one screen. Navigation returns the next page or component. |
 | `Components/` | component classes. A component owns one region (a folder field, the mode picker, a queue row). |
-| `Helpers/` | fixtures and utilities. `UITestFixtures` forwards to `UITestFixtureBuilder`. `XCUIElement+UITest` is waits and text matching. |
-| `Base/BaseUITest` | the test fixture / `beforeEach`. It builds fixtures, launches, and cleans up. |
-| `Base/BasePage` | base page. Holds `XCUIApplication` and the window root. |
+| `MediaTesting` helpers | fixtures and utilities. `UITestFixtures` forwards to `UITestFixtureBuilder`. `XCUIElement+UITest` is waits and text matching. |
+| `MediaTesting.BaseUITest` | the test fixture / `beforeEach`. It builds fixtures, launches, and cleans up. This app's `Base/BaseUITest` only sets the launch environment. |
+| `MediaTesting.BasePage` | base page. Holds `XCUIApplication` and the window root. |
 | `Tests/` | the spec. Steps only. No locators inline. |
 
 `MainWindowPage` holds the shared chrome (window, mode picker, folder fields, Scan, toolbar primary action, queue). `SplitPage` and `RemuxPage` specialize it. Launch opens **Split**. Video and Audio fields are not on screen until a test calls `switchToRemux()`.
@@ -46,7 +57,7 @@ That is the only argument. Replace the arguments. Do not append. Do not add `-Ap
 
 ## Environment
 
-`UITestFixtures.launchEnvironment` sets these from the builder folders. `UITestingLaunch` reads them only when `--uitesting` is present:
+This app's `BaseUITest` returns `UITestFixtures.mkvForgeEnvironment(for:)`. `UITestingLaunch` reads the variables only when `--uitesting` is present:
 
 | Variable | Folder |
 | --- | --- |
@@ -102,13 +113,13 @@ The toolbar primary button is titled `"Split"` or `"Remux"` while idle, so it is
 
 ## Fixtures
 
-`UITestFixtureBuilder.swift` stays at `App/MKVUITests/`. `UITestFixtures` creates it, cleans it up, and maps its folders onto the launch environment. Do not copy `createDummyFile` or `createValidMediaFile`. Call them on `fixtures` from `prepareFixtures()`.
+`UITestFixtureBuilder.swift` lives in MediaTesting. `UITestFixtures` creates it, cleans it up, and maps its folders onto the launch environment. Do not copy `createDummyFile` or `createValidMediaFile`. Call them on `fixtures` from `prepareFixtures()`.
 
 `createValidMediaFile` throws `XCTSkip` when ffmpeg is missing. A file modified in the last minute is "still changing", which blocks Ready. `fixtures.settle(_:)` sets the modification date back two minutes. `HelloWorldUITests` uses dummy files, which stay in the queue as an empty-file issue and never need mkvmerge. `RemuxMatchOnMKANameUITests` uses settled valid media and does not open Settings.
 
-## Adding a test
+## What the generated test does
 
-Run `./scripts/scaffold-xcuitest.sh <FlowName>`. When `Tests/` and `Base/BaseUITest.swift` exist, it writes `Tests/<Flow>UITests.swift` as an `@MainActor` `BaseUITest` subclass. The generated test overrides `prepareFixtures() async throws`, uses pages and `XCTContext.runActivity`, and does not click Scan. It does not override `setUp` or call `app.launch()`. It does not add `-ApplePersistenceIgnoreState YES`.
+`./scripts/scaffold-xcuitest.sh <FlowName>` writes `Tests/<Flow>UITests.swift` as an `@MainActor` subclass of this app's `BaseUITest` when `Tests/` and `Base/BaseUITest.swift` exist. The generated test overrides `prepareFixtures() async throws`, uses pages and `XCTContext.runActivity`, and does not click Scan. It does not override `setUp` or call `app.launch()`. It does not add `-ApplePersistenceIgnoreState YES`.
 
 If `Tests/` or `Base/BaseUITest.swift` is missing, the script writes a root `*UITests.swift` instead. That fallback still launches with `--uitesting` only.
 

@@ -1,3 +1,4 @@
+import MediaTesting
 import XCTest
 
 /// Remux happy path for Match on MKA Name (#33). The setting defaults on, and

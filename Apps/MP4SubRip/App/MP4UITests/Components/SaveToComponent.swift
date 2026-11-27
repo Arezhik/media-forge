@@ -1,7 +1,9 @@
+import MediaTesting
 import XCTest
 
 // Component: the Save to menu. Identifier `saveToMenu`.
 // During a UI test the title is the abbreviated UITEST_OUTPUT_DIR path.
+// No shared Save to component. Menu buttons put the path in `title`, so this reads `uiMenuText`.
 
 /// Where the .srt files are written.
 @MainActor
@@ -24,7 +26,7 @@ struct SaveToComponent {
         let window = app.mainWindow
         let types: [XCUIElement.ElementType] = [.menuButton, .button, .popUpButton, .staticText]
         for element in UITestQuery.identified("saveToMenu", in: window, types: types) where element.exists {
-            if element.uiText.localizedCaseInsensitiveContains(fragment) {
+            if element.uiMenuText.localizedCaseInsensitiveContains(fragment) {
                 return true
             }
             // The path is a Text inside the menu button. The button's own title can be empty.
@@ -41,7 +43,7 @@ struct SaveToComponent {
         guard let element = identified.first(where: \.exists) else {
             return "saveToMenu was not on screen."
         }
-        let children = element.staticTexts.allElementsBoundByIndex.prefix(4).map(\.uiText).joined(separator: " | ")
-        return "Menu showed \(element.uiText). Children \(children)."
+        let children = element.staticTexts.allElementsBoundByIndex.prefix(4).map(\.uiMenuText).joined(separator: " | ")
+        return "Menu showed \(element.uiMenuText). Children \(children)."
     }
 }

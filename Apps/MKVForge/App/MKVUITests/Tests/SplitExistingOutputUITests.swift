@@ -1,3 +1,4 @@
+import MediaTesting
 import XCTest
 
 // UIT-P1-02. An existing .mka is an Issue and is not overwritten.

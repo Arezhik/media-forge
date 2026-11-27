@@ -1,13 +1,16 @@
+import MediaTesting
 import XCTest
 
 // Page: the queue window. Drop screen when the list is empty, rows otherwise.
 // Toolbar titles: Open…, Cancel All, Clear Finished. Conversion starts on drop.
 // There is no separate Convert button and no tool-missing banner.
+// `root` is `queueWindow` (`pgs2srt.queue`, then the drop screen or footer).
+// Settings titles the selected pane, so a title filter is not enough.
 
 /// The PGS2SRT queue window.
 @MainActor
-final class MainWindowPage: BasePage {
-    override var root: XCUIElement { app.mainWindow }
+final class MainWindowPage: MediaTesting.MainWindowPage {
+    override var root: XCUIElement { app.queueWindow }
 
     var banner: IntakeBannerComponent { IntakeBannerComponent(app: app) }
     var queue: QueueRowComponent { QueueRowComponent(app: app) }
@@ -17,7 +20,7 @@ final class MainWindowPage: BasePage {
         waitUntilLoaded(timeout: timeout)
         requireText("PGS2SRT", timeout: timeout)
         requireText("Drop .sup or .mkv files, or a folder", timeout: timeout)
-        openButton().requireExists(timeout: timeout, message: "The Open button never showed up")
+        toolbarButton(prefix: "Open").requireExists(timeout: timeout, message: "The Open button never showed up")
     }
 
     func requireText(
@@ -35,36 +38,36 @@ final class MainWindowPage: BasePage {
     }
 
     func assertToolbar(_ title: String, enabled: Bool, file: StaticString = #filePath, line: UInt = #line) {
-        let button = toolbarButton(title)
+        let button = toolbarButton(exact: title)
         button.requireExists(timeout: UITestTimeout.standard, message: "The \(title) button never showed up", file: file, line: line)
         XCTAssertEqual(button.isEnabled, enabled, "\(title) enabled was \(button.isEnabled)", file: file, line: line)
     }
 
     func dismissBanner() {
-        toolbarButton("Dismiss").clickWhenReady(message: "The Dismiss button never showed up")
+        toolbarButton(exact: "Dismiss").clickWhenReady(message: "The Dismiss button never showed up")
     }
 
     func clickClearFinished() {
-        toolbarButton("Clear Finished").clickWhenReady(message: "Clear Finished never showed up")
+        toolbarButton(exact: "Clear Finished").clickWhenReady(message: "Clear Finished never showed up")
     }
+}
 
-    private func openButton() -> XCUIElement {
-        // The title uses the single ellipsis character, not three dots.
-        let predicate = NSPredicate(format: "label BEGINSWITH %@ OR title BEGINSWITH %@", "Open", "Open")
-        let candidates = [
-            root.buttons.matching(predicate).firstMatch,
-            root.toolbars.buttons.matching(predicate).firstMatch,
-            app.buttons.matching(predicate).firstMatch,
-        ]
-        return UITestWait.firstExisting(candidates, timeout: UITestTimeout.standard) ?? candidates[0]
-    }
-
-    private func toolbarButton(_ title: String) -> XCUIElement {
-        let candidates = [
-            root.buttons[title],
-            root.toolbars.buttons[title],
-            app.buttons[title],
-        ]
-        return UITestWait.firstExisting(candidates, timeout: UITestTimeout.short) ?? candidates[0]
+@MainActor
+extension XCUIApplication {
+    /// Queue window while Settings may also be open.
+    ///
+    /// Identifier `pgs2srt.queue`, then the drop screen or the footer.
+    /// The Settings title bar names the selected pane, so `mainWindow`'s title filter is not enough.
+    var queueWindow: XCUIElement {
+        let marked = windows["pgs2srt.queue"]
+        if marked.exists { return marked }
+        if let queue = windows.allElementsBoundByIndex.first(where: { window in
+            window.staticTexts["settingsSummary"].exists
+                || window.groups["emptyDrop"].exists
+                || window.otherElements["emptyDrop"].exists
+        }) {
+            return queue
+        }
+        return mainWindow(identifier: "pgs2srt.queue")
     }
 }

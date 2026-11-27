@@ -1,3 +1,4 @@
+import MediaTesting
 import XCTest
 
 // A 0-byte .sup is ingested and fails before OCR.

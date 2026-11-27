@@ -1,3 +1,4 @@
+import MediaTesting
 import XCTest
 
 // UIT-P1-05. Turning Match on MKA Name off clears Remux and exact-matches only.

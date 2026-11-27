@@ -1,3 +1,4 @@
+import MediaTesting
 import XCTest
 
 // A 0-byte .mkv cannot be read. Without MKVToolNix the row says it is not
@@ -39,8 +40,8 @@ private extension FooterSummaryComponent {
     }
 
     private var settledLine: String {
-        let element = app.mainWindow.staticTexts["batchLine"]
+        let element = app.queueWindow.staticTexts["batchLine"]
         guard element.exists else { return "" }
-        return element.uiText
+        return element.uiLabelAndValue
     }
 }

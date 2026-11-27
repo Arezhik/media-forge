@@ -1,3 +1,4 @@
+import MediaTesting
 import XCTest
 
 // Component: one folder field. A component owns a region.

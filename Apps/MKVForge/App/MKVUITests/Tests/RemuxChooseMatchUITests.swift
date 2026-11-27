@@ -1,3 +1,4 @@
+import MediaTesting
 import XCTest
 
 // UIT-P1-04 (priority P2). Choose Match pairs an ambiguous group. Unmatch restores it.

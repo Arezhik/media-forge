@@ -1,3 +1,4 @@
+import MediaTesting
 import XCTest
 
 // UIT-P2-03. With mkvmerge missing, the banner is up and Scan does not run.

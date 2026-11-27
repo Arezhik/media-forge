@@ -1,3 +1,4 @@
+import MediaTesting
 import XCTest
 
 // Component: the MKVToolNix-not-found banner at the top of the main window.

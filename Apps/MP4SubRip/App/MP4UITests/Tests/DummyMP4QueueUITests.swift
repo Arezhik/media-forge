@@ -1,3 +1,4 @@
+import MediaTesting
 import XCTest
 
 // A 0-byte .mp4 is queued. Probe may fail it. Extraction does not start

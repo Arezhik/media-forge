@@ -1,3 +1,4 @@
+import MediaTesting
 import XCTest
 
 // UIT-P1-03. A full MKV in Video is Ready with "Uses video only".

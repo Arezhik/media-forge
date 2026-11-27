@@ -1,3 +1,4 @@
+import MediaTesting
 import XCTest
 
 // UIT-P1-01. A settled empty MKV is one Issue, and Split stays disabled.
