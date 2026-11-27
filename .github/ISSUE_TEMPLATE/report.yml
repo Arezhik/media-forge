@@ -62,7 +62,6 @@ body:
 
         ### Logs
         Paste the debug log (Help > Export Debug Log)
-      render: markdown
     validations:
       required: false
 
