@@ -6,6 +6,10 @@ Every merged PR that changes the shipped app bumps the version in the same PR wi
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-11-26 (build 15)
+### Changed
+- First 1.0.0 release after Mac testing. No feature changes in this version bump (#13).
+
 ## [0.8.5] - 2026-11-26 (build 14)
 ### Changed
 - The "About N left" ETA sentence now comes from shared MediaCore wording. The estimate itself is unchanged (#7).
