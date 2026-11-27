@@ -1,0 +1,341 @@
+# Publish unsigned universal apps to this repo's single Releases page.
+# Push to main only, plus a manual run (workflow_dispatch). Never pull_request.
+# A push is limited to app trees, the shared package, and this file. The detect
+# job then keeps the apps whose <app>-v<version> tag does not exist yet.
+# Tags stay per app (mkvforge-vX.Y.Z, mp4subrip-vX.Y.Z, pgs2srt-vX.Y.Z).
+# The zip is <App>-<version>-universal.zip. The build matches each app's
+# macOS universal job (Release, arm64 + x86_64, unsigned), on macos-latest.
+name: Release
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'Apps/MKVForge/**'
+      - 'Apps/MP4SubRip/**'
+      - 'Apps/PGS2SRT/**'
+      - 'Packages/MediaForge/**'
+      - '.github/workflows/release.yml'
+  workflow_dispatch:
+    inputs:
+      app:
+        description: App to release
+        required: true
+        default: all
+        type: choice
+        options:
+          - all
+          - mkvforge
+          - mp4subrip
+          - pgs2srt
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  detect:
+    name: Detect apps to release
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.plan.outputs.matrix }}
+      has_apps: ${{ steps.plan.outputs.has_apps }}
+    steps:
+      - name: Require main
+        if: github.ref != 'refs/heads/main'
+        run: |
+          echo "Releases are created from main only (this ref is ${{ github.ref }})"
+          exit 1
+
+      - name: Check out
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Plan the matrix
+        id: plan
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          DISPATCH_APP: ${{ inputs.app }}
+          BEFORE: ${{ github.event.before }}
+        run: |
+          python3 - <<'PY'
+          import json
+          import os
+          import subprocess
+          import sys
+
+          event = os.environ.get("EVENT_NAME", "")
+          dispatch = os.environ.get("DISPATCH_APP", "") or ""
+          before = os.environ.get("BEFORE", "") or ""
+          sha = os.environ["GITHUB_SHA"]
+          apps = ["mkvforge", "mp4subrip", "pgs2srt"]
+          meta = {
+              "mkvforge": {
+                  "id": "mkvforge",
+                  "display": "MKVForge",
+                  "dir": "Apps/MKVForge",
+                  "scheme": "MKVForge",
+                  "product": "MKVForgeKit",
+              },
+              "mp4subrip": {
+                  "id": "mp4subrip",
+                  "display": "MP4SubRip",
+                  "dir": "Apps/MP4SubRip",
+                  "scheme": "MP4SubRip",
+                  "product": "MP4SubRipKit",
+              },
+              "pgs2srt": {
+                  "id": "pgs2srt",
+                  "display": "PGS2SRT",
+                  "dir": "Apps/PGS2SRT",
+                  "scheme": "PGS2SRT",
+                  "product": "PGS2SRTKit",
+              },
+          }
+          prefixes = (
+              ("Apps/MKVForge/", "mkvforge"),
+              ("Apps/MP4SubRip/", "mp4subrip"),
+              ("Apps/PGS2SRT/", "pgs2srt"),
+          )
+
+          def candidates():
+              if event == "workflow_dispatch":
+                  if dispatch == "all":
+                      return list(apps)
+                  if dispatch not in meta:
+                      sys.exit(f"unknown app {dispatch!r}")
+                  return [dispatch]
+              if not before or set(before) == {"0"}:
+                  print("No previous commit; considering every app")
+                  return list(apps)
+              try:
+                  diff = subprocess.check_output(
+                      ["git", "diff", "--name-only", before, sha],
+                      text=True,
+                  )
+              except subprocess.CalledProcessError as exc:
+                  sys.exit(f"git diff {before}..{sha} failed: {exc}")
+              files = [line for line in diff.splitlines() if line]
+              shared = any(
+                  path.startswith("Packages/MediaForge/")
+                  or path == ".github/workflows/release.yml"
+                  for path in files
+              )
+              if shared:
+                  print("Shared package or this workflow changed; considering every app")
+                  return list(apps)
+              chosen = []
+              for prefix, app in prefixes:
+                  if any(path.startswith(prefix) for path in files):
+                      chosen.append(app)
+              return chosen
+
+          matrix = []
+          for app in candidates():
+              current = subprocess.check_output(
+                  ["bash", "scripts/bump-version.sh", app, "--current"],
+                  text=True,
+              ).strip()
+              version = current.split()[0]
+              tag = f"{app}-v{version}"
+              remote = subprocess.run(
+                  ["git", "ls-remote", "--tags", "origin", f"refs/tags/{tag}"],
+                  check=True,
+                  capture_output=True,
+                  text=True,
+              )
+              if remote.stdout.strip():
+                  print(f"skip {tag}: tag already exists")
+                  continue
+              item = dict(meta[app])
+              item["version"] = version
+              item["tag"] = tag
+              item["zip_name"] = f"{item['display']}-{version}-universal.zip"
+              matrix.append(item)
+              print(f"release {tag} -> {item['zip_name']}")
+
+          payload = json.dumps(matrix, separators=(",", ":"))
+          print(payload)
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as handle:
+              handle.write(f"has_apps={'true' if matrix else 'false'}\n")
+              handle.write("matrix<<EOF\n")
+              handle.write(payload)
+              handle.write("\nEOF\n")
+          PY
+
+  release:
+    name: Release ${{ matrix.display }} ${{ matrix.version }}
+    needs: detect
+    if: needs.detect.outputs.has_apps == 'true'
+    runs-on: macos-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJson(needs.detect.outputs.matrix) }}
+    defaults:
+      run:
+        shell: bash
+        working-directory: ${{ matrix.dir }}
+    steps:
+      - name: Check out
+        uses: actions/checkout@v7
+
+      - name: Xcode version
+        run: xcodebuild -version
+
+      - name: Resolve local package
+        env:
+          APP_DIR: ${{ matrix.dir }}
+          DISPLAY: ${{ matrix.display }}
+          SCHEME: ${{ matrix.scheme }}
+          PRODUCT: ${{ matrix.product }}
+        run: |
+          set -euo pipefail
+          ROOT="$GITHUB_WORKSPACE/$APP_DIR"
+          rm -rf "$ROOT/build" "$ROOT/.build"
+          set +e
+          LOG=$(xcodebuild \
+            -resolvePackageDependencies \
+            -project "$ROOT/App/$DISPLAY.xcodeproj" \
+            -scheme "$SCHEME" \
+            -derivedDataPath "$ROOT/build" 2>&1)
+          code=$?
+          set -e
+          echo "$LOG"
+          test "$code" -eq 0
+          echo "$LOG" | grep -q "$PRODUCT"
+          echo "$LOG" | grep -qi "resolved source packages"
+          if echo "$LOG" | grep -q "Missing package product"; then
+            echo "Package products did not bind"
+            exit 1
+          fi
+
+      - name: Build universal app
+        env:
+          APP_DIR: ${{ matrix.dir }}
+          DISPLAY: ${{ matrix.display }}
+          SCHEME: ${{ matrix.scheme }}
+        run: |
+          set -euo pipefail
+          ROOT="$GITHUB_WORKSPACE/$APP_DIR"
+          xcodebuild \
+            -project "$ROOT/App/$DISPLAY.xcodeproj" \
+            -scheme "$SCHEME" \
+            -configuration Release \
+            -destination 'generic/platform=macOS' \
+            -derivedDataPath "$ROOT/build" \
+            ARCHS="arm64 x86_64" \
+            ONLY_ACTIVE_ARCH=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            build
+
+      - name: Verify both architectures and zip
+        env:
+          APP_DIR: ${{ matrix.dir }}
+          DISPLAY: ${{ matrix.display }}
+          APP_ID: ${{ matrix.id }}
+          VERSION: ${{ matrix.version }}
+          ZIP_NAME: ${{ matrix.zip_name }}
+        run: |
+          set -euo pipefail
+          ROOT="$GITHUB_WORKSPACE/$APP_DIR"
+          APP="$ROOT/build/Build/Products/Release/$DISPLAY.app"
+          if [ ! -d "$APP" ]; then
+            APP="$(find "$ROOT/build" -type d -name "$DISPLAY.app" | head -1)"
+          fi
+          test -d "$APP"
+          BIN="$APP/Contents/MacOS/$DISPLAY"
+          test -f "$BIN"
+          lipo -info "$BIN"
+          ARCHS="$(lipo -archs "$BIN")"
+          echo "Architectures: $ARCHS"
+          echo "$ARCHS" | grep -qw arm64
+          echo "$ARCHS" | grep -qw x86_64
+          INFO="$APP/Contents/Info.plist"
+          test -f "$INFO"
+          case "$APP_ID" in
+            mkvforge)
+              plutil -extract CFBundleIdentifier raw "$INFO" | grep -qx com.arezhik.MKVForge
+              # The app icon (L33): actool compiled App/Assets.xcassets into the bundle.
+              plutil -extract CFBundleIconName raw "$INFO" | grep -qx AppIcon
+              test -s "$APP/Contents/Resources/Assets.car"
+              test -s "$APP/Contents/Resources/AppIcon.icns"
+              # MKVForge takes folders from Choose… buttons only, so it declares no document types.
+              if plutil -extract CFBundleDocumentTypes xml1 -o - "$INFO" >/dev/null 2>&1; then
+                echo "Info.plist should not declare CFBundleDocumentTypes (no drag and drop or Open With)"
+                exit 1
+              fi
+              ENTS="$(codesign -d --entitlements :- "$APP" 2>/dev/null || true)"
+              if printf '%s' "$ENTS" | grep -q 'com.apple.security.app-sandbox'; then
+                echo "App Sandbox should stay off so output files can be written next to the input"
+                exit 1
+              fi
+              # Ad-hoc signature (no identity, no secrets): seals the bundle so macOS lets
+              # testers' copies post the batch-finished notification (Phase 5 Q6).
+              codesign --force --sign - "$APP"
+              codesign --verify --verbose=2 "$APP"
+              ;;
+            mp4subrip)
+              plutil -extract CFBundleIdentifier raw "$INFO" | grep -qx com.arezhik.MP4SubRip
+              plutil -extract CFBundleDocumentTypes.0.LSItemContentTypes.0 raw "$INFO" | grep -qx public.folder
+              ENTS="$(codesign -d --entitlements :- "$APP" 2>/dev/null || true)"
+              if printf '%s' "$ENTS" | grep -q 'com.apple.security.app-sandbox'; then
+                echo "App Sandbox should stay off so output files can be written next to the input"
+                exit 1
+              fi
+              ;;
+            pgs2srt)
+              plutil -extract CFBundleIdentifier raw "$INFO" | grep -qx com.pgs2srt.PGS2SRT
+              plutil -extract CFBundleDocumentTypes.0.CFBundleTypeExtensions.0 raw "$INFO" | grep -qx sup
+              plutil -extract CFBundleDocumentTypes.1.LSItemContentTypes.0 raw "$INFO" | grep -qx public.folder
+              plutil -extract UTImportedTypeDeclarations.0.UTTypeIdentifier raw "$INFO" | grep -qx com.pgs2srt.pgs-subtitle
+              ENTS="$(codesign -d --entitlements :- "$APP" 2>/dev/null || true)"
+              if printf '%s' "$ENTS" | grep -q 'com.apple.security.app-sandbox'; then
+                echo "App Sandbox should stay off so the .srt can be written next to a dropped .sup"
+                exit 1
+              fi
+              ;;
+            *)
+              echo "unknown app $APP_ID"
+              exit 1
+              ;;
+          esac
+          ZIP="$ROOT/$ZIP_NAME"
+          ditto -c -k --keepParent "$APP" "$ZIP"
+          test -s "$ZIP"
+
+      - name: Publish GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          APP_DIR: ${{ matrix.dir }}
+          DISPLAY: ${{ matrix.display }}
+          VERSION: ${{ matrix.version }}
+          TAG: ${{ matrix.tag }}
+          ZIP_NAME: ${{ matrix.zip_name }}
+        run: |
+          set -euo pipefail
+          ROOT="$GITHUB_WORKSPACE/$APP_DIR"
+          NOTES="$RUNNER_TEMP/release-notes.md"
+          LOG="$ROOT/CHANGELOG.md"
+          if [ -f "$LOG" ]; then
+            awk -v ver="$VERSION" '
+              index($0, "## [" ver "]") == 1 { capture = 1; print; next }
+              capture && index($0, "## [") == 1 { exit }
+              capture { print }
+            ' "$LOG" > "$NOTES"
+          fi
+          if [ ! -s "$NOTES" ]; then
+            printf '%s %s\n' "$DISPLAY" "$VERSION" > "$NOTES"
+          fi
+          gh release create "$TAG" \
+            --target "$GITHUB_SHA" \
+            --title "$DISPLAY $VERSION" \
+            --notes "$(cat "$NOTES")" \
+            "$ROOT/$ZIP_NAME"
