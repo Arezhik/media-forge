@@ -2,7 +2,7 @@
 
 Playwright-style page objects for `MP4SubRipUITests`. Tests stay thin. Screens and regions own the locators.
 
-Every UI test lives in `Tests/` and subclasses `BaseUITest`. `UITestFixtureBuilder` lives in MediaTesting. Tests call it through `UITestFixtures` / `fixtures`.
+Every UI test lives in `Tests/` and subclasses this app's `BaseUITest`. `UITestFixtureBuilder` lives in MediaTesting. Tests call it through `UITestFixtures` / `fixtures`.
 
 ```
 App/MP4UITests/
@@ -10,9 +10,20 @@ App/MP4UITests/
 ├── Tests/
 ├── Pages/
 ├── Components/
-├── Helpers/
 └── Base/
 ```
+
+## Shared in MediaTesting
+
+`import MediaTesting`. Shared types compile only on macOS with XCTest. This app's `BaseUITest` subclasses `MediaTesting.BaseUITest` and returns `UITestFixtures.inputOutputEnvironment` (`UITEST_INPUT_DIR` and `UITEST_OUTPUT_DIR`). Do not copy the shared files into the app.
+
+Shared: `BaseUITest`, `BasePage`, `MainWindowPage` (window and toolbar), `SettingsPage` (application menu, then the settings window), `UITestFixtures`, waits and text helpers, `QueueRowComponent` (row lookup), `ModePickerComponent` (click a segment), and `IntakeBannerComponent` (`intakeBanner`). MP4SubRip uses the shared intake banner. It does not keep a local copy.
+
+Kept here: `SaveToComponent`, mode titles (One at a Time / Parallel) and `extractionModePicker` (menu-style picker, half-width click), and the intake and queue sentences.
+
+## Adding a test
+
+From `Apps/MP4SubRip`, run `./scripts/scaffold-xcuitest.sh <FlowName>`. The new file subclasses this `BaseUITest`, overrides `prepareFixtures() async throws`, and does not override `setUp` or call `app.launch()`. Put locators on a page or component in this target. Subclass the MediaTesting type when the screen shares that chrome. Keep assertions in the test. Keep edge cases in `MP4SubRipCoreTests`. Do not click Extract Subtitles in a smoke. A real extract needs ffmpeg and stays in the core tests.
 
 ## Launch
 

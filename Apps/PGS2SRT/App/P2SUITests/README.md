@@ -2,7 +2,7 @@
 
 Playwright-style page objects for `PGS2SRTUITests`. Tests stay thin. Screens and regions own the locators.
 
-Every UI test lives in `Tests/` and subclasses `BaseUITest`. `UITestFixtureBuilder` lives in MediaTesting. Tests call it through `UITestFixtures` / `fixtures`.
+Every UI test lives in `Tests/` and subclasses this app's `BaseUITest`. `UITestFixtureBuilder` lives in MediaTesting. Tests call it through `UITestFixtures` / `fixtures`.
 
 ```
 App/P2SUITests/
@@ -10,9 +10,20 @@ App/P2SUITests/
 ├── Tests/
 ├── Pages/
 ├── Components/
-├── Helpers/
 └── Base/
 ```
+
+## Shared in MediaTesting
+
+`import MediaTesting`. Shared types compile only on macOS with XCTest. This app's `BaseUITest` subclasses `MediaTesting.BaseUITest` and returns `UITestFixtures.inputOutputEnvironment` (`UITEST_INPUT_DIR` and `UITEST_OUTPUT_DIR`). Do not copy the shared files into the app.
+
+Shared: `BaseUITest`, `BasePage`, `MainWindowPage` (window and toolbar), `SettingsPage` (application menu, then the settings window), `UITestFixtures`, waits and text helpers (`uiLabelAndValue` for PGS text), `QueueRowComponent` (row lookup), and `IntakeBannerComponent` (`intakeBanner`). There is no mode picker in this app.
+
+Kept here: `queueWindow` (`pgs2srt.queue`, then the drop screen or the footer), because Settings titles the selected pane, `FooterSummaryComponent`, the settings pane lookup (`pgs2srt.settings`), the intake-banner subclass that joins label and value, and the banner and queue sentences.
+
+## Adding a test
+
+From `Apps/PGS2SRT`, run `./scripts/scaffold-xcuitest.sh <FlowName>`. The new file subclasses this `BaseUITest`, overrides `prepareFixtures() async throws`, and does not override `setUp` or call `app.launch()`. Put locators on a page or component in this target. Subclass the MediaTesting type when the screen shares that chrome. Keep assertions in the test. Keep edge cases in `PGSCoreTests`. Do not seed `createValidPGSFile` as input. A real `.sup` starts OCR.
 
 ## Launch
 

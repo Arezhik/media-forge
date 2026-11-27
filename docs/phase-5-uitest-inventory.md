@@ -1,8 +1,37 @@
 # Phase 5 UI-test inventory
 
-Each app still owns its page objects. This list is the input for issue #7: move the shared pieces into `Packages/MediaForge` (`MediaTesting`) without changing what the tests check.
+Shared XCUITest helpers live in `Packages/MediaForge/Sources/MediaTesting/UITest`. They compile only for `#if canImport(XCTest) && os(macOS)`, so Linux `swift test` does not see them. Each app keeps the pages, components, copy, and assertions that belong to that app. The tables below are the map. Tests still check what they checked before the move.
 
-Launch stays `--uitesting` only. Do not pass `-ApplePersistenceIgnoreState YES`. Tests subclass `BaseUITest`, seed files in `prepareFixtures()`, and do not call `app.launch()`.
+Launch stays `--uitesting` only. Do not pass `-ApplePersistenceIgnoreState YES`. Tests subclass the app's `BaseUITest`, seed files in `prepareFixtures()`, and do not call `app.launch()`.
+
+## Shared in MediaTesting
+
+`import MediaTesting` in any app file that uses these types. App classes subclass them. Do not copy the shared file into an app.
+
+| Shared type | Path | What the app still supplies |
+| --- | --- | --- |
+| `BaseUITest` | `UITest/Base/BaseUITest.swift` | `launchEnvironment(for:)`. MKVForge uses `UITestFixtures.mkvForgeEnvironment`. MP4SubRip and PGS2SRT use `UITestFixtures.inputOutputEnvironment`. |
+| `BasePage` | `UITest/Base/BasePage.swift` | Nothing. Screens subclass it. |
+| `MainWindowPage` | `UITest/Pages/MainWindowPage.swift` | Folder fields, mode, queue, and toolbar actions. PGS2SRT overrides `root` with `queueWindow`. |
+| `SettingsPage` | `UITest/Pages/SettingsPage.swift` | `menuTitle`, and the controls inside the window. |
+| `UITestFixtures`, `UITestTimeout`, `UITestQuery`, `UITestWait`, `UITestPoll` | `UITest/Helpers/UITestFixtures.swift` | Which `UITEST_*` keys the app reads. |
+| `XCUIElement` helpers | `UITest/Helpers/XCUIElement+UITest.swift` | Which helper matches that app's text (`uiText`, `uiMenuText`, or `uiLabelAndValue`). |
+| `QueueRowComponent` | `UITest/Components/QueueRowComponent.swift` | Badge sentences. MKVForge also adds Include, Choose Match, and Unmatch. |
+| `ModePickerComponent` | `UITest/Components/ModePickerComponent.swift` | Picker id, titles, and the menu-style click. MKVForge and MP4SubRip only. |
+| `IntakeBannerComponent` | `UITest/Components/IntakeBannerComponent.swift` | The sentence. MP4SubRip uses the shared type. PGS2SRT subclasses it and reads `uiLabelAndValue`. |
+| `UITestFixtureBuilder` | `UITestFixtureBuilder.swift` | Nothing. Call it from `prepareFixtures()`. |
+
+App-specific, left in the app:
+
+- MKVForge: `ToolBannerComponent`, `FolderFieldComponent`, `BottomBarComponent`, `SplitPage`, `RemuxPage`, mode titles (Split / Remux), queue badge copy, Settings sections.
+- MP4SubRip: `SaveToComponent`, mode titles (One at a Time / Parallel), intake and queue copy.
+- PGS2SRT: `queueWindow` (`pgs2srt.queue`, then the drop screen or the footer), `FooterSummaryComponent`, settings pane lookup (`pgs2srt.settings`), banner and queue copy.
+
+## How to add a test
+
+From the app directory, run `./scripts/scaffold-xcuitest.sh <FlowName>`. When `Tests/` and `Base/BaseUITest.swift` exist, it writes `Tests/<Flow>UITests.swift` as a subclass of that app's `BaseUITest`.
+
+The new test overrides `prepareFixtures() async throws` and does not override `setUp` or call `app.launch()`. Put locators on a page or component in the app target. Subclass the MediaTesting page or component when the screen shares that chrome. Keep the assertion in the app test. Keep edge cases in the app's core tests (`MKVForgeCoreTests`, `MP4SubRipCoreTests`, or `PGSCoreTests`).
 
 ## Base, helpers, pages, components
 
@@ -58,4 +87,10 @@ MKVForge also has `HelloWorldUITests`, `RemuxChooseMatchUITests`, `RemuxMatchOnM
 - A test sets up data, then calls one function. It does not also launch a process unless the test is about that process.
 - Skip when a tool is missing (`XCTSkip` / the builder's missing-ffmpeg handler) instead of failing the machine that does not have ffmpeg.
 
-Phase 5 should move `BaseUITest`, `BasePage`, `XCUIElement+UITest`, and the intake-banner and settings-window helpers into `MediaTesting`. Leave queue copy, mode titles, and tool banners in the apps until a second caller needs them.
+`BaseUITest`, `BasePage`, `XCUIElement+UITest`, and the intake-banner and settings-window helpers now live in `MediaTesting`. Queue copy, mode titles, and tool banners stay in the apps.
+
+## Releases
+
+`.github/workflows/release.yml` publishes to this repo's single Releases page. It runs on a push to `main` when `Apps/<app>/**`, `Packages/MediaForge/**`, or the workflow file changes, and from Actions → Run workflow (`app`: `all`, `mkvforge`, `mp4subrip`, or `pgs2srt`). It does not run on pull requests.
+
+For each affected app it reads the version with `bash scripts/bump-version.sh <app> --current`. It skips the app when the tag `<app>-v<version>` already exists (`mkvforge-v0.8.4`, `mp4subrip-v0.9.1`, `pgs2srt-v0.4.1`). Otherwise a `macos-latest` job builds the unsigned universal Release app, zips `<App>-<version>-universal.zip`, and creates that tag with `gh release create`. The title is `<App> <version>`. The notes are that version's CHANGELOG section. PGS2SRT has no CHANGELOG, so the note is the app name and version. A version bump that lands on `main` is what cuts a new release. Docs-only and CI-only changes do not bump, so they do not create a new tag.
