@@ -26,6 +26,22 @@ final class QuitFlowTests: XCTestCase {
         XCTAssertEqual(alert.message, "MKVForge is remuxing the current file. \(tail)")
     }
 
+    /// ⌘Q during an immediate stop still shows the G1 alert. It does not quit quietly.
+    func testImmediateStopStillShowsTheQuitAlert() {
+        var w = Workflow()
+        _ = w.startRun(mode: .split, total: 2)
+        w.apply(.started(id: "A", index: 1, total: 2))
+        XCTAssertTrue(w.cancel(immediate: true))
+        guard case let .ask(alert) = QuitFlow.decide(w) else {
+            return XCTFail("⌘Q during an immediate stop shows the quit alert")
+        }
+        XCTAssertEqual(alert.title, "A batch is running")
+        XCTAssertEqual(alert.buttons, ["Finish Current File", "Quit", "Cancel"])
+        XCTAssertTrue(alert.message.contains("finishing"))
+        XCTAssertFalse(w.finishThenQuit(), "the stop is already in progress, so Quit does not ask the runner again")
+        XCTAssertTrue(w.quitAfterStop)
+    }
+
     func testCancellingOrQuittingUsesTheFinishingText() {
         var w = Workflow()
         _ = w.startRun(mode: .remux, total: 3)

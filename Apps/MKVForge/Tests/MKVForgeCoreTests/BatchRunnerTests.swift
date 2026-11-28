@@ -157,6 +157,25 @@ final class BatchRunnerTests: XCTestCase {
         XCTAssertEqual(log.statuses["C"]?.statusText(mode: .split), "Ready")
     }
 
+    /// Immediate cancel is the quit hard stop, but the stopped file is Ready, not Cancelled.
+    func testImmediateStopDeletesTheTempKeepsFinishedFilesAndReturnsRowsToReady() async throws {
+        let jobs = try ["A", "B", "C"].map { try RunFixture.split($0, in: folders) }
+        let tool = FakeMKVMerge([
+            "B": FakeRun(status: 0, requestsImmediateStop: true),
+        ])
+        let (summary, log) = await run(jobs, tool)
+        XCTAssertEqual(log.statuses["A"], .done(outputPath: jobs[0].outputPath), "a finished file is kept")
+        XCTAssertEqual(log.statuses["B"], .notRun)
+        XCTAssertNotEqual(log.statuses["B"], .canceled)
+        XCTAssertEqual(log.statuses["B"]?.statusText(mode: .split), "Ready")
+        XCTAssertEqual(log.statuses["C"], .notRun)
+        XCTAssertEqual(log.statuses["C"]?.statusText(mode: .split), "Ready")
+        XCTAssertEqual(folders.names(in: "Output"), ["A.mka"], "B's temp is gone and A's output stays")
+        XCTAssertEqual(tool.calls.count, 2, "C never starts")
+        XCTAssertTrue(summary.stopped)
+        XCTAssertEqual(summary.text, "Stopped · 1 of 3 complete")
+    }
+
     func testAHardStopDeletesTheTempAndMarksTheRowCancelled() async throws {
         let jobs = try ["A", "B"].map { try RunFixture.split($0, in: folders) }
         let tool = FakeMKVMerge(["A": FakeRun(status: 0, cancelsTask: true)])

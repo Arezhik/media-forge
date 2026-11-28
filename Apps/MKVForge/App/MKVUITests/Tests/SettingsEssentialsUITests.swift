@@ -1,9 +1,10 @@
 import MediaTesting
 import XCTest
 
-// UIT-P0-05. Settings shows the tool, the match switch, Scan child folders, and the
-// finish switches. No media. `--uitesting` clears the defaults, so Match on MKA Name
-// and the two finish switches start on. Scan child folders starts off.
+// UIT-P0-05. Settings shows the tool, the match switch, Scan child folders, the
+// Cancel switch, and the finish switches. No media. `--uitesting` clears the defaults,
+// so Match on MKA Name and the two finish switches start on. Scan child folders and
+// Cancel stops the current file immediately start off.
 // Does not click Choose…, Get MKVToolNix, or Open System Settings….
 
 @MainActor
@@ -40,6 +41,15 @@ final class SettingsEssentialsUITests: BaseUITest {
             settings.waitUntilSwitch(named: "Scan child folders", isOn: true)
             settings.clickScanChildFolders()
             settings.waitUntilSwitch(named: "Scan child folders", isOn: false)
+        }
+
+        XCTContext.runActivity(named: "Cancel stops immediately is on screen and starts off") { _ in
+            settings.requireCancelStopsImmediatelyToggle()
+            settings.waitUntilSwitch(named: "Cancel stops the current file immediately", isOn: false)
+            settings.clickCancelStopsImmediately()
+            settings.waitUntilSwitch(named: "Cancel stops the current file immediately", isOn: true)
+            settings.clickCancelStopsImmediately()
+            settings.waitUntilSwitch(named: "Cancel stops the current file immediately", isOn: false)
         }
 
         XCTContext.runActivity(named: "Finish switches are on screen and start on") { _ in

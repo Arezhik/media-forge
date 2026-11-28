@@ -28,6 +28,9 @@ public struct AppSettings: Equatable, Sendable {
     /// Split and Remux. On: list files in child folders (issue #19). Off: top level only.
     /// Default off. A missing key stays off, so a fresh install and `--uitesting` do too.
     public var scanChildFolders = false
+    /// On: Cancel kills the current file (issue #57). Off: finish the current file, then stop.
+    /// Default off. A missing key stays off. Changing it does not clear the queue.
+    public var cancelStopsImmediately = false
 
     public init() {}
 
@@ -50,6 +53,7 @@ public struct AppSettings: Equatable, Sendable {
         public static let bounce = "bounceWhenFinished"
         public static let matchOnMKAName = "matchOnMKAName"
         public static let scanChildFolders = "scanChildFolders"
+        public static let cancelStopsImmediately = "cancelStopsImmediately"
 
         public static func folder(_ mode: ScanMode, _ role: FolderRole) -> String {
             "folder.\(mode.rawValue).\(role.rawValue)"
@@ -57,7 +61,7 @@ public struct AppSettings: Equatable, Sendable {
 
         /// Every key this app writes.
         public static var all: [String] {
-            var keys = [activeMode, chosenToolPath, notify, bounce, matchOnMKAName, scanChildFolders]
+            var keys = [activeMode, chosenToolPath, notify, bounce, matchOnMKAName, scanChildFolders, cancelStopsImmediately]
             for mode in [ScanMode.split, .remux] {
                 for role in ModeState.roles(for: mode) { keys.append(folder(mode, role)) }
             }
@@ -92,6 +96,7 @@ public struct AppSettings: Equatable, Sendable {
         if defaults.object(forKey: Key.bounce) != nil { settings.bounceWhenFinished = defaults.bool(forKey: Key.bounce) }
         if defaults.object(forKey: Key.matchOnMKAName) != nil { settings.matchOnMKAName = defaults.bool(forKey: Key.matchOnMKAName) }
         if defaults.object(forKey: Key.scanChildFolders) != nil { settings.scanChildFolders = defaults.bool(forKey: Key.scanChildFolders) }
+        if defaults.object(forKey: Key.cancelStopsImmediately) != nil { settings.cancelStopsImmediately = defaults.bool(forKey: Key.cancelStopsImmediately) }
         for name in dropped {
             DebugLog.shared.record(.lifecycle, "Remembered \(name) folder is gone; shown as not chosen")
         }
@@ -111,6 +116,7 @@ public struct AppSettings: Equatable, Sendable {
         defaults.set(bounceWhenFinished, forKey: Key.bounce)
         defaults.set(matchOnMKAName, forKey: Key.matchOnMKAName)
         defaults.set(scanChildFolders, forKey: Key.scanChildFolders)
+        defaults.set(cancelStopsImmediately, forKey: Key.cancelStopsImmediately)
     }
 
     public static func isFolder(_ path: String) -> Bool {
@@ -126,7 +132,8 @@ public struct AppSettings: Equatable, Sendable {
             + "mkvmerge \(chosenToolPath == nil ? "automatic" : "chosen"), "
             + "notification \(notifyWhenFinished ? "on" : "off"), Dock bounce \(bounceWhenFinished ? "on" : "off"), "
             + "match on MKA name \(matchOnMKAName ? "on" : "off"), "
-            + "scan child folders \(scanChildFolders ? "on" : "off")"
+            + "scan child folders \(scanChildFolders ? "on" : "off"), "
+            + "cancel stops immediately \(cancelStopsImmediately ? "on" : "off")"
     }
 }
 

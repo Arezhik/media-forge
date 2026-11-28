@@ -52,6 +52,9 @@ public enum StatusLines {
             let batch = workflow.batch
             return "\(verb) · \(BatchSummary.progressText(completed: batch?.completed ?? 0, total: batch?.total ?? 0))"
         case .cancelling:
+            if workflow.cancelStyle == .immediate {
+                return "Cancelling · stopping current file"
+            }
             return "Cancelling · finishing current file"
         case .idle:
             if !toolUsable { return "\(mode) · MKVToolNix not found" }
@@ -75,6 +78,10 @@ public enum StatusLines {
         case .cancelling:
             let batch = workflow.batch
             let progress = BatchSummary.progressText(completed: batch?.completed ?? 0, total: batch?.total ?? 0)
+            if workflow.cancelStyle == .immediate {
+                if let name = batch?.currentName { return SummaryText(bold: "Stopping \(name)", rest: " · \(progress)") }
+                return SummaryText(bold: "Stopping", rest: " · \(progress)")
+            }
             if let name = batch?.currentName { return SummaryText(bold: "Finishing \(name), then stopping", rest: " · \(progress)") }
             return SummaryText(bold: "Stopping", rest: " · \(progress)")
         case .idle, .scanning:

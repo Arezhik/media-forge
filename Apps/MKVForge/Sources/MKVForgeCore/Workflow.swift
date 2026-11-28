@@ -112,6 +112,8 @@ public struct CommandFlags: Equatable, Sendable {
     public var runTitle = "Split"
     public var canCancel = false
     public var isCancelling = false
+    /// Batch menu title while a batch runs: `Cancel`, `Force Cancel`, `Finish Current`, or `Cancelling…`.
+    public var cancelTitle = "Cancel"
     public var canSelect = false
     /// A batch is running or cancelling.
     public var hasActiveWork = false
@@ -124,6 +126,8 @@ public struct Workflow: Equatable, Sendable {
     public var batch: BatchProgress?
     /// Finish Current File was chosen: quit when the batch stops (v2.1 §1.4–§1.5).
     public private(set) var quitAfterStop = false
+    /// How the Cancel that is in progress stops the batch. Ignored unless `activity` is `.cancelling`.
+    public private(set) var cancelStyle: CancelBehavior = .finishCurrent
 
     public init() {}
 
@@ -180,7 +184,7 @@ public struct Workflow: Equatable, Sendable {
         }
     }
 
-    public func commandFlags(_ state: ModeState, toolUsable: Bool) -> CommandFlags {
+    public func commandFlags(_ state: ModeState, toolUsable: Bool, cancelTitle: String = "Cancel") -> CommandFlags {
         let e = enablement(state, toolUsable: toolUsable)
         var flags = CommandFlags()
         flags.mode = state.mode
@@ -191,6 +195,11 @@ public struct Workflow: Equatable, Sendable {
         flags.runTitle = state.mode.displayName
         flags.canCancel = activity == .running
         flags.isCancelling = activity == .cancelling
+        switch activity {
+        case .cancelling: flags.cancelTitle = "Cancelling…"
+        case .running: flags.cancelTitle = cancelTitle
+        case .idle, .scanning: flags.cancelTitle = "Cancel"
+        }
         flags.canSelect = e.selectAll
         flags.hasActiveWork = activity.isBatch
         return flags
@@ -221,6 +230,7 @@ public struct Workflow: Equatable, Sendable {
         activity = .running
         batch = BatchProgress(mode: mode, total: total)
         quitAfterStop = false
+        cancelStyle = .finishCurrent
         return true
     }
 
@@ -228,10 +238,13 @@ public struct Workflow: Equatable, Sendable {
         batch?.apply(event)
     }
 
-    /// Cancel (⌘. or Esc): finish the current file, then stop. False if not running.
-    public mutating func cancel() -> Bool {
+    /// Cancel (⌘. or Esc), or the Option override. `immediate` kills the current file
+    /// (the Quit hard stop, without quitting). False if a cancel is already in progress,
+    /// so a second click does not ask the runner to stop again.
+    public mutating func cancel(immediate: Bool = false) -> Bool {
         guard activity == .running else { return false }
         activity = .cancelling
+        cancelStyle = immediate ? .immediate : .finishCurrent
         return true
     }
 
@@ -249,6 +262,7 @@ public struct Workflow: Equatable, Sendable {
         activity = .idle
         batch = nil
         quitAfterStop = false
+        cancelStyle = .finishCurrent
         if quit { return .quitQuietly }
         return .feedback(BatchEndFeedback.decide(summary: summary, appIsActive: appIsActive, notifyOn: notifyOn, bounceOn: bounceOn))
     }

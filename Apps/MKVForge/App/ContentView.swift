@@ -117,8 +117,10 @@ private struct PrimaryButton: View {
 
     var body: some View {
         let enablement = model.enablement
+        let action = model.workflow.primaryAction(model.activeMode)
+        let intent = model.cancelIntent
         Group {
-            switch model.workflow.primaryAction(model.activeMode) {
+            switch action {
             case let .run(title, systemImage):
                 Button {
                     model.primaryAction()
@@ -134,12 +136,12 @@ private struct PrimaryButton: View {
                 Button {
                     model.primaryAction()
                 } label: {
-                    Label(PrimaryAction.cancel.title, systemImage: "stop.fill")
+                    Label(intent.buttonLabel, systemImage: "stop.fill")
                         .labelStyle(.titleAndIcon)
                 }
                 .buttonStyle(.bordered)
                 .accessibilityIdentifier("primaryAction")
-                .accessibilityLabel(PrimaryAction.cancel.title)
+                .accessibilityLabel(intent.buttonLabel)
             case .cancelling:
                 Button {} label: {
                     HStack(spacing: 6) {
@@ -156,7 +158,7 @@ private struct PrimaryButton: View {
             }
         }
         .frame(minWidth: 96)
-        .help(enablement.primaryHelp ?? "")
+        .help(action == .cancel ? intent.help : (enablement.primaryHelp ?? ""))
     }
 }
 

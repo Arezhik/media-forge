@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		022DBFDDC8F230C70399CA34 /* SettingsPage.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC2ECD6C097DCA7643D8B8BF /* SettingsPage.swift */; };
+		05916EBCA4C109B2D6941AED /* SplitChildFolderScanUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 268674C87FC4857B47F4A91E /* SplitChildFolderScanUITests.swift */; };
 		07F6C7498771333EFE2C7041 /* HelloWorldUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B571F909AA0951C9EB942F8 /* HelloWorldUITests.swift */; };
 		08DD1BF4CAEC03C372E76BF2 /* RemuxChooseMatchUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E82F4FFF71F2B06C94E19C4A /* RemuxChooseMatchUITests.swift */; };
 		0D729A31503EF71D91816755 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 389CDAC04276C249F212248B /* ContentView.swift */; };
@@ -27,6 +28,7 @@
 		641B6B7EAF2368E94C8F5FE8 /* SplitAudioOnlyUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AD389A601225C3CE8A810CB /* SplitAudioOnlyUITests.swift */; };
 		6428359D6410411EEFF987DF /* SplitStillChangingUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84AB3D66A009512FE7C437E8 /* SplitStillChangingUITests.swift */; };
 		6753D013FA4C907A711E6668 /* MainWindowPage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8158EA0016D4686F63028DC5 /* MainWindowPage.swift */; };
+		760254EA10E247BFCCB4D17B /* ForceCancelOptionUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE9852366701448F35341130 /* ForceCancelOptionUITests.swift */; };
 		7A07E0E67D8DD4582CEB520F /* ShowReadyRemuxUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 739CA4BBDF8C07B0BE87091B /* ShowReadyRemuxUITests.swift */; };
 		870AD24CEFB4080AA016C1BF /* MediaUI in Frameworks */ = {isa = PBXBuildFile; productRef = A911D91A3F09F2E86C9F7E77 /* MediaUI */; };
 		8A01A6D062C3D5F296809C63 /* MainWindowSmokeUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8DF373DACD8A87D7E85CFEF /* MainWindowSmokeUITests.swift */; };
@@ -68,6 +70,7 @@
 		1496BB0D61ABEEFD71BF9129 /* MKVForge.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MKVForge.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		1AE507E6FBC58A20CFF649DD /* BaseUITest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaseUITest.swift; sourceTree = "<group>"; };
 		1C0094AFE47DCA40222C32D6 /* RemuxPage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemuxPage.swift; sourceTree = "<group>"; };
+		268674C87FC4857B47F4A91E /* SplitChildFolderScanUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplitChildFolderScanUITests.swift; sourceTree = "<group>"; };
 		2696D2594905DBACDA07FB03 /* AppModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppModel.swift; sourceTree = "<group>"; };
 		27FDD737995B92AF6CF52518 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		29EE229ABEFF5F05ABB443A7 /* SplitEmptyFileUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplitEmptyFileUITests.swift; sourceTree = "<group>"; };
@@ -103,6 +106,7 @@
 		F9E2FB71476CEB766DDC6A15 /* RemuxMatchOnMKANameUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemuxMatchOnMKANameUITests.swift; sourceTree = "<group>"; };
 		FD58BB5DA86B2B18484192FB /* SplitReadyUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplitReadyUITests.swift; sourceTree = "<group>"; };
 		FDD91645221C410D7E4ABA8F /* ToolBannerComponent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToolBannerComponent.swift; sourceTree = "<group>"; };
+		FE9852366701448F35341130 /* ForceCancelOptionUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ForceCancelOptionUITests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -150,6 +154,7 @@
 		62D6FE98EA1D7E3D4216D3BB /* Tests */ = {
 			isa = PBXGroup;
 			children = (
+				FE9852366701448F35341130 /* ForceCancelOptionUITests.swift */,
 				6B571F909AA0951C9EB942F8 /* HelloWorldUITests.swift */,
 				D8DF373DACD8A87D7E85CFEF /* MainWindowSmokeUITests.swift */,
 				E82F4FFF71F2B06C94E19C4A /* RemuxChooseMatchUITests.swift */,
@@ -162,6 +167,7 @@
 				739CA4BBDF8C07B0BE87091B /* ShowReadyRemuxUITests.swift */,
 				BCCD941874875EEB52AD11CB /* ShowReadySplitUITests.swift */,
 				4AD389A601225C3CE8A810CB /* SplitAudioOnlyUITests.swift */,
+				268674C87FC4857B47F4A91E /* SplitChildFolderScanUITests.swift */,
 				29EE229ABEFF5F05ABB443A7 /* SplitEmptyFileUITests.swift */,
 				65945D429A28CF51FF4AA4A4 /* SplitExistingOutputUITests.swift */,
 				2F23C913BD3342BC3A51A616 /* SplitMissingChaptersUITests.swift */,
@@ -346,6 +352,7 @@
 				EFBC01C4967140D2D9ECFC08 /* BaseUITest.swift in Sources */,
 				DD5B5E1983A11F6141659BE5 /* BottomBarComponent.swift in Sources */,
 				2857DDF9BD14AADBAF5EC560 /* FolderFieldComponent.swift in Sources */,
+				760254EA10E247BFCCB4D17B /* ForceCancelOptionUITests.swift in Sources */,
 				07F6C7498771333EFE2C7041 /* HelloWorldUITests.swift in Sources */,
 				6753D013FA4C907A711E6668 /* MainWindowPage.swift in Sources */,
 				8A01A6D062C3D5F296809C63 /* MainWindowSmokeUITests.swift in Sources */,
@@ -363,6 +370,7 @@
 				7A07E0E67D8DD4582CEB520F /* ShowReadyRemuxUITests.swift in Sources */,
 				FC9D4A6A107B649427BB72D2 /* ShowReadySplitUITests.swift in Sources */,
 				641B6B7EAF2368E94C8F5FE8 /* SplitAudioOnlyUITests.swift in Sources */,
+				05916EBCA4C109B2D6941AED /* SplitChildFolderScanUITests.swift in Sources */,
 				DBA4E066D9581D6FF28CED4D /* SplitEmptyFileUITests.swift in Sources */,
 				F7C71CF93494BB6743B18874 /* SplitExistingOutputUITests.swift in Sources */,
 				B934923595B4FC0F336BB031 /* SplitMissingChaptersUITests.swift in Sources */,
@@ -413,7 +421,7 @@
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 16;
+				CURRENT_PROJECT_VERSION = 17;
 				ENABLE_HARDENED_RUNTIME = NO;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -425,7 +433,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 15.0;
-				MARKETING_VERSION = 1.1.0;
+				MARKETING_VERSION = 1.2.0;
 				ONLY_ACTIVE_ARCH = NO;
 				PRODUCT_BUNDLE_IDENTIFIER = com.arezhik.MKVForge;
 				PRODUCT_NAME = MKVForge;
@@ -503,7 +511,7 @@
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 16;
+				CURRENT_PROJECT_VERSION = 17;
 				ENABLE_HARDENED_RUNTIME = NO;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -515,7 +523,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 15.0;
-				MARKETING_VERSION = 1.1.0;
+				MARKETING_VERSION = 1.2.0;
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = com.arezhik.MKVForge;
 				PRODUCT_NAME = MKVForge;

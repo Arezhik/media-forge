@@ -120,4 +120,29 @@ final class WorkflowTests: XCTestCase {
         XCTAssertNil(PrimaryAction.cancelling.systemImage)
         XCTAssertEqual(PrimaryAction.cancelling.title, "Cancelling…")
     }
+
+    /// The title passed in is the resolver's label. Cancelling… replaces it.
+    func testCancelTitleWhileRunningAndCancelling() {
+        var w = Workflow()
+        let state = U.state([U.ready("A")])
+        _ = w.startRun(mode: .split, total: 1)
+        XCTAssertEqual(w.commandFlags(state, toolUsable: true, cancelTitle: "Force Cancel").cancelTitle, "Force Cancel")
+        XCTAssertEqual(w.commandFlags(state, toolUsable: true, cancelTitle: "Finish Current").cancelTitle, "Finish Current")
+        XCTAssertTrue(w.cancel(immediate: true))
+        XCTAssertEqual(w.cancelStyle, .immediate)
+        XCTAssertFalse(w.cancel(immediate: false), "a cancel already in progress is left alone")
+        XCTAssertEqual(w.cancelStyle, .immediate)
+        XCTAssertEqual(w.commandFlags(state, toolUsable: true, cancelTitle: "Force Cancel").cancelTitle, "Cancelling…")
+    }
+
+    /// The caller reads the setting at click time. A run that started with it off
+    /// can still stop immediately if the next click says so.
+    func testImmediateCancelIsChosenAtClickTime() {
+        var w = Workflow()
+        _ = w.startRun(mode: .split, total: 2)
+        let intent = CancelIntent.resolve(cancelStopsImmediately: true, optionHeld: false)
+        XCTAssertTrue(w.cancel(immediate: intent.behavior == .immediate))
+        XCTAssertEqual(w.cancelStyle, .immediate)
+        XCTAssertEqual(w.activity, .cancelling)
+    }
 }

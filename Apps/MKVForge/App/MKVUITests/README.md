@@ -41,7 +41,7 @@ From `Apps/MKVForge`, run `./scripts/scaffold-xcuitest.sh <FlowName>`. The new f
 
 `MainWindowPage` holds the shared chrome (window, mode picker, folder fields, Scan, toolbar primary action, queue). `SplitPage` and `RemuxPage` specialize it. Launch opens **Split**. Video and Audio fields are not on screen until a test calls `switchToRemux()`.
 
-`SettingsPage` wraps the Settings scene (`SettingsView`: MKVToolNix section, the Remux switch, the Scanning switch "Scan child folders", and "When a batch finishes" toggles). `SettingsPage.open(in:)` uses the MKVForge application menu item "Settings…". If that title differs, construct `SettingsPage(app:)` after the window is up and use `mkvToolNixSection`, `matchOnMKANameToggle`, `scanChildFoldersToggle`, `sendNotificationToggle`, and `bounceDockIconToggle`.
+`SettingsPage` wraps the Settings scene (`SettingsView`: MKVToolNix section, the Remux switch, the Scanning switch "Scan child folders", the Cancel switch "Cancel stops the current file immediately", and "When a batch finishes" toggles). `SettingsPage.open(in:)` uses the MKVForge application menu item "Settings…". If that title differs, construct `SettingsPage(app:)` after the window is up and use `mkvToolNixSection`, `matchOnMKANameToggle`, `scanChildFoldersToggle`, `cancelStopsImmediatelyToggle`, `sendNotificationToggle`, and `bounceDockIconToggle`.
 
 ## Launch
 

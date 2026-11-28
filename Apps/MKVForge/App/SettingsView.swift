@@ -8,6 +8,7 @@ import MKVForgeCore
 ///   mkvmerge binary), Use Automatic, and the real search list. A chosen copy that's
 ///   missing or doesn't run shows "Can't run this mkvmerge"; there's no fallback (L15).
 /// - Remux: Match on MKA Name. Scanning: Scan child folders, off by default (issue #19).
+/// - Cancel: stop the current file immediately, off by default (issue #57). Stays enabled during a run.
 /// - When a batch finishes: two mini switches, on by default. If macOS doesn't allow
 ///   MKVForge's notifications, an inline note offers Open System Settings….
 struct SettingsView: View {
@@ -134,6 +135,27 @@ struct SettingsView: View {
                 .accessibilityHint(locked ? ScanChildFolders.disabledHelp : "\(ScanChildFolders.caption) \(ScanChildFolders.changeHelp)")
             }
 
+            Section(CancelStopsImmediately.section) {
+                Toggle(isOn: cancelStopsImmediatelyBinding) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(CancelStopsImmediately.label)
+                        Text(CancelStopsImmediately.helpLine1)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .accessibilityHidden(true)
+                        Text(CancelStopsImmediately.helpLine2)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .accessibilityHidden(true)
+                    }
+                }
+                .toggleStyle(.switch)
+                .controlSize(.mini)
+                .accessibilityIdentifier(CancelStopsImmediately.identifier)
+                .accessibilityLabel(CancelStopsImmediately.label)
+                .accessibilityHint("\(CancelStopsImmediately.helpLine1) \(CancelStopsImmediately.helpLine2)")
+            }
+
             Section("When a batch finishes") {
                 Toggle(isOn: notifyBinding) {
                     VStack(alignment: .leading, spacing: 2) {
@@ -216,6 +238,13 @@ struct SettingsView: View {
         Binding(
             get: { [model] in model.settings.scanChildFolders },
             set: { [model] value in Task { @MainActor in model.setScanChildFolders(value) } }
+        )
+    }
+
+    private var cancelStopsImmediatelyBinding: Binding<Bool> {
+        Binding(
+            get: { [model] in model.settings.cancelStopsImmediately },
+            set: { [model] value in Task { @MainActor in model.setCancelStopsImmediately(value) } }
         )
     }
 }

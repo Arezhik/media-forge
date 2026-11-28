@@ -93,8 +93,9 @@ struct AppCommands: Commands {
             .keyboardShortcut(.return, modifiers: .command)
             .disabled(!flags.canRun)
 
-            // Esc also cancels while the main window is key (AppModel's key monitor).
-            Button(flags.isCancelling ? "Cancelling…" : "Cancel") {
+            // Esc and ⌥Esc / ⌥⌘. are AppModel's key monitor. This item is plain ⌘.
+            // The title tracks Option: Cancel, Force Cancel, Finish Current, or Cancelling….
+            Button(flags.cancelTitle) {
                 model.cancelBatch()
             }
             .keyboardShortcut(".", modifiers: .command)

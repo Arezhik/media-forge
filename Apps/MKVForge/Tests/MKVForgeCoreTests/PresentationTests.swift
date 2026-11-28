@@ -142,6 +142,21 @@ final class StatusLinesTests: XCTestCase {
         XCTAssertEqual(StatusLines.subtitle(w, state, toolUsable: true), "Cancelling · finishing current file")
     }
 
+    func testImmediateCancelSummaries() {
+        var w = Workflow()
+        let state = U.state([U.ready("A"), U.ready("B"), U.ready("C"), U.ready("D")])
+        _ = w.startRun(mode: .split, total: 4)
+        w.apply(.started(id: "A", index: 1, total: 4))
+        w.apply(.finished(id: "A", status: .done(outputPath: "/o/A.mka")))
+        w.apply(.finished(id: "B", status: .done(outputPath: "/o/B.mka")))
+        w.apply(.started(id: "C", index: 3, total: 4))
+        _ = w.cancel(immediate: true)
+        XCTAssertEqual(StatusLines.summary(w, state), SummaryText(bold: "Stopping C", rest: " · 2 of 4 complete"))
+        XCTAssertEqual(StatusLines.subtitle(w, state, toolUsable: true), "Cancelling · stopping current file")
+        XCTAssertEqual(StatusLines.progressColumn(w, state)?.caption, "")
+        XCTAssertEqual(StatusLines.progressColumn(w, state)?.completed, 2)
+    }
+
     func testProgressDoesNotChangeTheRowOrFractionallyFillTheBar() throws {
         var state = U.state([U.ready("A"), U.ready("B")])
         state.beginRun(state.jobs())

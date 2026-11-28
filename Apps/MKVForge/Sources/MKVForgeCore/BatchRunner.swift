@@ -16,6 +16,9 @@ import MediaCore
 // - Cancel (`requestStop`) lets the current file finish, then the rest are not run.
 //   Cancelling the Swift task (a hard stop, such as quitting) kills mkvmerge through
 //   `MKVMergeLiveRun`, deletes the temp, and marks that row cancelled (L5).
+// - Immediate cancel (`requestImmediateStop`, then cancel that same task) is the quit
+//   hard stop without quitting: the temp (the partial output) is deleted, finished
+//   files stay, and the stopped row is `.notRun` (Ready), not `.canceled`.
 // - Mux runs through `MKVMergeLiveRun` (live `#GUI#progress`, UTF-8 locale). Identify
 //   uses `ToolCommand`. Warning and error lines are on standard output, so they're
 //   logged here (L28).
@@ -98,6 +101,12 @@ public final class BatchRunner: Sendable {
         stopFlag.set()
     }
 
+    /// Immediate cancel. Pair this with cancelling the task that is inside `run`,
+    /// the same way Quit kills mkvmerge. Safe to call twice. Safe from any thread.
+    public func requestImmediateStop() {
+        stopFlag.setImmediate()
+    }
+
     public var isStopRequested: Bool { stopFlag.isSet }
 
     /// Runs `jobs` one at a time and returns the summary. `flaggedCount` is the scan's
@@ -132,8 +141,9 @@ public final class BatchRunner: Sendable {
             do {
                 status = try await runOne(job, publisher: publisher)
             } catch {
-                // Only cancellation reaches here: a hard stop.
-                status = .canceled
+                // Only cancellation reaches here: a hard stop. Quit keeps `.canceled`.
+                // An immediate cancel already set the flag, so the row goes back to Ready.
+                status = stopFlag.isImmediate ? .notRun : .canceled
                 summary.stopped = true
             }
             if let duration = publisher.muxDuration {
@@ -356,11 +366,18 @@ final class ETAPublisher: @unchecked Sendable {
 private final class StopFlag: @unchecked Sendable {
     private let lock = NSLock()
     private var value = false
+    private var immediate = false
 
     var isSet: Bool {
         lock.lock()
         defer { lock.unlock() }
         return value
+    }
+
+    var isImmediate: Bool {
+        lock.lock()
+        defer { lock.unlock() }
+        return immediate
     }
 
     func set() {
@@ -369,9 +386,18 @@ private final class StopFlag: @unchecked Sendable {
         lock.unlock()
     }
 
+    /// Also requests a stop, and marks the interrupted row Ready instead of cancelled.
+    func setImmediate() {
+        lock.lock()
+        value = true
+        immediate = true
+        lock.unlock()
+    }
+
     func clear() {
         lock.lock()
         value = false
+        immediate = false
         lock.unlock()
     }
 }
