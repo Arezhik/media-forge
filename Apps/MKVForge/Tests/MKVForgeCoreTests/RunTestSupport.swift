@@ -16,8 +16,10 @@ struct FakeRun: Sendable {
     var progress: [Int] = []
     /// Call Cancel (requestStop) while this file runs.
     var requestsStop = false
-    /// Cancel the running task while this file runs (a hard stop).
+    /// Cancel the running task while this file runs (a hard stop, row Cancelled).
     var cancelsTask = false
+    /// Immediate cancel: set the Ready flag, then cancel the task (issue #57).
+    var requestsImmediateStop = false
 }
 
 /// Plays scripted runs, keyed by the job's base name, and records every argument list.
@@ -62,6 +64,12 @@ final class FakeMKVMerge: MKVMergeRunning, @unchecked Sendable {
             onProgress(percent)
         }
         if script.requestsStop { runner?.requestStop() }
+        if script.requestsImmediateStop {
+            runner?.requestImmediateStop()
+            runner?.requestImmediateStop()
+            withUnsafeCurrentTask { $0?.cancel() }
+            try Task.checkCancellation()
+        }
         if script.cancelsTask {
             withUnsafeCurrentTask { $0?.cancel() }
             try Task.checkCancellation()

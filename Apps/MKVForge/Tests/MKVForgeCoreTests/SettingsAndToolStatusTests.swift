@@ -100,9 +100,10 @@ final class AppSettingsTests: XCTestCase {
         settings.setFolder("/Users/secret/Rips", .split, .source)
         settings.chosenToolPath = "/Users/secret/mkvmerge"
         XCTAssertFalse(settings.summary.contains("secret"))
-        XCTAssertEqual(settings.summary, "mode Split, folders Split 1/2 Remux 0/3, mkvmerge chosen, notification on, Dock bounce on, match on MKA name on, scan child folders off")
-        XCTAssertEqual(AppSettings.Key.all.count, 11)
+        XCTAssertEqual(settings.summary, "mode Split, folders Split 1/2 Remux 0/3, mkvmerge chosen, notification on, Dock bounce on, match on MKA name on, scan child folders off, cancel stops immediately off")
+        XCTAssertEqual(AppSettings.Key.all.count, 12)
         XCTAssertTrue(AppSettings.Key.all.contains(AppSettings.Key.scanChildFolders))
+        XCTAssertTrue(AppSettings.Key.all.contains(AppSettings.Key.cancelStopsImmediately))
     }
 
     /// Issue #19: off when the key is missing, and a saved on comes back on.
@@ -118,6 +119,21 @@ final class AppSettingsTests: XCTestCase {
         settings.scanChildFolders = false
         settings.save(to: defaults)
         XCTAssertFalse(AppSettings.load(from: defaults, folderExists: { _ in true }).settings.scanChildFolders)
+    }
+
+    /// Issue #57: off when the key is missing, and a saved on comes back on.
+    func testCancelStopsImmediatelyDefaultsOffAndPersistsOn() {
+        XCTAssertFalse(AppSettings().cancelStopsImmediately)
+        let (fresh, _) = AppSettings.load(from: defaults, folderExists: { _ in true })
+        XCTAssertFalse(fresh.cancelStopsImmediately, "a missing key stays off")
+        var settings = AppSettings()
+        settings.cancelStopsImmediately = true
+        settings.save(to: defaults)
+        XCTAssertTrue(defaults.bool(forKey: AppSettings.Key.cancelStopsImmediately))
+        XCTAssertTrue(AppSettings.load(from: defaults, folderExists: { _ in true }).settings.cancelStopsImmediately)
+        settings.cancelStopsImmediately = false
+        settings.save(to: defaults)
+        XCTAssertFalse(AppSettings.load(from: defaults, folderExists: { _ in true }).settings.cancelStopsImmediately)
     }
 }
 

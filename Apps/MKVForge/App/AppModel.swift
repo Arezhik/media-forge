@@ -12,7 +12,8 @@ import MediaUI
 // - Each mode keeps its own folders, scan, checkboxes and last summary.
 // - Scans and batches run off the main thread. Their updates come back through an
 //   AsyncStream pumped by one main-actor task, so they arrive in order.
-// - Esc stops a scan (task cancel, rows untouched) or cancels a batch (`requestStop`).
+// - Esc stops a scan (task cancel, rows untouched) or cancels a batch. ⌥Esc and ⌥⌘.
+//   use the other Cancel behavior. Option is a `flagsChanged` monitor.
 // - Quitting never holds `.terminateLater` across a file (v2.1 §1.4).
 // - Menus read `CommandState`, which publishes only when a flag changes (L9, L11).
 
@@ -68,6 +69,8 @@ final class AppModel: ObservableObject {
     /// A scan that failed (a folder can't be read), shown in the Scan row caption.
     @Published private(set) var scanErrors: [ScanMode: String] = [:]
     @Published private(set) var settings = AppSettings()
+    /// True while Option is held. The toolbar Cancel title follows this live.
+    @Published private(set) var optionHeld = false { didSet { refreshCommands() } }
     /// True when notifications are off or unavailable for MKVForge (Settings shows a note).
     @Published private(set) var notificationsBlocked = false
 
@@ -83,6 +86,7 @@ final class AppModel: ObservableObject {
     private var freshOutputs = FreshOutputs()
     private var toolCheck = 0
     private var escapeMonitor: Any?
+    private var optionMonitor: Any?
     /// Set once MKVForge has decided to quit; no more alerts or batch-end feedback.
     private var terminating = false
     /// `applicationShouldTerminate` returned `.terminateLater` and still needs a reply.
@@ -105,10 +109,15 @@ final class AppModel: ObservableObject {
         remux = ModeState(mode: .remux, folders: loaded.settings.folders[.remux] ?? [:])
         logLaunch()
         detectTool()
-        installEscapeMonitor()
+        installKeyMonitors()
         refreshNotificationStatus()
         refreshCommands()
         applyUITestingFolders()
+    }
+
+    deinit {
+        if let escapeMonitor { NSEvent.removeMonitor(escapeMonitor) }
+        if let optionMonitor { NSEvent.removeMonitor(optionMonitor) }
     }
 
     // MARK: Derived state
@@ -149,8 +158,17 @@ final class AppModel: ObservableObject {
         }
     }
 
+    /// What this click will do. Option inverts the Settings switch for that click only.
+    var cancelIntent: CancelIntent {
+        CancelIntent.resolve(cancelStopsImmediately: settings.cancelStopsImmediately, optionHeld: optionHeld)
+    }
+
     private func refreshCommands() {
-        commands.update(workflow.commandFlags(state(for: activeMode), toolUsable: toolStatus.isUsable))
+        commands.update(workflow.commandFlags(
+            state(for: activeMode),
+            toolUsable: toolStatus.isUsable,
+            cancelTitle: cancelIntent.buttonLabel
+        ))
     }
 
     /// The Scan row caption for the active mode.
@@ -357,12 +375,27 @@ final class AppModel: ObservableObject {
         }
     }
 
-    /// Cancel: finish the current file, then stop (v2 §6).
-    func cancelBatch() {
-        guard workflow.cancel() else { return }
-        runner?.requestStop()
+    /// Cancel. The Settings switch and Option choose finish-current or an immediate stop.
+    /// A second click while a cancel is already in progress does nothing.
+    @discardableResult
+    func cancelBatch(optionHeld explicit: Bool? = nil) -> Bool {
+        let held = explicit ?? (optionHeld || NSEvent.modifierFlags.contains(.option))
+        let intent = CancelIntent.resolve(cancelStopsImmediately: settings.cancelStopsImmediately, optionHeld: held)
+        let immediate = intent.behavior == .immediate
+        guard workflow.cancel(immediate: immediate) else { return false }
+        if immediate {
+            // Same kill as Quit, after the Ready flag, and without quitting.
+            killCurrentWork(returnToReady: true)
+            if let name = workflow.batch?.currentName, !name.isEmpty {
+                announce(CancelIntent.stoppingAnnouncement(fileName: name))
+            }
+            DebugLog.shared.record(.queue, "Immediate cancel requested")
+        } else {
+            runner?.requestStop()
+            DebugLog.shared.record(.queue, "Cancel requested")
+        }
         mutate(workflow.batch?.mode ?? activeMode) { $0.markCancelling() }
-        DebugLog.shared.record(.queue, "Cancel requested")
+        return true
     }
 
     private func handle(_ event: RunEvent, mode: ScanMode) {
@@ -548,6 +581,15 @@ final class AppModel: ObservableObject {
         announce(ScanChildFolders.clearedAnnouncement)
     }
 
+    /// Cancel stops the current file immediately. A change applies to the next Cancel only.
+    func setCancelStopsImmediately(_ on: Bool) {
+        guard on != settings.cancelStopsImmediately else { return }
+        settings.cancelStopsImmediately = on
+        settings.save(to: defaults)
+        DebugLog.shared.record(.lifecycle, "Cancel stops immediately \(on ? "on" : "off")")
+        refreshCommands()
+    }
+
     // MARK: Choose Match (v2.2 §B)
 
     func clearMatchFocus() { matchFocusRowID = nil }
@@ -697,29 +739,53 @@ final class AppModel: ObservableObject {
         DebugLog.shared.record(.lifecycle, "Couldn't open System Settings > Notifications", isWarning: true)
     }
 
-    // MARK: Esc (v2 §11, v2.1 §2.3)
+    // MARK: Esc and Option (v2 §11, v2.1 §2.3, issue #57)
 
-    /// Esc stops a scan or cancels a batch while the main window is key. A local monitor,
-    /// so it works whatever has focus (the table, a button).
-    private func installEscapeMonitor() {
+    /// Local monitors. Esc and ⌥⌘. need the main window key. Option relabels Cancel
+    /// wherever focus is, including Settings. Removed in `deinit`.
+    private func installKeyMonitors() {
         escapeMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
-            guard event.keyCode == 53 else { return event }
-            let modifiers = event.modifierFlags.intersection(.deviceIndependentFlagsMask).subtracting([.function, .numericPad, .capsLock])
-            guard modifiers.isEmpty else { return event }
-            let handled = MainActor.assumeIsolated { self?.handleEscape() ?? false }
+            let handled = MainActor.assumeIsolated { self?.handleKeyDown(event) ?? false }
             return handled ? nil : event
+        }
+        optionMonitor = NSEvent.addLocalMonitorForEvents(matching: .flagsChanged) { [weak self] event in
+            let held = event.modifierFlags.contains(.option)
+            MainActor.assumeIsolated { self?.setOptionHeld(held) }
+            return event
         }
     }
 
-    private func handleEscape() -> Bool {
+    private func setOptionHeld(_ held: Bool) {
+        guard held != optionHeld else { return }
+        optionHeld = held
+    }
+
+    /// Escape is 53. Period is 47. Plain ⌘. stays on the Batch menu item.
+    private func handleKeyDown(_ event: NSEvent) -> Bool {
         guard let window = mainWindow, NSApp.keyWindow === window, window.attachedSheet == nil else { return false }
+        let modifiers = event.modifierFlags.intersection(.deviceIndependentFlagsMask)
+            .subtracting([.function, .numericPad, .capsLock])
+        switch event.keyCode {
+        case 53:
+            if modifiers.isEmpty { return handleCancelKey(optionHeld: false) }
+            if modifiers == .option { return handleCancelKey(optionHeld: true) }
+            return false
+        case 47 where modifiers == [.command, .option]:
+            return handleCancelKey(optionHeld: true)
+        default:
+            return false
+        }
+    }
+
+    /// Plain Esc also stops a scan. Option never does: ⌥Esc is Force Cancel only.
+    private func handleCancelKey(optionHeld: Bool) -> Bool {
         switch workflow.activity {
         case .scanning:
+            guard !optionHeld else { return false }
             stopScan()
             return true
         case .running:
-            cancelBatch()
-            return true
+            return cancelBatch(optionHeld: optionHeld)
         case .idle, .cancelling:
             return false
         }
@@ -832,12 +898,23 @@ final class AppModel: ObservableObject {
         }
     }
 
+    /// Kills the in-flight mkvmerge by cancelling the run task. `MKVMergeLiveRun`
+    /// terminates the process and the runner deletes the temp. `returnToReady` is
+    /// the Force Cancel flag (the row goes back to Ready). Quit leaves it false,
+    /// so that row stays cancelled. Safe to call twice.
+    private func killCurrentWork(returnToReady: Bool) {
+        if returnToReady {
+            runner?.requestImmediateStop()
+        }
+        runTask?.cancel()
+    }
+
     /// Kills mkvmerge and deletes the unfinished file (the core does both on task
     /// cancel), waits briefly for that, then quits.
     private func hardStopThenQuit() {
         terminating = true
         scanTask?.cancel()
-        runTask?.cancel()
+        killCurrentWork(returnToReady: false)
         let task = runTask
         Task {
             let deadline = Date().addingTimeInterval(3)

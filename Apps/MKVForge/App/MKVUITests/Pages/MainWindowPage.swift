@@ -132,6 +132,41 @@ class MainWindowPage: MediaTesting.MainWindowPage {
         )
     }
 
+    /// Holds Option and waits until the primary action's own title matches.
+    /// A running batch relabels Cancel to Force Cancel (or Finish Current) while Option is down.
+    func assertPrimaryWhileHoldingOption(
+        titled title: String,
+        timeout: TimeInterval = UITestTimeout.standard,
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) {
+        let button = primaryAction
+        button.requireExists(
+            timeout: timeout,
+            message: "The primary action never showed up",
+            file: file,
+            line: line
+        )
+        var matched = false
+        button.perform(withKeyModifiers: .option) {
+            let deadline = Date().addingTimeInterval(timeout)
+            while Date() < deadline {
+                if button.exists, Self.titleMatches(button, title) {
+                    matched = true
+                    return
+                }
+                RunLoop.current.run(until: Date().addingTimeInterval(0.05))
+            }
+        }
+        if !matched {
+            XCTFail(
+                "primaryAction while holding Option was \(Self.describe(button)), expected title \(title)",
+                file: file,
+                line: line
+            )
+        }
+    }
+
     func clickPrimaryAction(
         titled title: String,
         timeout: TimeInterval = UITestTimeout.long,

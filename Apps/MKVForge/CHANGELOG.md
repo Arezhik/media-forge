@@ -6,6 +6,12 @@ Every merged PR that changes the shipped app bumps the version in the same PR wi
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-11-28 (build 17)
+### Added
+- Settings has a Cancel section, after Scanning and before When a batch finishes, with "Cancel stops the current file immediately" (off by default). On, Cancel stops at once: it kills the current mkvmerge, deletes the temp file and the partial output, keeps finished files, and puts the stopped row back to Ready. There is no confirm dialog. Files that have not started go back to Ready either way. Changing the switch during a batch applies to the next Cancel only (#57).
+### Changed
+- While a batch runs, holding Option relabels Cancel to Force Cancel (setting off) or Finish Current (setting on), and that click uses the other behavior. Option-Command-period and Option-Esc do the same. The bottom bar says "Stopping …" during an immediate stop. Command-Q during that stop still shows the quit alert (#57).
+
 ## [1.1.0] - 2026-11-27 (build 16)
 ### Added
 - Settings: Scan child folders (off by default). When on, Split and Remux look through subfolders of the Source, Video, and Audio folders. Hidden folders and package or bundle directories are skipped. Finished files stay flat in Output. Two files with the same base name are one Issue (`Duplicate name in <Role> folder`). Changing the switch clears both queues, and the switch stays locked while a scan or a batch is running (#19).

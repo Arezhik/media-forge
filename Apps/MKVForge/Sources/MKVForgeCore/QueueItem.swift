@@ -4,7 +4,8 @@ import Foundation
 // - The queue is the last scan's rows. A rescan replaces it; MKVForge has no Clear
 //   Finished, no row ✕ and no Cancel All. Nothing in the queue ever deletes a file.
 // - Cancel finishes the current file, then stops; rows it kept from starting are notRun
-//   and show Ready again. A hard stop (quitting with Quit) marks the current row canceled.
+//   and show Ready again. An immediate cancel uses that same notRun result for the
+//   file it stopped. A hard stop while quitting marks the current row canceled.
 // - An empty queue shows the empty state (MKVForge has no drop screen).
 
 /// Where one queued file is. The texts follow docs/design/v1-layout-contract_v2.md §4.
