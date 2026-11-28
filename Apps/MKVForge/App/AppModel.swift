@@ -130,6 +130,11 @@ final class AppModel: ObservableObject {
         return RemuxMatchLock.isLocked(activity: workflow.activity, workingMode: working)
     }
 
+    /// Scan child folders applies to both modes, so the switch is off during any scan or batch.
+    var scanChildFoldersLocked: Bool {
+        ScanChildFoldersLock.isLocked(activity: workflow.activity)
+    }
+
     /// Set after a pick so the queue selects that pair and focuses its checkbox. Cleared by the view.
     @Published private(set) var matchFocusRowID: String?
 
@@ -231,6 +236,7 @@ final class AppModel: ObservableObject {
         freshOutputs.prune(now: Date())
         let fresh = freshOutputs
         let matchOnMKAName = settings.matchOnMKAName
+        let scanChildFolders = settings.scanChildFolders
         let (progress, progressInput) = AsyncStream<ScanProgress>.makeStream(bufferingPolicy: .bufferingNewest(1))
         let pump = Task { [weak self] in
             for await update in progress {
@@ -243,9 +249,9 @@ final class AppModel: ObservableObject {
                 let result: ScanResult
                 switch mode {
                 case .split:
-                    result = try await scanner.scanSplit(source: folders[0], output: folders[1], progress: report)
+                    result = try await scanner.scanSplit(source: folders[0], output: folders[1], scanChildFolders: scanChildFolders, progress: report)
                 case .remux:
-                    result = try await scanner.scanRemux(video: folders[0], audio: folders[1], output: folders[2], fresh: fresh, matchOnMKAName: matchOnMKAName, progress: report)
+                    result = try await scanner.scanRemux(video: folders[0], audio: folders[1], output: folders[2], fresh: fresh, matchOnMKAName: matchOnMKAName, scanChildFolders: scanChildFolders, progress: report)
                 }
                 progressInput.finish()
                 pump.cancel()
@@ -526,6 +532,20 @@ final class AppModel: ObservableObject {
         clearMatchUndo()
         DebugLog.shared.record(.lifecycle, "Match on MKA Name \(on ? "on" : "off")")
         if activeMode == .remux { announce(MatchOnMKAName.clearedAnnouncement) }
+    }
+
+    /// Scan child folders (v2.5). Changing it drops both queues. Remux picks go with the Remux queue.
+    func setScanChildFolders(_ on: Bool) {
+        guard !scanChildFoldersLocked, on != settings.scanChildFolders else { return }
+        settings.scanChildFolders = on
+        settings.save(to: defaults)
+        mutate(.split) { $0.childFolderSettingChanged() }
+        mutate(.remux) { $0.childFolderSettingChanged() }
+        scanErrors[.split] = nil
+        scanErrors[.remux] = nil
+        clearMatchUndo()
+        DebugLog.shared.record(.lifecycle, "Scan child folders \(on ? "on" : "off")")
+        announce(ScanChildFolders.clearedAnnouncement)
     }
 
     // MARK: Choose Match (v2.2 §B)

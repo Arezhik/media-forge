@@ -7,6 +7,7 @@ import MKVForgeCore
 /// - MKVToolNix: the mkvmerge in use and its status, Choose… (the MKVToolNix app or the
 ///   mkvmerge binary), Use Automatic, and the real search list. A chosen copy that's
 ///   missing or doesn't run shows "Can't run this mkvmerge"; there's no fallback (L15).
+/// - Remux: Match on MKA Name. Scanning: Scan child folders, off by default (issue #19).
 /// - When a batch finishes: two mini switches, on by default. If macOS doesn't allow
 ///   MKVForge's notifications, an inline note offers Open System Settings….
 struct SettingsView: View {
@@ -104,6 +105,35 @@ struct SettingsView: View {
                 .accessibilityHint(locked ? MatchOnMKAName.disabledHelp : "\(MatchOnMKAName.helpLine1) \(MatchOnMKAName.helpLine2)")
             }
 
+            Section(ScanChildFolders.section) {
+                let locked = model.scanChildFoldersLocked
+                Toggle(isOn: scanChildFoldersBinding) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(ScanChildFolders.label)
+                        Text(ScanChildFolders.caption)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .accessibilityHidden(true)
+                        Text(ScanChildFolders.changeHelp)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .accessibilityHidden(true)
+                        if locked {
+                            Text(ScanChildFolders.disabledHelp)
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                                .accessibilityHidden(true)
+                        }
+                    }
+                }
+                .toggleStyle(.switch)
+                .controlSize(.mini)
+                .disabled(locked)
+                .accessibilityIdentifier("scanChildFolders")
+                .accessibilityLabel(ScanChildFolders.label)
+                .accessibilityHint(locked ? ScanChildFolders.disabledHelp : "\(ScanChildFolders.caption) \(ScanChildFolders.changeHelp)")
+            }
+
             Section("When a batch finishes") {
                 Toggle(isOn: notifyBinding) {
                     VStack(alignment: .leading, spacing: 2) {
@@ -179,6 +209,13 @@ struct SettingsView: View {
         Binding(
             get: { [model] in model.settings.matchOnMKAName },
             set: { [model] value in Task { @MainActor in model.setMatchOnMKAName(value) } }
+        )
+    }
+
+    private var scanChildFoldersBinding: Binding<Bool> {
+        Binding(
+            get: { [model] in model.settings.scanChildFolders },
+            set: { [model] value in Task { @MainActor in model.setScanChildFolders(value) } }
         )
     }
 }

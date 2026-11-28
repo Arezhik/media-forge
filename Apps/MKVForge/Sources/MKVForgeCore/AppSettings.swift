@@ -9,6 +9,8 @@ import MediaCore
 // - The chosen mkvmerge is remembered as chosen. A missing copy is an error, not a
 //   silent fallback (L15). Nil means the automatic search.
 // - The notification and Dock bounce switches default to on (v2 §13).
+// - Scan child folders defaults to off (issue #19), including a fresh install and the
+//   cleared `--uitesting` defaults. It applies to Split and Remux.
 // - The window frame is restored by SwiftUI itself (Phase 5 Q9), so it isn't stored here.
 
 public struct AppSettings: Equatable, Sendable {
@@ -23,6 +25,9 @@ public struct AppSettings: Equatable, Sendable {
     /// Off: exact base-name matching. Default on (issue #33). Not saved until the user changes it,
     /// so a fresh install stays on.
     public var matchOnMKAName = true
+    /// Split and Remux. On: list files in child folders (issue #19). Off: top level only.
+    /// Default off. A missing key stays off, so a fresh install and `--uitesting` do too.
+    public var scanChildFolders = false
 
     public init() {}
 
@@ -44,6 +49,7 @@ public struct AppSettings: Equatable, Sendable {
         public static let notify = "notifyWhenFinished"
         public static let bounce = "bounceWhenFinished"
         public static let matchOnMKAName = "matchOnMKAName"
+        public static let scanChildFolders = "scanChildFolders"
 
         public static func folder(_ mode: ScanMode, _ role: FolderRole) -> String {
             "folder.\(mode.rawValue).\(role.rawValue)"
@@ -51,7 +57,7 @@ public struct AppSettings: Equatable, Sendable {
 
         /// Every key this app writes.
         public static var all: [String] {
-            var keys = [activeMode, chosenToolPath, notify, bounce, matchOnMKAName]
+            var keys = [activeMode, chosenToolPath, notify, bounce, matchOnMKAName, scanChildFolders]
             for mode in [ScanMode.split, .remux] {
                 for role in ModeState.roles(for: mode) { keys.append(folder(mode, role)) }
             }
@@ -85,6 +91,7 @@ public struct AppSettings: Equatable, Sendable {
         if defaults.object(forKey: Key.notify) != nil { settings.notifyWhenFinished = defaults.bool(forKey: Key.notify) }
         if defaults.object(forKey: Key.bounce) != nil { settings.bounceWhenFinished = defaults.bool(forKey: Key.bounce) }
         if defaults.object(forKey: Key.matchOnMKAName) != nil { settings.matchOnMKAName = defaults.bool(forKey: Key.matchOnMKAName) }
+        if defaults.object(forKey: Key.scanChildFolders) != nil { settings.scanChildFolders = defaults.bool(forKey: Key.scanChildFolders) }
         for name in dropped {
             DebugLog.shared.record(.lifecycle, "Remembered \(name) folder is gone; shown as not chosen")
         }
@@ -103,6 +110,7 @@ public struct AppSettings: Equatable, Sendable {
         defaults.set(notifyWhenFinished, forKey: Key.notify)
         defaults.set(bounceWhenFinished, forKey: Key.bounce)
         defaults.set(matchOnMKAName, forKey: Key.matchOnMKAName)
+        defaults.set(scanChildFolders, forKey: Key.scanChildFolders)
     }
 
     public static func isFolder(_ path: String) -> Bool {
@@ -117,7 +125,27 @@ public struct AppSettings: Equatable, Sendable {
         return "mode \(activeMode.displayName), folders Split \(split)/2 Remux \(remux)/3, "
             + "mkvmerge \(chosenToolPath == nil ? "automatic" : "chosen"), "
             + "notification \(notifyWhenFinished ? "on" : "off"), Dock bounce \(bounceWhenFinished ? "on" : "off"), "
-            + "match on MKA name \(matchOnMKAName ? "on" : "off")"
+            + "match on MKA name \(matchOnMKAName ? "on" : "off"), "
+            + "scan child folders \(scanChildFolders ? "on" : "off")"
+    }
+}
+
+/// Strings for the Scan child folders switch (layout contract v2.5). It applies to
+/// Split and Remux, so it is not a Remux-only control.
+public enum ScanChildFolders {
+    public static let section = "Scanning"
+    public static let label = "Scan child folders"
+    public static let caption = "Look in subfolders of the Source, Video, and Audio folders."
+    public static let changeHelp = "Changing this clears the queue. Scan again afterward."
+    public static let disabledHelp = "Available when a scan or batch isn't running."
+    public static let clearedAnnouncement = "Queue cleared. Scan again."
+}
+
+/// The switch stays off while a scan or a batch is in progress. It changes both queues,
+/// so unlike Match on MKA Name it locks for Split as well as Remux.
+public enum ScanChildFoldersLock {
+    public static func isLocked(activity: Activity) -> Bool {
+        activity.isBusy
     }
 }
 

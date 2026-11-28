@@ -6,6 +6,10 @@ Every merged PR that changes the shipped app bumps the version in the same PR wi
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-11-27 (build 16)
+### Added
+- Settings: Scan child folders (off by default). When on, Split and Remux look through subfolders of the Source, Video, and Audio folders. Hidden folders and package or bundle directories are skipped. Finished files stay flat in Output. Two files with the same base name are one Issue (`Duplicate name in <Role> folder`). Changing the switch clears both queues, and the switch stays locked while a scan or a batch is running (#19).
+
 ## [1.0.0] - 2026-11-26 (build 15)
 ### Changed
 - First 1.0.0 release after Mac testing. No feature changes in this version bump (#13).

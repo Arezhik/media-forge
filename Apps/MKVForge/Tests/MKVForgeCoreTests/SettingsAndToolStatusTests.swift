@@ -100,8 +100,24 @@ final class AppSettingsTests: XCTestCase {
         settings.setFolder("/Users/secret/Rips", .split, .source)
         settings.chosenToolPath = "/Users/secret/mkvmerge"
         XCTAssertFalse(settings.summary.contains("secret"))
-        XCTAssertEqual(settings.summary, "mode Split, folders Split 1/2 Remux 0/3, mkvmerge chosen, notification on, Dock bounce on, match on MKA name on")
-        XCTAssertEqual(AppSettings.Key.all.count, 10)
+        XCTAssertEqual(settings.summary, "mode Split, folders Split 1/2 Remux 0/3, mkvmerge chosen, notification on, Dock bounce on, match on MKA name on, scan child folders off")
+        XCTAssertEqual(AppSettings.Key.all.count, 11)
+        XCTAssertTrue(AppSettings.Key.all.contains(AppSettings.Key.scanChildFolders))
+    }
+
+    /// Issue #19: off when the key is missing, and a saved on comes back on.
+    func testScanChildFoldersDefaultsOffAndPersistsOn() {
+        XCTAssertFalse(AppSettings().scanChildFolders)
+        let (fresh, _) = AppSettings.load(from: defaults, folderExists: { _ in true })
+        XCTAssertFalse(fresh.scanChildFolders, "a missing key stays off")
+        var settings = AppSettings()
+        settings.scanChildFolders = true
+        settings.save(to: defaults)
+        XCTAssertTrue(defaults.bool(forKey: AppSettings.Key.scanChildFolders))
+        XCTAssertTrue(AppSettings.load(from: defaults, folderExists: { _ in true }).settings.scanChildFolders)
+        settings.scanChildFolders = false
+        settings.save(to: defaults)
+        XCTAssertFalse(AppSettings.load(from: defaults, folderExists: { _ in true }).settings.scanChildFolders)
     }
 }
 

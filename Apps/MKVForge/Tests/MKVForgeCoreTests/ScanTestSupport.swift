@@ -5,9 +5,18 @@ import Foundation
 struct FakeLister: FolderListing {
     var folders: [String: [FileEntry]]
     var existing: Set<String> = []
+    /// Recursive listing. Nil means the same files as `entries(in:)`. Child-folder tests
+    /// set this. `FileEntry.name` is the path relative to the folder (`Season 1/Episode.mkv`).
+    var recursive: [String: [FileEntry]]?
 
     func entries(in folder: String) throws -> [FileEntry] {
         guard let entries = folders[folder] else { throw CocoaError(.fileReadNoPermission) }
+        return entries
+    }
+
+    func recursiveEntries(in folder: String) throws -> [FileEntry] {
+        let source = recursive ?? folders
+        guard let entries = source[folder] else { throw CocoaError(.fileReadNoPermission) }
         return entries
     }
 
