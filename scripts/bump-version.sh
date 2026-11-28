@@ -13,7 +13,7 @@
 #                                                       (for example origin/main after another
 #                                                       PR merged a bump first)
 #
-# <app> is exactly one of: mkvforge, mp4subrip, pgs2srt.
+# <app> is exactly one of: mkvforge, mp4subrip, pgs2srt, or mediaforgecatalog.
 # Apps/<App>/scripts/bump-version.sh is a wrapper that adds the app name and
 # forwards every argument here.
 #
@@ -24,6 +24,7 @@
 #   A new phase is usually a minor bump; 1.0.0 is the v1 release.
 #   Every bump also adds 1 to the build number. Docs-only or CI-only PRs don't bump.
 #   Tags: per-app <app>-vX.Y.Z (mkvforge-vX.Y.Z, mp4subrip-vX.Y.Z, pgs2srt-vX.Y.Z).
+#   mediaforgecatalog is an internal catalog and is not released.
 #   Never a bare vX.Y.Z.
 #
 # Two open PRs that both bump collide on the same version lines. Whichever merges
@@ -74,7 +75,12 @@ case "$APP" in
     TAG_PREFIX="pgs2srt-v"
     CHANGELOG_REQUIRED=0
     ;;
-  *) die "unknown app '$APP' (use mkvforge, mp4subrip, or pgs2srt)" ;;
+  mediaforgecatalog)
+    APP_DIR="Apps/MediaForgeCatalog"
+    TAG_PREFIX="mediaforgecatalog-v"
+    CHANGELOG_REQUIRED=1
+    ;;
+  *) die "unknown app '$APP' (use mkvforge, mp4subrip, pgs2srt, or mediaforgecatalog)" ;;
 esac
 
 REPO="$(cd "$(dirname "$0")/.." && pwd)"

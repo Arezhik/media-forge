@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- Build stamp. A post-build script replaces this with the short git commit.
+	     The other keys are generated (GENERATE_INFOPLIST_FILE = YES). -->
+	<key>MFCatalogCommit</key>
+	<string>unknown</string>
+</dict>
+</plist>

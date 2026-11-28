@@ -1,0 +1,141 @@
+# Source of truth for App/MediaForgeCatalog.xcodeproj. Never hand-edit project.pbxproj:
+# change this file, then run ./scripts/verify-linux.sh (XcodeGen 2.48.0)
+# from Apps/MediaForgeCatalog (the folder reference is named MediaForgeCatalog). A second run must
+# change nothing, and the project must have no TEMP_ object IDs.
+# The Xcode project must not sit next to Package.swift, and the package
+# must not be named MediaForgeCatalog, or Xcode reports the products as missing.
+name: MediaForgeCatalog
+options:
+  bundleIdPrefix: com.arezhik
+  deploymentTarget:
+    macOS: "15.0"
+  # Off: with `path: .`, intermediate groups leave files under random TEMP_ IDs
+  # so every `xcodegen generate` writes a different project (same as mkv-forge L33).
+  createIntermediateGroups: false
+  defaultConfig: Release
+settings:
+  # XcodeGen ignores plain keys next to configs:, so project-wide keys go under base:.
+  base:
+    MACOSX_DEPLOYMENT_TARGET: "15.0"
+    SDKROOT: macosx
+    SUPPORTED_PLATFORMS: macosx
+    SUPPORTS_MACCATALYST: NO
+    SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD: NO
+    SWIFT_VERSION: "5.0"
+    ENABLE_USER_SCRIPT_SANDBOXING: NO
+  configs:
+    Debug:
+      # Do not set ARCHS here. Debug follows the run destination (My Mac),
+      # so the app and the package module are the same chip.
+      ONLY_ACTIVE_ARCH: YES
+    Release:
+      ONLY_ACTIVE_ARCH: NO
+packages:
+  CorePackage:
+    path: ..
+  MediaForge:
+    path: ../../../Packages/MediaForge
+targets:
+  MediaForgeCatalog:
+    type: application
+    platform: macOS
+    sources:
+      - path: .
+        includes:
+          - "*.swift"
+          - Info.plist
+        excludes:
+          - "CatalogUITests/**"
+      - path: Assets.xcassets
+        buildPhase: resources
+    # App Sandbox stays off, same as the product apps. This catalog is unsigned
+    # and is not shipped.
+    dependencies:
+      - package: CorePackage
+        product: MediaForgeCatalogCore
+      - package: MediaForge
+        product: MediaUI
+    postBuildScripts:
+      - name: Stamp MFCatalogCommit
+        basedOnDependencyAnalysis: false
+        shellPath: /bin/bash
+        script: |
+          set -euo pipefail
+          ROOT="$(cd "${SRCROOT}/../../.." && pwd)"
+          COMMIT="$(git -C "${ROOT}" rev-parse --short HEAD 2>/dev/null || true)"
+          if [ -z "${COMMIT}" ]; then
+            COMMIT="unknown"
+          fi
+          INFO_PLIST="${TARGET_BUILD_DIR}/${INFOPLIST_PATH}"
+          if [ ! -f "${INFO_PLIST}" ]; then
+            INFO_PLIST="${BUILT_PRODUCTS_DIR}/${CONTENTS_FOLDER_PATH}/Info.plist"
+          fi
+          if [ ! -f "${INFO_PLIST}" ]; then
+            echo "error: MFCatalogCommit stamp could not find the built Info.plist" >&2
+            exit 1
+          fi
+          /usr/libexec/PlistBuddy -c "Delete :MFCatalogCommit" "${INFO_PLIST}" >/dev/null 2>&1 || true
+          /usr/libexec/PlistBuddy -c "Add :MFCatalogCommit string ${COMMIT}" "${INFO_PLIST}"
+          echo "MFCatalogCommit=${COMMIT}"
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.arezhik.MediaForgeCatalog
+        PRODUCT_NAME: MediaForgeCatalog
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_FILE: Info.plist
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        # Version: change with scripts/bump-version.sh only, so this file and the
+        # .xcodeproj stay in sync. MARKETING_VERSION is what users see (MAJOR.MINOR.PATCH).
+        MARKETING_VERSION: "0.1.0"
+        CURRENT_PROJECT_VERSION: "1"
+        CODE_SIGN_STYLE: Manual
+        CODE_SIGN_IDENTITY: "-"
+        CODE_SIGNING_REQUIRED: NO
+        CODE_SIGNING_ALLOWED: YES
+        ENABLE_HARDENED_RUNTIME: NO
+        ENABLE_USER_SCRIPT_SANDBOXING: NO
+        INFOPLIST_KEY_CFBundleDisplayName: MediaForgeCatalog
+        INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.developer-tools
+        LD_RUNPATH_SEARCH_PATHS:
+          - "$(inherited)"
+          - "@executable_path/../Frameworks"
+        SWIFT_EMIT_LOC_STRINGS: YES
+        ENABLE_PREVIEWS: YES
+        MACOSX_DEPLOYMENT_TARGET: "15.0"
+      configs:
+        Debug:
+          ONLY_ACTIVE_ARCH: YES
+        Release:
+          ONLY_ACTIVE_ARCH: NO
+          ARCHS: [arm64, x86_64]
+    scheme:
+      gatherCoverageData: false
+  MediaForgeCatalogUITests:
+    type: bundle.ui-testing
+    platform: macOS
+    sources:
+      - path: CatalogUITests
+        excludes:
+          - "README.md"
+          - "**/*.md"
+    dependencies:
+      - target: MediaForgeCatalog
+      - package: MediaForge
+        product: MediaTesting
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.arezhik.MediaForgeCatalogUITests
+        GENERATE_INFOPLIST_FILE: YES
+        TEST_TARGET_NAME: MediaForgeCatalog
+        CODE_SIGN_STYLE: Manual
+        CODE_SIGN_IDENTITY: "-"
+        MACOSX_DEPLOYMENT_TARGET: "15.0"
+schemes:
+  MediaForgeCatalog-UITests:
+    build:
+      targets:
+        MediaForgeCatalog: all
+        MediaForgeCatalogUITests: [test]
+    test:
+      targets:
+        - MediaForgeCatalogUITests
