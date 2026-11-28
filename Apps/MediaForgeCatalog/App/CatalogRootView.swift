@@ -242,8 +242,9 @@ struct OverviewView: View {
             }
             .padding(28)
             .frame(maxWidth: .infinity, alignment: .leading)
+            .accessibilityElement(children: .contain)
+            .accessibilityIdentifier("overview")
         }
-        .accessibilityIdentifier("overview")
     }
 
     private func moduleCard(_ section: CatalogSection) -> some View {

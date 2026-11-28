@@ -19,8 +19,14 @@ final class CatalogPage: BasePage {
     }
 
     func requireDetailTitle(_ title: String) {
-        let element = app.groups["detail"].staticTexts["detailTitle"]
-        element.requireExists(message: "Detail title never showed \(title)")
+        let candidates = [
+            app.groups["detail"].staticTexts["detailTitle"],
+            app.staticTexts["detailTitle"],
+        ]
+        guard let element = UITestWait.firstExisting(candidates, timeout: UITestTimeout.standard) else {
+            XCTFail("Detail title never showed \(title)")
+            return
+        }
         XCTAssertTrue(
             element.uiText == title || (element.value as? String) == title,
             "Detail title was \(element.uiText), expected \(title)"

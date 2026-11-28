@@ -186,8 +186,51 @@ struct CatalogCommands: Commands {
 }
 
 final class AppDelegate: NSObject, NSApplicationDelegate {
+    private var testingWindow: NSWindow?
+
     func applicationDidFinishLaunching(_ notification: Notification) {
         try? SampleFiles.ensure()
+        guard UITestingLaunch.isActive else { return }
+        Task { @MainActor in
+            try? await Task.sleep(for: .milliseconds(300))
+            self.presentTestingWindowIfNeeded()
+        }
+    }
+
+    /// XCTest leaves this process with no SwiftUI window (`NSApp.windows` stays
+    /// empty), so the smoke tests never see Overview. `-ApplePersistenceIgnoreState`
+    /// is not used: together with `--uitesting` it suppresses the window too.
+    @MainActor
+    private func presentTestingWindowIfNeeded() {
+        NSApp.setActivationPolicy(.regular)
+        NSApp.activate(ignoringOtherApps: true)
+        if let window = NSApp.windows.first(where: { $0.canBecomeKey && $0.isVisible }) {
+            window.makeKeyAndOrderFront(nil)
+            return
+        }
+        let window = NSWindow(
+            contentRect: NSRect(x: 0, y: 0, width: 1080, height: 700),
+            styleMask: [.titled, .closable, .miniaturizable, .resizable],
+            backing: .buffered,
+            defer: false
+        )
+        window.title = "MediaForgeCatalog"
+        window.contentViewController = NSHostingController(rootView: TestingCatalogWindow())
+        window.minSize = NSSize(width: 900, height: 600)
+        window.setContentSize(NSSize(width: 1080, height: 700))
+        window.center()
+        window.makeKeyAndOrderFront(nil)
+        testingWindow = window
+    }
+}
+
+private struct TestingCatalogWindow: View {
+    @State private var preview: TilePreview = .auto
+
+    var body: some View {
+        CatalogRoot(preview: $preview)
+            .defaultAppStorage(UITestingLaunch.defaults)
+            .frame(minWidth: 900, minHeight: 600)
     }
 }
 
