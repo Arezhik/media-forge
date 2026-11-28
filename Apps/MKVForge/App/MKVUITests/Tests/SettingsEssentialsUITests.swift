@@ -1,8 +1,9 @@
 import MediaTesting
 import XCTest
 
-// UIT-P0-05. Settings shows the tool, the match switch, and the finish switches.
-// No media. `--uitesting` clears the defaults, so the three switches start on.
+// UIT-P0-05. Settings shows the tool, the match switch, Scan child folders, and the
+// finish switches. No media. `--uitesting` clears the defaults, so Match on MKA Name
+// and the two finish switches start on. Scan child folders starts off.
 // Does not click Choose…, Get MKVToolNix, or Open System Settings….
 
 @MainActor
@@ -27,13 +28,25 @@ final class SettingsEssentialsUITests: BaseUITest {
             settings.assertChooseButtonPresent()
         }
 
-        XCTContext.runActivity(named: "Match on MKA Name is on screen") { _ in
+        XCTContext.runActivity(named: "Match on MKA Name is on screen and starts on") { _ in
             settings.requireMatchOnMKANameToggle()
+            settings.waitUntilSwitch(named: "Match on MKA Name", isOn: true)
         }
 
-        XCTContext.runActivity(named: "Finish switches are on screen") { _ in
+        XCTContext.runActivity(named: "Scan child folders is on screen and starts off") { _ in
+            settings.requireScanChildFoldersToggle()
+            settings.waitUntilSwitch(named: "Scan child folders", isOn: false)
+            settings.clickScanChildFolders()
+            settings.waitUntilSwitch(named: "Scan child folders", isOn: true)
+            settings.clickScanChildFolders()
+            settings.waitUntilSwitch(named: "Scan child folders", isOn: false)
+        }
+
+        XCTContext.runActivity(named: "Finish switches are on screen and start on") { _ in
             settings.requireSendNotificationToggle()
             settings.requireBounceDockIconToggle()
+            settings.waitUntilSwitch(named: "Send a notification", isOn: true)
+            settings.waitUntilSwitch(named: "Bounce the Dock icon", isOn: true)
         }
 
         XCTContext.runActivity(named: "Send a notification toggles off and back on") { _ in

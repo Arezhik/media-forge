@@ -5,7 +5,8 @@ import XCTest
 //
 // Opening Settings is the application menu item "Settings…" (SwiftUI `Settings` scene, also ⌘,).
 // The navigation title is "MKVForge Settings". The pane has an MKVToolNix section and
-// "When a batch finishes" toggles ("Send a notification", "Bounce the Dock icon").
+// "When a batch finishes" toggles ("Send a notification", "Bounce the Dock icon"),
+// and the Scanning switch "Scan child folders" (off by default).
 //
 // Do not use `app.windows["MKVForge Settings"]` as the only lookup. The window title
 // may be "Settings" or empty, with the navigation title as a static text.
@@ -40,6 +41,11 @@ final class SettingsPage: MediaTesting.SettingsPage {
         control(named: "Match on MKA Name")
     }
 
+    /// The Scanning switch. Same lookup as the other switches. It starts off.
+    var scanChildFoldersToggle: XCUIElement {
+        control(named: "Scan child folders")
+    }
+
     func clickSendNotification() {
         clickControl(named: "Send a notification", message: "The Send a notification toggle never showed up")
     }
@@ -50,6 +56,10 @@ final class SettingsPage: MediaTesting.SettingsPage {
 
     func clickMatchOnMKAName() {
         clickControl(named: "Match on MKA Name", message: "The Match on MKA Name toggle never showed up")
+    }
+
+    func clickScanChildFolders() {
+        clickControl(named: "Scan child folders", message: "The Scan child folders toggle never showed up")
     }
 
     /// Navigation title `MKVForge Settings` is up, either as the window title
@@ -82,6 +92,20 @@ final class SettingsPage: MediaTesting.SettingsPage {
             )
             return
         }
+    }
+
+    func requireScanChildFoldersToggle(
+        timeout: TimeInterval = UITestTimeout.standard,
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) {
+        requireControl(
+            named: "Scan child folders",
+            message: "The Scan child folders switch never showed up",
+            timeout: timeout,
+            file: file,
+            line: line
+        )
     }
 
     func requireMatchOnMKANameToggle(

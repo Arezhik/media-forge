@@ -2,7 +2,10 @@ import Foundation
 import MediaCore
 
 // Folder scans (docs/scaffold.md, Split, Remux, Validation / Scan Rules). Rules:
-// - Top level only. Hidden and `._` files, subfolders, and other extensions are skipped.
+// - Top level only, unless `scanChildFolders` is on (issue #19). Hidden and `._` files
+//   are skipped at every depth. Hidden folders and package/bundle directories are not
+//   descended into. Output is always flat in the Output folder: `Season 1/Episode.mkv`
+//   writes `<Output>/Episode.mka`. The Output folder is not scanned for layout.
 // - Exact base-name matching, unless Remux is asked to match on the MKA name (issue #33).
 //   That path pairs a .mkv whose stem starts with the .mka stem and lives in `RemuxMatcher`.
 // - Cheap file checks run first (duplicate, orphan, empty, unreadable, still changing).
@@ -53,12 +56,12 @@ public struct FolderScanner: Sendable {
 
     // MARK: Split
 
-    public func scanSplit(source: String, output: String, progress: (@Sendable (ScanProgress) -> Void)? = nil) async throws -> ScanResult {
+    public func scanSplit(source: String, output: String, scanChildFolders: Bool = false, progress: (@Sendable (ScanProgress) -> Void)? = nil) async throws -> ScanResult {
         let scannedAt = now()
         DebugLog.shared.record(.queue, "Scan Split started")
         var reporter = ScanProgressReporter(report: progress, interval: progressInterval)
         reporter.listing()
-        let groups = ScanFilter.byBaseName(ScanFilter.candidates(try list(source, .source), fileExtension: "mkv"))
+        let groups = ScanFilter.byBaseName(ScanFilter.candidates(try await list(source, .source, childFolders: scanChildFolders), fileExtension: "mkv"))
         try Task.checkCancellation()
 
         var items: [String: ScanItem] = [:]
@@ -126,16 +129,18 @@ public struct FolderScanner: Sendable {
 
     /// `fresh`: the outputs of this session's recent Split batches (see `FreshOutputs`).
     /// `matchOnMKAName`: prefix pairing (issue #33). Off keeps exact base-name matching.
-    public func scanRemux(video: String, audio: String, output: String, fresh: FreshOutputs = FreshOutputs(), matchOnMKAName: Bool = false, progress: (@Sendable (ScanProgress) -> Void)? = nil) async throws -> ScanResult {
+    /// `scanChildFolders`: list every nested file (issue #19). Matching then uses the
+    /// whole tree. Off keeps the top-level listing.
+    public func scanRemux(video: String, audio: String, output: String, fresh: FreshOutputs = FreshOutputs(), matchOnMKAName: Bool = false, scanChildFolders: Bool = false, progress: (@Sendable (ScanProgress) -> Void)? = nil) async throws -> ScanResult {
         if matchOnMKAName {
-            return try await scanRemuxMatching(video: video, audio: audio, output: output, fresh: fresh, progress: progress)
+            return try await scanRemuxMatching(video: video, audio: audio, output: output, fresh: fresh, scanChildFolders: scanChildFolders, progress: progress)
         }
         let scannedAt = now()
         DebugLog.shared.record(.queue, "Scan Remux started")
         var reporter = ScanProgressReporter(report: progress, interval: progressInterval)
         reporter.listing()
-        let videos = ScanFilter.byBaseName(ScanFilter.candidates(try list(video, .video), fileExtension: "mkv"))
-        let mkas = ScanFilter.byBaseName(ScanFilter.candidates(try list(audio, .audio), fileExtension: "mka"))
+        let videos = ScanFilter.byBaseName(ScanFilter.candidates(try await list(video, .video, childFolders: scanChildFolders), fileExtension: "mkv"))
+        let mkas = ScanFilter.byBaseName(ScanFilter.candidates(try await list(audio, .audio, childFolders: scanChildFolders), fileExtension: "mka"))
         try Task.checkCancellation()
         let outputIsVideoFolder = Self.sameFolder(video, output)
 
@@ -238,13 +243,13 @@ public struct FolderScanner: Sendable {
 
     /// Match on MKA Name (issue #33). Lists every file, identifies the ones a pair or an
     /// ambiguous row might use, and stores the inventory so a later pick doesn't rescan.
-    private func scanRemuxMatching(video: String, audio: String, output: String, fresh: FreshOutputs, progress: (@Sendable (ScanProgress) -> Void)?) async throws -> ScanResult {
+    private func scanRemuxMatching(video: String, audio: String, output: String, fresh: FreshOutputs, scanChildFolders: Bool, progress: (@Sendable (ScanProgress) -> Void)?) async throws -> ScanResult {
         let scannedAt = now()
         DebugLog.shared.record(.queue, "Scan Remux started")
         var reporter = ScanProgressReporter(report: progress, interval: progressInterval)
         reporter.listing()
-        let videoGroups = ScanFilter.byBaseName(ScanFilter.candidates(try list(video, .video), fileExtension: "mkv"))
-        let audioGroups = ScanFilter.byBaseName(ScanFilter.candidates(try list(audio, .audio), fileExtension: "mka"))
+        let videoGroups = ScanFilter.byBaseName(ScanFilter.candidates(try await list(video, .video, childFolders: scanChildFolders), fileExtension: "mkv"))
+        let audioGroups = ScanFilter.byBaseName(ScanFilter.candidates(try await list(audio, .audio, childFolders: scanChildFolders), fileExtension: "mka"))
         try Task.checkCancellation()
         let outputIsVideoFolder = Self.sameFolder(video, output)
 
@@ -290,7 +295,7 @@ public struct FolderScanner: Sendable {
             if entries.count > 1 {
                 let first = entries[0]
                 files.append(RemuxListedFile(
-                    name: first.name, path: Self.join(folder, first.name), stem: stem, role: role,
+                    name: first.fileName, path: Self.join(folder, first.name), stem: stem, role: role,
                     cheapIssues: [], duplicateFileNames: entries.map(\.name)
                 ))
             } else {
@@ -299,7 +304,7 @@ public struct FolderScanner: Sendable {
                 let settled = role == .audio && fresh.isOwnOutput(path, entry, at: scannedAt)
                 if settled { ownOutputs += 1 }
                 files.append(RemuxListedFile(
-                    name: entry.name, path: path, stem: stem, role: role,
+                    name: entry.fileName, path: path, stem: stem, role: role,
                     cheapIssues: cheapIssues(entry, role: role, scannedAt: scannedAt, settled: settled)
                 ))
             }
@@ -309,27 +314,51 @@ public struct FolderScanner: Sendable {
 
     // MARK: Shared
 
-    private func list(_ folder: String, _ role: FolderRole) throws -> [FileEntry] {
+    /// Folder walks run off the main thread (L16). `childFolders` uses the recursive
+    /// listing; off keeps `entries(in:)`, which stays top-level.
+    private func list(_ folder: String, _ role: FolderRole, childFolders: Bool) async throws -> [FileEntry] {
+        let lister = self.lister
         do {
-            return try lister.entries(in: folder)
+            return try await Self.readOffMainThread {
+                if childFolders {
+                    return try lister.recursiveEntries(in: folder)
+                }
+                return try lister.entries(in: folder)
+            }
+        } catch is CancellationError {
+            throw CancellationError()
         } catch {
             DebugLog.shared.record(.error, "Scan: \(role.displayName) folder can't be read", isError: true)
             throw ScanError.folderNotReadable(role, path: folder)
         }
     }
 
+    /// Runs a folder walk off the calling thread. Cancelling the scan cancels the walk.
+    private static func readOffMainThread<T: Sendable>(_ body: @escaping @Sendable () throws -> T) async throws -> T {
+        let task = Task.detached(priority: .userInitiated) {
+            try Task.checkCancellation()
+            return try body()
+        }
+        return try await withTaskCancellationHandler {
+            try await task.value
+        } onCancel: {
+            task.cancel()
+        }
+    }
+
     /// `settled`: the file is known to be complete (an output MKVForge just wrote), so the
-    /// still-changing check is skipped.
+    /// still-changing check is skipped. The message names the file, not its subfolder.
     func cheapIssues(_ file: FileEntry, role: FolderRole, scannedAt: Date, settled: Bool = false) -> [ScanIssue] {
         var issues: [ScanIssue] = []
+        let fileName = file.fileName
         if file.size == 0 {
-            issues.append(.emptyFile(role, fileName: file.name))
+            issues.append(.emptyFile(role, fileName: fileName))
         } else if !file.isReadable {
-            issues.append(.unreadable(role, fileName: file.name, detail: "no permission to read it"))
+            issues.append(.unreadable(role, fileName: fileName, detail: "no permission to read it"))
         }
         // A future modification date (a share's clock running ahead) also counts.
         if !settled && scannedAt.timeIntervalSince(file.modified) < Self.stillChangingInterval {
-            issues.append(.stillChanging(role, fileName: file.name))
+            issues.append(.stillChanging(role, fileName: fileName))
         }
         return issues
     }

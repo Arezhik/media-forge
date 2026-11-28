@@ -107,6 +107,12 @@ public struct ModeState: Equatable, Sendable {
         clearScan()
     }
 
+    /// A Scan child folders change (issue #19, layout contract v2.5). Both modes drop
+    /// their queue. Remux picks go with the Remux scan. Folders stay.
+    public mutating func childFolderSettingChanged() {
+        clearScan()
+    }
+
     /// Re-scores the current Remux scan with these picks. Returns the row id of the last
     /// pick that locked a pair, so the queue can select it. No-op without a matching inventory.
     @discardableResult
