@@ -148,7 +148,7 @@ class MainWindowPage: MediaTesting.MainWindowPage {
             line: line
         )
         var matched = false
-        button.perform(withKeyModifiers: .option) {
+        XCUIElement.perform(withKeyModifiers: .option) {
             let deadline = Date().addingTimeInterval(timeout)
             while Date() < deadline {
                 if button.exists, Self.titleMatches(button, title) {
